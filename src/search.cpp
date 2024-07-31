@@ -1558,13 +1558,14 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     continue;
                 }
 
-                // If static eval is much lower than alpha and move is
-                // not winning material, we can prune this move. (~2 Elo)
-                if (futilityBase <= alpha && !pos.see_ge(move, 1))
+                int see_safety_margin = 800;
+                if (futilityBase <= alpha && !pos.see_ge(move, alpha - futilityBase - see_safety_margin))
                 {
                     bestValue = std::max(bestValue, futilityBase);
                     continue;
                 }
+
+                TUNE(see_safety_margin);
 
                 // If static exchange evaluation is much worse than what
                 // is needed to not fall below alpha, we can prune this move.
