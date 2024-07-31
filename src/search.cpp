@@ -52,6 +52,9 @@
 
 namespace Stockfish {
 
+int see_safety_margin = 800;
+TUNE(see_safety_margin);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1558,14 +1561,12 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     continue;
                 }
 
-                int see_safety_margin = 800;
                 if (futilityBase <= alpha && !pos.see_ge(move, alpha - futilityBase - see_safety_margin))
                 {
                     bestValue = std::max(bestValue, futilityBase);
                     continue;
                 }
 
-                TUNE(see_safety_margin);
 
                 // If static exchange evaluation is much worse than what
                 // is needed to not fall below alpha, we can prune this move.
