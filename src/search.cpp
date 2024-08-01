@@ -52,9 +52,6 @@
 
 namespace Stockfish {
 
-int see_safety_margin = 800;
-TUNE(see_safety_margin);
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
