@@ -162,6 +162,7 @@ class MovePicker {
                const PawnHistory*);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
     Move next_move(bool skipQuiets = false);
+    int legal_quiet_count(){ return legalQuietCount; }
 
    private:
     template<PickType T, typename Pred>
@@ -179,6 +180,7 @@ class MovePicker {
     Move                         ttMove;
     ExtMove *                    cur, *endMoves, *endBadCaptures, *beginBadQuiets, *endBadQuiets;
     int                          stage;
+    int                          legalQuietCount = 0;
     int                          threshold;
     Depth                        depth;
     ExtMove                      moves[MAX_MOVES];
