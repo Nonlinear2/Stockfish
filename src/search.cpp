@@ -904,7 +904,6 @@ moves_loop:  // When in check, search starts here
 
     MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->captureHistory,
                   contHist, &thisThread->pawnHistory);
-    ss->legalQuietCount = mp.legal_quiet_count();
 
     value = bestValue;
 
@@ -1316,9 +1315,10 @@ moves_loop:  // When in check, search starts here
 
         // if we notice during move generation that the node we are searching doesn't improve alpha quick enough,
         // then it's probably a bad node, and we should break.
+        ss->legalQuietCount = mp.legal_quiet_count();
         if (
             (bestValue < alpha - 494 - 290 * depth) &&
-            (depth < 10) &&
+            (depth < 6) &&
             (!ss->inCheck) &&
             (!PvNode) &&
             (!rootNode) &&
