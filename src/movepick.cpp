@@ -251,7 +251,7 @@ top:
         {
             cur      = endBadCaptures;
             endMoves = beginBadQuiets = endBadQuiets = generate<QUIETS>(pos, cur);
-            
+
             score<QUIETS>();
             partial_insertion_sort(cur, endMoves, quiet_threshold(depth));
         }
