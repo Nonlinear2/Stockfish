@@ -249,10 +249,9 @@ top:
     case QUIET_INIT :
         if (!skipQuiets)
         {
-            Stockfish::ExtMove* endMovesBefore = endMoves;
             cur      = endBadCaptures;
             endMoves = beginBadQuiets = endBadQuiets = generate<QUIETS>(pos, cur);
-            legalQuietCount = endMoves - endMovesBefore;
+            
             score<QUIETS>();
             partial_insertion_sort(cur, endMoves, quiet_threshold(depth));
         }
