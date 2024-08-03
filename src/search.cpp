@@ -1566,10 +1566,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
                 // If static eval is much lower than alpha and move is
                 // not winning material, we can prune this move. (~2 Elo)
-                Value SeeValue = ss->staticEval + 375;
-                if (!pos.see_ge(move, alpha - SeeValue))
+                if (!pos.see_ge(move, std::min(alpha - futilityBase, 100)))
                 {
-                    bestValue = (SeeValue > alpha) ? alpha : std::max(bestValue, SeeValue);
+                    bestValue = (futilityBase > alpha) ? alpha : std::max(bestValue, futilityBase);
                     continue;
                 }
             }
