@@ -538,7 +538,7 @@ Value Search::Worker::search(
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    bool  givesCheck, improving, catastrophic, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
     Piece movedPiece;
 
@@ -692,6 +692,7 @@ Value Search::Worker::search(
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
         improving             = false;
+        catastrophic          = false;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -745,12 +746,14 @@ Value Search::Worker::search(
     // false otherwise. The improving flag is used in various pruning heuristics.
     improving = ss->staticEval > (ss - 2)->staticEval;
 
+    catastrophic = ss->staticEval < (ss - 1)->staticEval;
+
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
     // search suggests we cannot exceed alpha, return a speculative fail low.
-    if (eval < alpha - 494 - 290 * depth * depth)
+    if (eval < alpha - 494 - 290 * depth * depth + catastrophic*300)
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha && std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY)
