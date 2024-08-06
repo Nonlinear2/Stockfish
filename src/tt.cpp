@@ -57,6 +57,7 @@ struct TTEntry {
 
     bool is_occupied() const;
     void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, uint8_t generation8);
+    void save_static(Key k, bool pv, Value ev, uint8_t generation8);
     // The returned age is a multiple of TranspositionTable::GENERATION_DELTA
     uint8_t relative_age(const uint8_t generation8) const;
 
@@ -110,10 +111,24 @@ void TTEntry::save(
         depth8    = uint8_t(d - DEPTH_ENTRY_OFFSET);
         genBound8 = uint8_t(generation8 | uint8_t(pv) << 2 | b);
         value16   = int16_t(v);
-        if (isNewPosition || ev != VALUE_NONE) eval16    = int16_t(ev);
+        eval16    = int16_t(ev);
     }
 }
 
+// Populates the TTEntry with a new node's data, possibly
+// overwriting an old position. The update is not atomic and can be racy.
+void TTEntry::save_static(Key k, bool pv, Value ev, uint8_t generation8) {
+
+    if (uint16_t(k) != key16)
+    {
+        key16     = uint16_t(k);
+        depth8    = uint8_t(DEPTH_UNSEARCHED - DEPTH_ENTRY_OFFSET);
+        genBound8 = uint8_t(generation8 | uint8_t(pv) << 2 | BOUND_NONE);
+        move16    = Move::none();
+        value16   = int16_t(VALUE_NONE);
+        eval16    = int16_t(ev);
+    }
+}
 
 uint8_t TTEntry::relative_age(const uint8_t generation8) const {
     // Due to our packed storage format for generation and its cyclic
@@ -134,6 +149,10 @@ void TTWriter::write(
     entry->save(k, v, pv, b, d, m, ev, generation8);
 }
 
+void TTWriter::write_static(
+  Key k, bool pv, Value ev, uint8_t generation8) {
+    entry->save_static(k, pv, ev, generation8);
+}
 
 // A TranspositionTable is an array of Cluster, of size clusterCount. Each cluster consists of ClusterSize number
 // of TTEntry. Each non-empty TTEntry contains information on exactly one position. The size of a Cluster should
