@@ -748,7 +748,7 @@ Value Search::Worker::search(
 
     worsening = std::max(0, (-(ss - 1)->staticEval) - ss->staticEval);
 
-    opponentWorsening = ss->staticEval - (-(ss - 1)->staticEval) > 2;
+    opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
