@@ -93,9 +93,15 @@ bool TTEntry::is_occupied() const { return bool(depth8); }
 void TTEntry::save(
   Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, uint8_t generation8) {
 
-    bool good_entry = (b == BOUND_EXACT || d - DEPTH_ENTRY_OFFSET + 2 * pv > depth8 - 4);
+    bool isNewPosition = (uint16_t(k) != key16);
+
+    // update the old ttmove if we have a new one
+    if (m || isNewPosition)
+        move16 = m;
+
     // Overwrite less valuable entries (cheapest checks first)
-    if (uint16_t(k) != key16 || good_entry || relative_age(generation8))
+    if (b == BOUND_EXACT || isNewPosition || d - DEPTH_ENTRY_OFFSET + 2 * pv > depth8 - 4
+        || relative_age(generation8))
     {
         assert(d > DEPTH_ENTRY_OFFSET);
         assert(d < 256 + DEPTH_ENTRY_OFFSET);
@@ -103,13 +109,8 @@ void TTEntry::save(
         key16     = uint16_t(k);
         depth8    = uint8_t(d - DEPTH_ENTRY_OFFSET);
         genBound8 = uint8_t(generation8 | uint8_t(pv) << 2 | b);
-
-        // update the ttmove if we have a better one
-        if (uint16_t(k) != key16 || (m && (!move16 || good_entry)))
-            move16 = m;
-
         value16   = int16_t(v);
-        eval16    = int16_t(ev);
+        if (isNewPosition || ev != VALUE_NONE) eval16    = int16_t(ev);
     }
 }
 
