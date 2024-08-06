@@ -66,10 +66,10 @@ using namespace Search;
 namespace {
 
 // Futility margin
-Value futility_margin(Depth d, bool noTtCutNode, bool improving, bool oppWorsening) {
+Value futility_margin(Depth d, bool noTtCutNode, bool improving, Value oppWorsening) {
     Value futilityMult       = 122 - 37 * noTtCutNode;
     Value improvingDeduction = improving * futilityMult * 2;
-    Value worseningDeduction = oppWorsening * futilityMult / 3;
+    Value worseningDeduction = oppWorsening * futilityMult / 1000;
 
     return futilityMult * d - improvingDeduction - worseningDeduction;
 }
@@ -537,8 +537,8 @@ Value Search::Worker::search(
     Key   posKey;
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
-    Value bestValue, value, eval, maxValue, probCutBeta, worsening;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    Value bestValue, value, eval, maxValue, probCutBeta, opponentWorsening;
+    bool  givesCheck, improving, priorCapture;
     bool  capture, ttCapture;
     Piece movedPiece;
 
@@ -692,7 +692,6 @@ Value Search::Worker::search(
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
         improving             = false;
-        worsening          = 0;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -746,14 +745,12 @@ Value Search::Worker::search(
     // false otherwise. The improving flag is used in various pruning heuristics.
     improving = ss->staticEval > (ss - 2)->staticEval;
 
-    worsening = std::max(0, (-(ss - 1)->staticEval) - ss->staticEval);
-
-    opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
+    opponentWorsening = ss->staticEval + (ss - 1)->staticEval;
 
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
     // search suggests we cannot exceed alpha, return a speculative fail low.
-    if (eval < alpha - 494 - 290 * depth * depth + worsening)
+    if (eval < alpha - 494 - 290 * depth * depth)
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha && std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY)
