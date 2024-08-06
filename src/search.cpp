@@ -746,14 +746,14 @@ Value Search::Worker::search(
     // false otherwise. The improving flag is used in various pruning heuristics.
     improving = ss->staticEval > (ss - 2)->staticEval;
 
-    worsening = std::max(0, (ss - 1)->staticEval - ss->staticEval);
+    worsening = std::max(0, (-(ss - 1)->staticEval) - ss->staticEval);
 
-    opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
+    opponentWorsening = ss->staticEval - (-(ss - 1)->staticEval) > 2;
 
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
     // search suggests we cannot exceed alpha, return a speculative fail low.
-    if (eval < alpha - 494 - 290 * depth * depth + 2*worsening)
+    if (eval < alpha - 494 - 290 * depth * depth)
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha && std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY)
@@ -764,7 +764,7 @@ Value Search::Worker::search(
     // The depth condition is important for mate finding.
     if (!ss->ttPv && depth < 13
         && eval - futility_margin(depth, cutNode && !ss->ttHit, improving, opponentWorsening)
-               - (ss - 1)->statScore / 260
+               - (ss - 1)->statScore / 260 - worsening
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && beta > VALUE_TB_LOSS_IN_MAX_PLY
         && eval < VALUE_TB_WIN_IN_MAX_PLY)
