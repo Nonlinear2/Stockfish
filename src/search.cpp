@@ -626,10 +626,7 @@ Value Search::Worker::search(
                                               -stat_malus(depth + 1));
         }
 
-        // Partial workaround for the graph history interaction problem
-        // For high rule50 counts don't produce transposition table cutoffs.
-        if (pos.rule50_count() < 90)
-            return ttData.value;
+        return ttData.value;
     }
 
     // Step 5. Tablebases probe
@@ -1374,12 +1371,18 @@ moves_loop:  // When in check, search starts here
     // Write gathered information in transposition table. Note that the
     // static evaluation is saved as it was before correction history.
     if (!excludedMove && !(rootNode && thisThread->pvIdx))
-        ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
-                       bestValue >= beta    ? BOUND_LOWER
+    {
+        bool isHistoryDependent = (depth < 10 && pos.rule50_count() > 100-depth);
+
+        ttWriter.write(posKey, 
+                       isHistoryDependent ? VALUE_NONE : value_to_tt(bestValue, ss->ply), 
+                       ss->ttPv,
+                       isHistoryDependent   ? BOUND_NONE
+                       : bestValue >= beta  ? BOUND_LOWER
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
                        depth, bestMove, unadjustedStaticEval, tt.generation());
-
+    }
     // Adjust correction history
     if (!ss->inCheck && (!bestMove || !pos.capture(bestMove))
         && !(bestValue >= beta && bestValue <= ss->staticEval)
