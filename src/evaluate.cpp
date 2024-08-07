@@ -56,10 +56,18 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
                      const Position&                pos,
                      Eval::NNUE::AccumulatorCaches& caches,
                      int                            optimism) {
+    return evaluate(networks, pos, caches, optimism, false);
+}
+
+Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
+                     const Position&                pos,
+                     Eval::NNUE::AccumulatorCaches& caches,
+                     int                            optimism,
+                     bool                           useBigNetOnly) {
 
     assert(!pos.checkers());
 
-    bool smallNet = use_smallnet(pos);
+    bool smallNet = !useBigNetOnly && use_smallnet(pos);
     int  v;
 
     auto [psqt, positional] = smallNet ? networks.small.evaluate(pos, &caches.small)
@@ -94,6 +102,8 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     return v;
 }
+
+
 
 // Like evaluate(), but instead of returning a value, it returns
 // a string (suitable for outputting to stdout) that contains the detailed

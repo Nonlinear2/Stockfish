@@ -49,6 +49,12 @@ Value evaluate(const NNUE::Networks&          networks,
                const Position&                pos,
                Eval::NNUE::AccumulatorCaches& caches,
                int                            optimism);
+
+Value evaluate(const NNUE::Networks&          networks,
+               const Position&                pos,
+               Eval::NNUE::AccumulatorCaches& caches,
+               int                            optimism,
+               bool                           useBigNetOnly);
 }  // namespace Eval
 
 }  // namespace Stockfish
