@@ -1372,7 +1372,7 @@ moves_loop:  // When in check, search starts here
     // static evaluation is saved as it was before correction history.
     if (!excludedMove && !(rootNode && thisThread->pvIdx))
     {
-        bool isHistoryDependent = (depth < 10 && pos.rule50_count() > 100-depth);
+        bool isHistoryDependent = pos.rule50_count() >= 100-depth;
 
         ttWriter.write(posKey, 
                        isHistoryDependent ? VALUE_NONE : value_to_tt(bestValue, ss->ply), 
