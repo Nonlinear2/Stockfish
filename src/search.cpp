@@ -1373,14 +1373,12 @@ moves_loop:  // When in check, search starts here
     // static evaluation is saved as it was before correction history.
     if (!excludedMove && !(rootNode && thisThread->pvIdx))
     {
-        bool historyDependent = (depth < 10 && pos.rule50_count() >= 100-depth);
-        ttWriter.write(posKey, 
-                        historyDependent ? VALUE_NONE : value_to_tt(bestValue, ss->ply), ss->ttPv,
-                       historyDependent ? BOUND_NONE : 
+        ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
                        bestValue >= beta    ? BOUND_LOWER
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
-                       depth, bestMove, unadjustedStaticEval, tt.generation(), historyDependent);
+                       depth, bestMove, unadjustedStaticEval, tt.generation(), 
+                       depth < 10 && pos.rule50_count() >= 100-depth);
     }
 
     // Adjust correction history
