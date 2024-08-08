@@ -603,6 +603,8 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+    bool ttDataHistoryDependent = ttData.depth > 256-RULE50_TOLERANCE;
+    if (ttDataHistoryDependent) ttData.depth = -ttData.depth + 256;
 
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
@@ -626,7 +628,7 @@ Value Search::Worker::search(
                                               -stat_malus(depth + 1));
         }
 
-        return ttData.value;
+        if (!ttDataHistoryDependent) return ttData.value;
     }
 
     // Step 5. Tablebases probe
@@ -1372,16 +1374,16 @@ moves_loop:  // When in check, search starts here
     // static evaluation is saved as it was before correction history.
     if (!excludedMove && !(rootNode && thisThread->pvIdx))
     {
-        bool isHistoryDependent = (depth < 10 && pos.rule50_count() >= 100-depth);
+        bool isHistoryDependent = (depth < RULE50_TOLERANCE && pos.rule50_count() >= 100-depth);
 
         ttWriter.write(posKey, 
-                       isHistoryDependent ? VALUE_NONE : value_to_tt(bestValue, ss->ply), 
+                       value_to_tt(bestValue, ss->ply), 
                        ss->ttPv,
-                       isHistoryDependent   ? BOUND_NONE
-                       : bestValue >= beta  ? BOUND_LOWER
+                       bestValue >= beta    ? BOUND_LOWER
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
-                       depth, bestMove, unadjustedStaticEval, tt.generation());
+                       isHistoryDependent ? 256-depth : depth, // hack to store the information "BOUND_UNSAFE", if this gains change later
+                       bestMove, unadjustedStaticEval, tt.generation());
     }
     // Adjust correction history
     if (!ss->inCheck && (!bestMove || !pos.capture(bestMove))
@@ -1465,11 +1467,14 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     ttData.move  = ttHit ? ttData.move : Move::none();
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     pvHit        = ttHit && ttData.is_pv;
+    bool ttDataHistoryDependent = ttData.depth > 256-RULE50_TOLERANCE;
+    if (ttDataHistoryDependent) ttData.depth = -ttData.depth + 256;
 
     // At non-PV nodes we check for an early TT cutoff
     if (!PvNode && ttData.depth >= DEPTH_QS
         && ttData.value != VALUE_NONE  // Can happen when !ttHit or when access race in probe()
-        && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
+        && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER))
+        && !ttDataHistoryDependent)
         return ttData.value;
 
     // Step 4. Static evaluation of the position

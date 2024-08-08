@@ -105,8 +105,10 @@ constexpr bool Is64Bit = false;
 using Key      = uint64_t;
 using Bitboard = uint64_t;
 
+constexpr int RULE50_TOLERANCE = 10;
 constexpr int MAX_MOVES = 256;
 constexpr int MAX_PLY   = 246;
+
 
 enum Color {
     WHITE,
