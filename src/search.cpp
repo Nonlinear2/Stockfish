@@ -1378,7 +1378,7 @@ moves_loop:  // When in check, search starts here
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
                        depth, bestMove, unadjustedStaticEval, tt.generation(), 
-                       depth < 10 && pos.rule50_count() >= 100-depth);
+                       depth < RULE50_TOLERANCE && pos.rule50_count() >= 100-depth);
     }
 
     // Adjust correction history
