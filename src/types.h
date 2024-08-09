@@ -107,7 +107,6 @@ using Bitboard = uint64_t;
 
 constexpr int MAX_MOVES = 256;
 constexpr int MAX_PLY   = 246;
-constexpr int MAX_QSEARCH_DEPTH = 15;
 
 enum Color {
     WHITE,
