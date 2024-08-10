@@ -190,8 +190,9 @@ void MovePicker::score() {
                         + (*pawnHistory)[pawn_structure_index(pos)][pos.moved_piece(m)][m.to_sq()];
         }
 
-        if (m == ssMove)
-            m.value += 5000;
+        if (m == ssMove){
+            m.value += 6000;
+        }
     }
 }
 
