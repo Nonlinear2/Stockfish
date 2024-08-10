@@ -50,14 +50,13 @@ struct TTEntry {
 
     // Convert internal bitfields to external types
     TTData read() const {
-        return TTData{Move(move16),           Value(value16),
-                      Value(eval16),          Depth(get_depth8() + DEPTH_ENTRY_OFFSET),
-                      Bound(genBound8 & 0x3), bool(genBound8 & 0x4), is_history_dependent()};
+        bool historyDependent = (depth8 >> 3 == 0 && depth8 != 0);
+        return TTData{Move(move16), Value(value16), Value(eval16),        
+                      Depth((historyDependent ? -depth8 - DEPTH_ENTRY_OFFSET - 3 : depth8 + DEPTH_ENTRY_OFFSET)),
+                      Bound(genBound8 & 0x3), bool(genBound8 & 0x4), historyDependent};
     }
 
     bool is_occupied() const;
-    uint8_t get_depth8() const;
-    bool is_history_dependent() const;
     void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, uint8_t generation8, bool historyDependent);
     // The returned age is a multiple of TranspositionTable::GENERATION_DELTA
     uint8_t relative_age(const uint8_t generation8) const;
@@ -90,15 +89,6 @@ static constexpr int GENERATION_MASK = (0xFF << GENERATION_BITS) & 0xFF;
 // we sacrifice the ability to store depths greater than 1<<8 less the offset, as asserted in `save`.)
 bool TTEntry::is_occupied() const { return bool(depth8); }
 
-uint8_t TTEntry::get_depth8() const {
-    return is_history_dependent() ? -depth8 - 2*DEPTH_ENTRY_OFFSET - 3 : depth8;
-}
-
-bool TTEntry::is_history_dependent() const {
-    bool val = (depth8 < -DEPTH_ENTRY_OFFSET-3 && depth8 != 0);
-    return val;
-}
-
 // Populates the TTEntry with a new node's data, possibly
 // overwriting an old position. The update is not atomic and can be racy.
 void TTEntry::save(
@@ -109,7 +99,7 @@ void TTEntry::save(
         move16 = m;
 
     // Overwrite less valuable entries (cheapest checks first)
-    if (b == BOUND_EXACT || uint16_t(k) != key16 || d - DEPTH_ENTRY_OFFSET + 2 * pv > get_depth8() - 4
+    if (b == BOUND_EXACT || uint16_t(k) != key16 || d - DEPTH_ENTRY_OFFSET + 2 * pv > depth8 - 4
         || relative_age(generation8))
     {
         assert(d > DEPTH_ENTRY_OFFSET);
@@ -245,8 +235,8 @@ std::tuple<bool, TTData, TTWriter> TranspositionTable::probe(const Key key) cons
     // Find an entry to be replaced according to the replacement strategy
     TTEntry* replace = tte;
     for (int i = 1; i < ClusterSize; ++i)
-        if (replace->get_depth8() - replace->relative_age(generation8) * 2
-            > tte[i].get_depth8() - tte[i].relative_age(generation8) * 2)
+        if (replace->depth8 - replace->relative_age(generation8) * 2
+            > tte[i].depth8 - tte[i].relative_age(generation8) * 2)
             replace = &tte[i];
 
     return {false, TTData(), TTWriter(replace)};
