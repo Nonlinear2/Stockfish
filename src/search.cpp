@@ -1547,14 +1547,17 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         // Step 6. Pruning
         if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && pos.non_pawn_material(us))
         {
+            bool promotion = move.type_of() == PROMOTION;
+            PieceType promotion_type = promotion ? move.promotion_type() : PieceType::NO_PIECE_TYPE;
+
             // Futility pruning and moveCount pruning (~10 Elo)
             if (!givesCheck && move.to_sq() != prevSq && futilityBase > VALUE_TB_LOSS_IN_MAX_PLY
-                && (move.type_of() != PROMOTION || move.promotion_type() != PieceType::QUEEN))
+                && (!promotion || (promotion_type != PieceType::QUEEN && promotion_type != PieceType::KNIGHT)))
             {
                 if (moveCount > 2)
                     continue;
 
-                Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
+                Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())] + PieceValue[promotion_type];
 
                 // If static eval + value of piece we are going to capture is
                 // much lower than alpha, we can prune this move. (~2 Elo)
