@@ -155,6 +155,7 @@ class MovePicker {
     MovePicker& operator=(const MovePicker&) = delete;
     MovePicker(const Position&,
                Move,
+               Move,
                Depth,
                const ButterflyHistory*,
                const CapturePieceToHistory*,
@@ -177,6 +178,7 @@ class MovePicker {
     const PieceToHistory**       continuationHistory;
     const PawnHistory*           pawnHistory;
     Move                         ttMove;
+    Move                         ssMove;
     ExtMove *                    cur, *endMoves, *endBadCaptures, *beginBadQuiets, *endBadQuiets;
     int                          stage;
     int                          threshold;
