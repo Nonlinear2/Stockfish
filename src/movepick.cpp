@@ -149,7 +149,7 @@ void MovePicker::score() {
               + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
             
             if (m == ssMove)
-                m.value += 6000;
+                m.value += 5000;
         }
         else if constexpr (Type == QUIETS)
         {
@@ -183,7 +183,7 @@ void MovePicker::score() {
                                      : bool(to & threatenedByPawn) * 14900);
             
             if (m == ssMove)
-                m.value += 5000;
+                m.value += 4000;
         }
         else  // Type == EVASIONS
         {
