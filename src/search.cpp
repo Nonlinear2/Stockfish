@@ -1551,7 +1551,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             if (!givesCheck && move.to_sq() != prevSq && futilityBase > VALUE_TB_LOSS_IN_MAX_PLY
                 && move.type_of() != PROMOTION)
             {
-                if (moveCount > 2)
+                bool bad_move = moveCount > 3 || !pos.see_ge(move, 1);
+                if (moveCount > 2 && bad_move)
                     continue;
 
                 Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
@@ -1566,7 +1567,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
                 // If static eval is much lower than alpha and move is
                 // not winning material, we can prune this move. (~2 Elo)
-                if (futilityBase <= alpha && !pos.see_ge(move, 1))
+                if (futilityBase <= alpha && bad_move)
                 {
                     bestValue = std::max(bestValue, futilityBase);
                     continue;
