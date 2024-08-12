@@ -1548,18 +1548,15 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && pos.non_pawn_material(us))
         {
             bool promotion = move.type_of() == PROMOTION;
-            PieceType promotion_type = move.promotion_type();
 
             // Futility pruning and moveCount pruning (~10 Elo)
             if (!givesCheck && move.to_sq() != prevSq && futilityBase > VALUE_TB_LOSS_IN_MAX_PLY
-                && (!promotion || promotion_type != PieceType::QUEEN))
+                && (!promotion || move.promotion_type() != PieceType::QUEEN))
             {
-                if (moveCount > 2)
+                if (moveCount > 2 || promotion)
                     continue;
 
-                Value futilityValue = futilityBase + 
-                    PieceValue[pos.piece_on(move.to_sq())] + 
-                    promotion ? PieceValue[promotion_type] - PieceValue[PAWN] : 0;
+                Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
 
                 // If static eval + value of piece we are going to capture is
                 // much lower than alpha, we can prune this move. (~2 Elo)
@@ -1571,7 +1568,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
                 // If static eval is much lower than alpha and move is
                 // not winning material, we can prune this move. (~2 Elo)
-                if (futilityBase <= alpha && !promotion && !pos.see_ge(move, 1)) // quick fix to avoid issues with see implementation
+                if (futilityBase <= alpha && !pos.see_ge(move, 1))
                 {
                     bestValue = std::max(bestValue, futilityBase);
                     continue;
@@ -1579,7 +1576,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
                 // If static exchange evaluation is much worse than what
                 // is needed to not fall below alpha, we can prune this move.
-                if (futilityBase > alpha && !promotion && !pos.see_ge(move, (alpha - futilityBase) * 4))
+                if (futilityBase > alpha && !pos.see_ge(move, (alpha - futilityBase) * 4))
                 {
                     bestValue = alpha;
                     continue;
