@@ -969,6 +969,11 @@ moves_loop:  // When in check, search starts here
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r;
 
+            bool isPromotion = move.type_of() == PROMOTION;
+            PieceType promotionType = isPromotion ? move.promotion_type() : NO_PIECE_TYPE;
+            if (lmrDepth < 5 && isPromotion && (promotionType != QUEEN) && (!givesCheck || promotionType != KNIGHT))
+                continue;
+
             if (capture || givesCheck)
             {
                 Piece capturedPiece = pos.piece_on(move.to_sq());
