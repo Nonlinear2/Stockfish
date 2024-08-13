@@ -1566,10 +1566,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
                 // If the static exchange evaluation is bad enough
                 // to bring the eval under alpha, we can prune this move. (~2 Elo)
-                Value SeeValue = (ss->staticEval > alpha) ? ss->staticEval : futilityBase;
-                if (!pos.see_ge(move, alpha - SeeValue))
+                bool goodScore = futilityBase > alpha;
+                if (!pos.see_ge(move, (alpha - futilityBase)*(1 + goodScore)))
                 {
-                    bestValue = (SeeValue > alpha) ? alpha : std::max(bestValue, futilityBase);
+                    bestValue = goodScore ? alpha : std::max(bestValue, futilityBase);
                     continue;
                 }
             }
