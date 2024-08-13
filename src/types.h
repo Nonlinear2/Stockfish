@@ -105,8 +105,9 @@ constexpr bool Is64Bit = false;
 using Key      = uint64_t;
 using Bitboard = uint64_t;
 
+constexpr int MAX_FLAG_DEPTH = 8;
 constexpr int MAX_MOVES = 256;
-constexpr int MAX_PLY   = 246;
+constexpr int MAX_PLY   = 246 - MAX_FLAG_DEPTH;
 
 enum Color {
     WHITE,
@@ -201,7 +202,7 @@ enum : int {
     // is used only for the transposition table entry occupancy check (see tt.cpp),
     // and should thus be lower than DEPTH_UNSEARCHED.
     DEPTH_UNSEARCHED   = -2,
-    DEPTH_ENTRY_OFFSET = -3
+    DEPTH_ENTRY_OFFSET = -3 - MAX_FLAG_DEPTH
 };
 
 // clang-format off
