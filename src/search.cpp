@@ -338,6 +338,9 @@ void Search::Worker::iterative_deepening() {
                     && nodes > 10000000)
                     main_manager()->pv(*this, threads, tt, rootDepth);
 
+                if (bestValue <= alpha && failedHighCnt != 0)
+                    delta += delta/5;
+
                 // In case of failing low/high increase aspiration window and re-search,
                 // otherwise exit the loop.
                 if (bestValue <= alpha)
