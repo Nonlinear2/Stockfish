@@ -81,7 +81,6 @@ void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 MovePicker::MovePicker(const Position&              p,
                        Move                         ttm,
                        Move                         ssm,
-                       Move                         exm,
                        Depth                        d,
                        const ButterflyHistory*      mh,
                        const CapturePieceToHistory* cph,
@@ -94,7 +93,6 @@ MovePicker::MovePicker(const Position&              p,
     pawnHistory(ph),
     ttMove(ttm),
     ssMove(ssm),
-    exMove(exm),
     depth(d) {
 
     if (pos.checkers())
@@ -149,8 +147,6 @@ void MovePicker::score() {
             m.value =
               7 * int(PieceValue[pos.piece_on(m.to_sq())])
               + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
-
-            m.value += (m == ssMove)*4000 + (m == exMove)*2000;
         }
         else if constexpr (Type == QUIETS)
         {
@@ -183,7 +179,7 @@ void MovePicker::score() {
                         : pt == ROOK ? bool(to & threatenedByMinor) * 24335
                                      : bool(to & threatenedByPawn) * 14900);
 
-            m.value += (m == ssMove)*3000 + (m == exMove)*1000;
+            m.value += (m == ssMove)*8000;
         }
         else  // Type == EVASIONS
         {

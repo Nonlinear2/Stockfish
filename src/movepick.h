@@ -156,7 +156,6 @@ class MovePicker {
     MovePicker(const Position&,
                Move,
                Move,
-               Move,
                Depth,
                const ButterflyHistory*,
                const CapturePieceToHistory*,
@@ -180,7 +179,6 @@ class MovePicker {
     const PawnHistory*           pawnHistory;
     Move                         ttMove;
     Move                         ssMove = Move::none();
-    Move                         exMove = Move::none();
     ExtMove *                    cur, *endMoves, *endBadCaptures, *beginBadQuiets, *endBadQuiets;
     int                          stage;
     int                          threshold;
