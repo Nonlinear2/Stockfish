@@ -52,7 +52,9 @@ enum Stages {
     // generate qsearch moves
     QSEARCH_TT,
     QCAPTURE_INIT,
-    QCAPTURE
+    QCAPTURE,
+
+    ROOT_MOVES
 };
 
 // Sort moves in descending order up to and including a given limit.
@@ -111,6 +113,16 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
 
     stage = PROBCUT_TT
           + !(ttm && pos.capture_stage(ttm) && pos.pseudo_legal(ttm) && pos.see_ge(ttm, threshold));
+}
+
+// MovePicker constructor for root nodes
+MovePicker::MovePicker(Search::RootMoves rootMoves_) :
+    pos(Position()),
+    rootMoves(rootMoves_),
+    rootMovesIdx(0) {
+    
+    std::stable_sort(rootMoves.begin(), rootMoves.end());
+    stage = ROOT_MOVES;
 }
 
 // Assigns a numerical value to each move in a list, used for sorting.
@@ -309,6 +321,9 @@ top:
 
     case QCAPTURE :
         return select<Next>([]() { return true; });
+    
+    case ROOT_MOVES:
+        return rootMovesIdx == rootMoves.size() ? Move::none() : rootMoves[rootMovesIdx++].pv[0];
     }
 
     assert(false);
