@@ -112,39 +112,6 @@ enum StatsType {
     Captures
 };
 
-
-namespace Search {
-// RootMove struct is used for moves at the root of the tree. For each root move
-// we store a score and a PV (really a refutation in the case of moves which
-// fail low). Score is normally set at -VALUE_INFINITE for all non-pv moves.
-struct RootMove {
-
-    explicit RootMove(Move m) :
-        pv(1, m) {}
-    bool extract_ponder_from_tt(const TranspositionTable& tt, Position& pos);
-    bool operator==(const Move& m) const { return pv[0] == m; }
-    // Sort in descending order
-    bool operator<(const RootMove& m) const {
-        return m.score != score ? m.score < score : m.previousScore < previousScore;
-    }
-
-    uint64_t          effort          = 0;
-    Value             score           = -VALUE_INFINITE;
-    Value             previousScore   = -VALUE_INFINITE;
-    Value             averageScore    = -VALUE_INFINITE;
-    Value             uciScore        = -VALUE_INFINITE;
-    bool              scoreLowerbound = false;
-    bool              scoreUpperbound = false;
-    int               selDepth        = 0;
-    int               tbRank          = 0;
-    Value             tbScore;
-    std::vector<Move> pv;
-};
-
-using RootMoves = std::vector<RootMove>;
-}
-
-
 // ButterflyHistory records how often quiet moves have been successful or unsuccessful
 // during the current search, and is used for reduction and move ordering decisions.
 // It uses 2 tables (one for each color) indexed by the move's from and to squares,
@@ -194,7 +161,6 @@ class MovePicker {
                const PieceToHistory**,
                const PawnHistory*);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
-    MovePicker(Search::RootMoves moves);
     Move next_move(bool skipQuiets = false);
 
    private:
@@ -216,8 +182,6 @@ class MovePicker {
     int                          threshold;
     Depth                        depth;
     ExtMove                      moves[MAX_MOVES];
-    Search::RootMoves            rootMoves;
-    unsigned                     rootMovesIdx;
 };
 
 }  // namespace Stockfish
