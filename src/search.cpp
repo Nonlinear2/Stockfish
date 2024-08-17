@@ -1576,7 +1576,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 // is needed to not fall below alpha, we can prune this move.
                 if (futilityBase > alpha && !pos.see_ge(move, (alpha - futilityBase) * 4))
                 {
-                    bestValue = 2*alpha - futilityBase;
+                    bestValue = alpha;
                     continue;
                 }
             }
