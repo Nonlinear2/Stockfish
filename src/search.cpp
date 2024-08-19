@@ -911,7 +911,7 @@ moves_loop:  // When in check, search starts here
 
     MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->captureHistory,
                   contHist, &thisThread->pawnHistory, 
-                  !cutNode && priorCapture && !improving && !opponentWorsening && 
+                  priorCapture && !improving && !opponentWorsening && 
                   (ss - 1)->statScore > 15000  && eval <= beta - 400 - depth*30);
 
     value = bestValue;
