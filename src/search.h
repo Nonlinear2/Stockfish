@@ -309,7 +309,6 @@ class Worker {
 
     size_t                pvIdx, pvLast;
     std::atomic<uint64_t> nodes, tbHits, bestMoveChanges;
-    std::vector<Move>     previousBestMoves = {};
     int                   selDepth, nmpMinPly;
 
     Value optimism[COLOR_NB];

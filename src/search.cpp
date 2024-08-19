@@ -223,8 +223,6 @@ void Search::Worker::iterative_deepening() {
     double timeReduction = 1, totBestMoveChanges = 0;
     int    delta, iterIdx                        = 0;
 
-    previousBestMoves = {};
-
     // Allocate stack with extra size to allow access from (ss - 7) to (ss + 2):
     // (ss - 7) is needed for update_continuation_histories(ss - 1) which accesses (ss - 6),
     // (ss + 2) is needed for initialization of cutOffCnt.
@@ -910,9 +908,7 @@ moves_loop:  // When in check, search starts here
                                         (ss - 6)->continuationHistory};
 
 
-    MovePicker mp = rootNode ? MovePicker(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, &thisThread->pawnHistory, previousBestMoves)
-                             : MovePicker(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->captureHistory,
+    MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->captureHistory,
                   contHist, &thisThread->pawnHistory);
 
     value = bestValue;
@@ -1269,10 +1265,7 @@ moves_loop:  // When in check, search starts here
                 // This information is used for time management. In MultiPV mode,
                 // we must take care to only do this for the first PV line.
                 if (moveCount > 1 && !thisThread->pvIdx)
-                {
                     ++thisThread->bestMoveChanges;
-                    previousBestMoves.push_back(move);
-                }
             }
             else
                 // All other moves but the PV, are set to the lowest value: this

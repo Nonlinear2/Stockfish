@@ -100,30 +100,6 @@ MovePicker::MovePicker(const Position&              p,
         stage = (depth > 0 ? MAIN_TT : QSEARCH_TT) + !(ttm && pos.pseudo_legal(ttm));
 }
 
-MovePicker::MovePicker(const Position&              p,
-                       Move                         ttm,
-                       Depth                        d,
-                       const ButterflyHistory*      mh,
-                       const CapturePieceToHistory* cph,
-                       const PieceToHistory**       ch,
-                       const PawnHistory*           ph,
-                       const std::vector<Move>      pbm) :
-    pos(p),
-    mainHistory(mh),
-    captureHistory(cph),
-    continuationHistory(ch),
-    pawnHistory(ph),
-    ttMove(ttm),
-    depth(d),
-    previousBestMoves(pbm) {
-
-    if (pos.checkers())
-        stage = EVASION_TT + !(ttm && pos.pseudo_legal(ttm));
-
-    else
-        stage = (depth > 0 ? MAIN_TT : QSEARCH_TT) + !(ttm && pos.pseudo_legal(ttm));
-}
-
 // MovePicker constructor for ProbCut: we generate captures with Static Exchange
 // Evaluation (SEE) greater than or equal to the given threshold.
 MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceToHistory* cph) :
@@ -163,7 +139,6 @@ void MovePicker::score() {
     }
 
     for (auto& m : *this)
-    {
         if constexpr (Type == CAPTURES)
             m.value =
               7 * int(PieceValue[pos.piece_on(m.to_sq())])
@@ -211,12 +186,6 @@ void MovePicker::score() {
                         + (*continuationHistory[0])[pos.moved_piece(m)][m.to_sq()]
                         + (*pawnHistory)[pawn_structure_index(pos)][pos.moved_piece(m)][m.to_sq()];
         }
-
-        for (unsigned i = 0; i < previousBestMoves.size(); i++)
-        {
-            m.value += (m == previousBestMoves[i])*2000;
-        }
-    }
 }
 
 // Returns the next move satisfying a predicate function.
