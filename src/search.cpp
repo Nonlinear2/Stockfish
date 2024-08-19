@@ -859,6 +859,7 @@ Value Search::Worker::search(
             prefetch(tt.first_entry(pos.key_after(move)));
 
             ss->currentMove = move;
+            ss->captured    = captured;
             ss->continuationHistory =
               &this->continuationHistory[ss->inCheck][true][pos.moved_piece(move)][move.to_sq()];
 
@@ -1361,6 +1362,12 @@ moves_loop:  // When in check, search starts here
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
               << stat_bonus(depth) * bonus / 25;
+    }
+
+    else if (prevSq != SQ_NONE)
+    {
+        captureHistory[(ss - 1)->currentMove.from_sq()][(ss - 1)->currentMove.to_sq()][(ss - 1)->captured] 
+            << stat_bonus(depth);
     }
 
     if (PvNode)
