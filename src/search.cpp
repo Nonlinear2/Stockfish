@@ -908,8 +908,11 @@ moves_loop:  // When in check, search starts here
                                         (ss - 6)->continuationHistory};
 
 
-    MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, &thisThread->pawnHistory);
+    MovePicker mp = (rootNode && rootDepth > 5) ? MovePicker(rootMoves) : 
+                                                  MovePicker(
+                                                    pos, ttData.move, depth, &thisThread->mainHistory, 
+                                                    &thisThread->captureHistory, contHist, &thisThread->pawnHistory
+                                                  );
 
     value = bestValue;
 
