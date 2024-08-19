@@ -194,7 +194,7 @@ class MovePicker {
                const PieceToHistory**,
                const PawnHistory*);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
-    MovePicker(Search::RootMoves moves);
+    MovePicker(Search::RootMoves);
     Move next_move(bool skipQuiets = false);
 
    private:

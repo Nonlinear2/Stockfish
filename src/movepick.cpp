@@ -116,9 +116,9 @@ MovePicker::MovePicker(const Position& p, Move ttm, int th, const CapturePieceTo
 }
 
 // MovePicker constructor for root nodes
-MovePicker::MovePicker(Search::RootMoves rootMoves_) :
+MovePicker::MovePicker(Search::RootMoves rm) :
     pos(Position()),
-    rootMoves(rootMoves_),
+    rootMoves(rm),
     rootMovesIdx(0) {
     
     std::stable_sort(rootMoves.begin(), rootMoves.end(), [](const Search::RootMove& m1, const Search::RootMove& m2){
