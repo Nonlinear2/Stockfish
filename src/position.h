@@ -144,6 +144,7 @@ class Position {
 
     // Static Exchange Evaluation
     bool see_ge(Move m, int threshold = 0) const;
+    bool see_sq(Square m, int threshold = 0) const;
 
     // Accessing hash keys
     Key key() const;

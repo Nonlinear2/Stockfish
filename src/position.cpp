@@ -1126,6 +1126,100 @@ bool Position::see_ge(Move m, int threshold) const {
     return bool(res);
 }
 
+bool Position::see_sq(Square sq, int threshold) const {
+
+    assert(sq != SQ_NONE);
+
+    int swap = -threshold;
+    if (swap < 0)
+        return false;
+
+    swap = PieceValue[piece_on(sq)] - swap;
+    if (swap <= 0)
+        return true;
+
+    Bitboard occupied  = pieces();
+    Color    stm       = ~sideToMove;
+    Bitboard attackers = attackers_to(sq, occupied);
+    Bitboard stmAttackers, bb;
+    int      res = 1;
+
+    while (true)
+    {
+        stm = ~stm;
+        attackers &= occupied;
+
+        // If stm has no more attackers then give up: stm loses
+        if (!(stmAttackers = attackers & pieces(stm)))
+            break;
+
+        // Don't allow pinned pieces to attack as long as there are
+        // pinners on their original square.
+        if (pinners(~stm) & occupied)
+        {
+            stmAttackers &= ~blockers_for_king(stm);
+
+            if (!stmAttackers)
+                break;
+        }
+
+        res ^= 1;
+
+        // Locate and remove the next least valuable attacker, and add to
+        // the bitboard 'attackers' any X-ray attackers behind it.
+        if ((bb = stmAttackers & pieces(PAWN)))
+        {
+            if ((swap = PawnValue - swap) < res)
+                break;
+            occupied ^= least_significant_square_bb(bb);
+
+            attackers |= attacks_bb<BISHOP>(sq, occupied) & pieces(BISHOP, QUEEN);
+        }
+
+        else if ((bb = stmAttackers & pieces(KNIGHT)))
+        {
+            if ((swap = KnightValue - swap) < res)
+                break;
+            occupied ^= least_significant_square_bb(bb);
+        }
+
+        else if ((bb = stmAttackers & pieces(BISHOP)))
+        {
+            if ((swap = BishopValue - swap) < res)
+                break;
+            occupied ^= least_significant_square_bb(bb);
+
+            attackers |= attacks_bb<BISHOP>(sq, occupied) & pieces(BISHOP, QUEEN);
+        }
+
+        else if ((bb = stmAttackers & pieces(ROOK)))
+        {
+            if ((swap = RookValue - swap) < res)
+                break;
+            occupied ^= least_significant_square_bb(bb);
+
+            attackers |= attacks_bb<ROOK>(sq, occupied) & pieces(ROOK, QUEEN);
+        }
+
+        else if ((bb = stmAttackers & pieces(QUEEN)))
+        {
+            if ((swap = QueenValue - swap) < res)
+                break;
+            occupied ^= least_significant_square_bb(bb);
+
+            attackers |= (attacks_bb<BISHOP>(sq, occupied) & pieces(BISHOP, QUEEN))
+                       | (attacks_bb<ROOK>(sq, occupied) & pieces(ROOK, QUEEN));
+        }
+
+        else  // KING
+              // If we "capture" with the king but the opponent still has attackers,
+              // reverse the result.
+            return (attackers & ~pieces(stm)) ? res ^ 1 : res;
+    }
+
+    return bool(res);
+}
+
 // Tests whether the position is drawn by 50-move rule
 // or by repetition. It does not detect stalemates.
 bool Position::is_draw(int ply) const {
