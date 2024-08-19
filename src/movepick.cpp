@@ -121,7 +121,9 @@ MovePicker::MovePicker(Search::RootMoves rootMoves_) :
     rootMoves(rootMoves_),
     rootMovesIdx(0) {
     
-    std::stable_sort(rootMoves.begin(), rootMoves.end());
+    std::stable_sort(rootMoves.begin(), rootMoves.end(), [](const Search::RootMove& m1, const Search::RootMove& m2){
+        return m1.effort > m2.effort;
+    });
     stage = ROOT_MOVES;
 }
 
