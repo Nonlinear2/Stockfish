@@ -1129,6 +1129,12 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             r--;
 
+        if (rootNode)
+        {
+            RootMove& rm = *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
+            if (rm.effort > 2*rootMoves[0].effort/3) r--;
+        }
+
         // These reduction adjustments have no proven non-linear scaling
 
         // Increase reduction for cut nodes (~4 Elo)
