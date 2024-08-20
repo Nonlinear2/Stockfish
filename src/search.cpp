@@ -269,8 +269,6 @@ void Search::Worker::iterative_deepening() {
         if (mainThread)
             totBestMoveChanges /= 2;
 
-        if (totBestMoveChanges == 0 && rootDepth == 10) rootDepth++;
-
         // Save the last iteration's scores before the first PV line is searched and
         // all the move scores except the (new) PV are set to -VALUE_INFINITE.
         for (RootMove& rm : rootMoves)
