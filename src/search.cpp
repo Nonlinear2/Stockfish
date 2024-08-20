@@ -714,9 +714,12 @@ Value Search::Worker::search(
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
 
         // ttValue can be used as a better position evaluation (~7 Elo)
+        bool ttHigher = ttData.value > eval;
         if (ttData.value != VALUE_NONE
-            && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
-            eval = ttData.value;
+            && (ttData.bound & (ttHigher ? BOUND_LOWER : BOUND_UPPER)))
+        {
+           eval = ttData.value + (ttHigher ? +20 : -20);
+        }
     }
     else
     {
