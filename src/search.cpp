@@ -1153,10 +1153,10 @@ moves_loop:  // When in check, search starts here
                       + (*contHist[1])[movedPiece][move.to_sq()] - 4664;
 
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
-        r -= ss->statScore / (9400 + 2600*(priorCapture || (ss - 1)->inCheck));
+        r -= ss->statScore / 10898;
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
-        if (depth >= 2 && moveCount > 1 + (rootNode && depth < 10))
+        if (depth >= 2 && moveCount > 1 + (rootNode && depth < 10 && bestMoveChanges > 0))
         {
             // In general we want to cap the LMR depth search at newDepth, but when
             // reduction is negative, we allow this move a limited search extension
