@@ -685,13 +685,13 @@ Value Search::Worker::search(
         }
     }
 
-    if (ss->inCheck && cutNode && (ss - 1)->statScore < 14389
-        && (ss - 2)->staticEval - 200 - 290 * depth * depth > beta
+    if (ss->inCheck && cutNode && (pos.attackers_to(prevSq) & pos.pieces(us)) && (ss - 1)->statScore < 10000
+        && (ss - 2)->staticEval - 400 - 290 * depth * depth >= beta && ttData.value != VALUE_NONE && ttData.value >= beta
         && beta > VALUE_TB_LOSS_IN_MAX_PLY)
     {
-        value = qsearch<NonPV>(pos, ss, beta, beta + 1);
-        if (value > beta && std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY){
-            return value;
+        value = qsearch<NonPV>(pos, ss, beta + 20*depth, beta + 20*depth + 1);
+        if (value > beta + 20*depth && std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY){
+            return beta + (value - beta) / 3;
         }
     }
 
