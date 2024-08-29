@@ -1557,8 +1557,18 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 if (moveCount > 2)
                     continue;
 
-                Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
+                Value capturedPieceValue = PieceValue[pos.piece_on(move.to_sq())];
 
+                bool ttFutilityOk = (ttData.bound == BOUND_UPPER && ttData.value != VALUE_NONE);
+                Value ttFutilityValue = ttFutilityOk ? ttData.value + 50 + capturedPieceValue : 0;
+                if (ttFutilityOk && ttFutilityValue <= alpha)
+                {
+                    bestValue = std::max(bestValue, ttFutilityValue);
+                    continue;                    
+                }
+                
+                Value futilityValue = futilityBase + capturedPieceValue;
+                
                 // If static eval + value of piece we are going to capture is
                 // much lower than alpha, we can prune this move. (~2 Elo)
                 if (futilityValue <= alpha)
