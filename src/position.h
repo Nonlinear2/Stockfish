@@ -46,6 +46,7 @@ struct StateInfo {
     Value  nonPawnMaterial[COLOR_NB];
     int    castlingRights;
     int    rule50;
+    int    wasHighMoveCount;
     int    pliesFromNull;
     Square epSquare;
 
@@ -159,6 +160,7 @@ class Position {
     bool  upcoming_repetition(int ply) const;
     bool  has_repeated() const;
     int   rule50_count() const;
+    int   was_high_move_count() const;
     Value non_pawn_material(Color c) const;
     Value non_pawn_material() const;
 
@@ -306,6 +308,8 @@ inline Value Position::non_pawn_material() const {
 inline int Position::game_ply() const { return gamePly; }
 
 inline int Position::rule50_count() const { return st->rule50; }
+
+inline int Position::was_high_move_count() const { return st->wasHighMoveCount; }
 
 inline bool Position::is_chess960() const { return chess960; }
 

@@ -745,6 +745,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
         st->materialKey ^= Zobrist::psq[captured][pieceCount[captured]];
 
         // Reset rule 50 counter
+        st->wasHighMoveCount = st->rule50 >= 90;
         st->rule50 = 0;
     }
 
@@ -818,6 +819,7 @@ void Position::do_move(Move m, StateInfo& newSt, bool givesCheck) {
         st->pawnKey ^= Zobrist::psq[pc][from] ^ Zobrist::psq[pc][to];
 
         // Reset rule 50 draw counter
+        st->wasHighMoveCount = st->rule50 >= 90;
         st->rule50 = 0;
     }
 

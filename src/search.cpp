@@ -629,7 +629,7 @@ Value Search::Worker::search(
 
         // Partial workaround for the graph history interaction problem
         // For high rule50 counts don't produce transposition table cutoffs.
-        if (pos.rule50_count() < 90)
+        if (pos.rule50_count() < 90 && (pos.rule50_count() > 5 || !pos.was_high_move_count()))
             return ttData.value;
     }
 
