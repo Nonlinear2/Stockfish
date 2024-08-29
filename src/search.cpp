@@ -1558,7 +1558,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     continue;
 
                 Value futilityValue = 
-                    (ttData.bound == BOUND_UPPER && ttData.value != VALUE_NONE) ? ttData.value + 100 : futilityBase + PieceValue[pos.piece_on(move.to_sq())];
+                    ((ttData.bound == BOUND_UPPER && ttData.value != VALUE_NONE) ? ttData.value + 100 : futilityBase) + PieceValue[pos.piece_on(move.to_sq())];
 
                 // If static eval + value of piece we are going to capture is
                 // much lower than alpha, we can prune this move. (~2 Elo)
