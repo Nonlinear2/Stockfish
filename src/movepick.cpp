@@ -80,6 +80,7 @@ void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 // MovePicker constructor for the main search and for the quiescence search
 MovePicker::MovePicker(const Position&              p,
                        Move                         ttm,
+                       Move                         pbm,
                        Depth                        d,
                        const ButterflyHistory*      mh,
                        const CapturePieceToHistory* cph,
@@ -91,6 +92,7 @@ MovePicker::MovePicker(const Position&              p,
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
+    priorBestMove(pbm),
     depth(d) {
 
     if (pos.checkers())
@@ -139,11 +141,16 @@ void MovePicker::score() {
     }
 
     for (auto& m : *this)
+    {
         if constexpr (Type == CAPTURES)
+        {
             m.value =
               7 * int(PieceValue[pos.piece_on(m.to_sq())])
               + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
-
+            
+            if (m == priorBestMove)
+                m.value += 5000;
+        }
         else if constexpr (Type == QUIETS)
         {
             Piece     pc   = pos.moved_piece(m);
@@ -174,8 +181,10 @@ void MovePicker::score() {
             m.value -= (pt == QUEEN  ? bool(to & threatenedByRook) * 49000
                         : pt == ROOK ? bool(to & threatenedByMinor) * 24335
                                      : bool(to & threatenedByPawn) * 14900);
+            
+            if (m == priorBestMove)
+                m.value += 4000;
         }
-
         else  // Type == EVASIONS
         {
             if (pos.capture_stage(m))
@@ -186,6 +195,7 @@ void MovePicker::score() {
                         + (*continuationHistory[0])[pos.moved_piece(m)][m.to_sq()]
                         + (*pawnHistory)[pawn_structure_index(pos)][pos.moved_piece(m)][m.to_sq()];
         }
+    }
 }
 
 // Returns the next move satisfying a predicate function.
