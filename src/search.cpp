@@ -1582,6 +1582,13 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     bestValue = alpha;
                     continue;
                 }
+
+                if (!PvNode && ttData.depth >= DEPTH_QS && ttData.value != VALUE_NONE
+                    && ttData.bound == BOUND_UPPER && !pos.see_ge(move, (alpha - ttData.value) * 2))
+                {
+                    bestValue = alpha;
+                    continue;
+                }
             }
 
             // Continuation history based pruning (~3 Elo)
