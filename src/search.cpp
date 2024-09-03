@@ -1474,7 +1474,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
-    if (ss->inCheck && (ttHit || !pos.attackers_to((ss - 1)->currentMove.to_sq())))
+    if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
     {
@@ -1505,7 +1505,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         }
 
         // Stand pat. Return immediately if static value is at least beta
-        if (bestValue >= beta && !ss->inCheck)
+        if (bestValue >= beta)
         {
             if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY)
                 bestValue = (3 * bestValue + beta) / 4;
@@ -1516,7 +1516,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             return bestValue;
         }
 
-        if (bestValue > alpha && !ss->inCheck)
+        if (bestValue > alpha)
             alpha = bestValue;
 
         futilityBase = ss->staticEval + 299;
@@ -1554,7 +1554,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             if (!givesCheck && move.to_sq() != prevSq && futilityBase > VALUE_TB_LOSS_IN_MAX_PLY
                 && move.type_of() != PROMOTION)
             {
-                if (moveCount > 2 && !ss->inCheck)
+                if (moveCount > 2)
                     continue;
 
                 Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
