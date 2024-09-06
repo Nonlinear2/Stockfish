@@ -686,6 +686,15 @@ Value Search::Worker::search(
         }
     }
 
+    if (ss->inCheck && cutNode && (pos.attackers_to(prevSq) & pos.pieces(us)) && (ss - 1)->statScore < 10000
+        && (ss - 2)->staticEval - 400 - 290 * depth * depth >= beta && beta > VALUE_TB_LOSS_IN_MAX_PLY)
+    {
+        value = qsearch<NonPV>(pos, ss, beta, beta + 1);
+        if (value > beta && std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY){
+            return (beta + value) / 2;
+        }
+    }
+
     // Step 6. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
     if (ss->inCheck)
