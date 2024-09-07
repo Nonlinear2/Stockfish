@@ -1034,7 +1034,7 @@ moves_loop:  // When in check, search starts here
             // (alpha, beta), then that move is singular and should be extended. To
             // verify this we do a reduced search on the position excluding the ttMove
             // and if the result is lower than ttValue minus a margin, then we will
-            //  extend the ttMove. Recursive singular search is avoided.
+            // extend the ttMove. Recursive singular search is avoided.
 
             // Note: the depth margin and singularBeta margin are known for having
             // non-linear scaling. Their values are optimized to time controls of
@@ -1090,6 +1090,9 @@ moves_loop:  // When in check, search starts here
                 // over current beta (~1 Elo)
                 else if (cutNode)
                     extension = -2;
+                
+                else if (ss->inCheck)
+                    extension = 1;
             }
 
             // Extension for capturing the previous moved piece (~1 Elo at LTC)
