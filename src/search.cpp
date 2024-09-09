@@ -1235,8 +1235,9 @@ moves_loop:  // When in check, search starts here
 
             rm.effort += nodes - nodeCount;
 
-            rm.averageScore =
-              rm.averageScore != -VALUE_INFINITE ? (value + rm.averageScore) / 2 : value;
+            if (std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY)
+                rm.averageScore =
+                  rm.averageScore != -VALUE_INFINITE ? (value + rm.averageScore) / 2 : value;
 
             // PV move or new best move?
             if (moveCount == 1 || value > alpha)
