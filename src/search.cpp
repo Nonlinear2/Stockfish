@@ -191,7 +191,6 @@ void Search::Worker::start_searching() {
         bestThread = threads.get_best_thread()->worker.get();
 
     main_manager()->bestPreviousScore        = bestThread->rootMoves[0].score;
-    main_manager()->bestPreviousAverageScore = bestThread->rootMoves[0].averageScore;
 
     // Send again PV info if we have a new best thread
     if (bestThread != this)
@@ -298,13 +297,13 @@ void Search::Worker::iterative_deepening() {
             selDepth = 0;
 
             // Reset aspiration window starting size
-            Value avg = rootMoves[pvIdx].averageScore;
-            delta     = 5 + avg * avg / 13424;
-            alpha     = std::max(avg - delta, -VALUE_INFINITE);
-            beta      = std::min(avg + delta, VALUE_INFINITE);
+            Value score = rootMoves[pvIdx].score;
+            delta     = 5 + score * score / 13424;
+            alpha     = std::max(score - delta, -VALUE_INFINITE);
+            beta      = std::min(score + delta, VALUE_INFINITE);
 
             // Adjust optimism based on root move's averageScore (~4 Elo)
-            optimism[us]  = 125 * avg / (std::abs(avg) + 89);
+            optimism[us]  = 125 * score / (std::abs(score) + 89);
             optimism[~us] = -optimism[us];
 
             // Start with a small aspiration window and, in the case of a fail
@@ -431,7 +430,7 @@ void Search::Worker::iterative_deepening() {
         {
             int nodesEffort = rootMoves[0].effort * 100 / std::max(size_t(1), size_t(nodes));
 
-            double fallingEval = (1067 + 223 * (mainThread->bestPreviousAverageScore - bestValue)
+            double fallingEval = (1067 + 223 * (mainThread->bestPreviousScore - bestValue)
                                   + 97 * (mainThread->iterValue[iterIdx] - bestValue))
                                / 10000.0;
             fallingEval = std::clamp(fallingEval, 0.580, 1.667);
@@ -1234,9 +1233,6 @@ moves_loop:  // When in check, search starts here
               *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
 
             rm.effort += nodes - nodeCount;
-
-            rm.averageScore =
-              rm.averageScore != -VALUE_INFINITE ? (value + rm.averageScore) / 2 : value;
 
             // PV move or new best move?
             if (moveCount == 1 || value > alpha)
