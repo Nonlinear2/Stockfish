@@ -1102,6 +1102,10 @@ moves_loop:  // When in check, search starts here
                                                   [type_of(pos.piece_on(move.to_sq()))]
                           > 3994)
                 extension = 1;
+            
+            else if (popcount(pos.pieces(us) & ~pos.pieces(PAWN, KING)) == 1 
+                     && type_of(movedPiece) != PAWN && type_of(movedPiece) != KING)
+                extension = 1;
         }
 
         // Add extension to new depth
@@ -1151,10 +1155,6 @@ moves_loop:  // When in check, search starts here
         // For first picked move (ttMove) reduce reduction (~3 Elo)
         else if (move == ttData.move)
             r -= 2;
-
-        if (popcount(pos.pieces(us) & ~pos.pieces(PAWN, KING)) == 1 
-            && type_of(movedPiece) != PAWN && type_of(movedPiece) != KING)
-            r -= 2; 
         
         ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
                       + (*contHist[0])[movedPiece][move.to_sq()]
