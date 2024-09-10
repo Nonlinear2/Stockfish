@@ -1093,7 +1093,10 @@ moves_loop:  // When in check, search starts here
                 // If we are on a cutNode but the ttMove is not assumed to fail high
                 // over current beta (~1 Elo)
                 else if (cutNode)
-                    extension = -2;
+                    extension = -2 + (PvNode && 
+                        popcount(pos.pieces(us) & ~pos.pieces(PAWN, KING)) == 1 && 
+                        type_of(movedPiece) != PAWN && type_of(movedPiece) != KING
+                    );
             }
 
             // Extension for capturing the previous moved piece (~1 Elo at LTC)
@@ -1101,10 +1104,6 @@ moves_loop:  // When in check, search starts here
                      && thisThread->captureHistory[movedPiece][move.to_sq()]
                                                   [type_of(pos.piece_on(move.to_sq()))]
                           > 3994)
-                extension = 1;
-            
-            else if (popcount(pos.pieces(us) & ~pos.pieces(PAWN, KING)) == 1 
-                     && type_of(movedPiece) != PAWN && type_of(movedPiece) != KING)
                 extension = 1;
         }
 
