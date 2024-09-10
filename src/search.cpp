@@ -752,6 +752,9 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
+    if (PvNode && !ttData.move)
+        depth -= 1;
+    
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
     // search suggests we cannot exceed alpha, return a speculative fail low.
@@ -816,7 +819,7 @@ Value Search::Worker::search(
     // Step 10. Internal iterative reductions (~9 Elo)
     // For PV nodes without a ttMove, we decrease depth.
     if (PvNode && !ttData.move)
-        depth -= 3;
+        depth -= 2;
 
     // Use qsearch if depth <= 0
     if (depth <= 0)
