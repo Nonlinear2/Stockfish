@@ -955,6 +955,7 @@ moves_loop:  // When in check, search starts here
         capture    = pos.capture_stage(move);
         movedPiece = pos.moved_piece(move);
         givesCheck = pos.gives_check(move);
+        PieceType capturedPieceType = type_of(pos.piece_on(move.to_sq()));
 
         // Calculate new depth for this move
         newDepth = depth - 1;
@@ -975,15 +976,14 @@ moves_loop:  // When in check, search starts here
 
             if (capture || givesCheck)
             {
-                Piece capturedPiece = pos.piece_on(move.to_sq());
                 int   captHist =
-                  thisThread->captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
+                  thisThread->captureHistory[movedPiece][move.to_sq()][capturedPieceType];
 
                 // Futility pruning for captures (~2 Elo)
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
                     Value futilityValue = ss->staticEval + 285 + 251 * lmrDepth
-                                        + PieceValue[capturedPiece] + captHist / 7;
+                                        + PieceValue[capturedPieceType] + captHist / 7;
                     if (futilityValue <= alpha)
                         continue;
                 }
@@ -1097,9 +1097,7 @@ moves_loop:  // When in check, search starts here
 
             // Extension for capturing the previous moved piece (~1 Elo at LTC)
             else if (PvNode && move.to_sq() == prevSq
-                     && thisThread->captureHistory[movedPiece][move.to_sq()]
-                                                  [type_of(pos.piece_on(move.to_sq()))]
-                          > 3994)
+                     && thisThread->captureHistory[movedPiece][move.to_sq()][capturedPieceType] > 3994)
                 extension = 1;
         }
 
@@ -1187,6 +1185,8 @@ moves_loop:  // When in check, search starts here
                 int bonus = value >= beta ? stat_bonus(newDepth) : -stat_malus(newDepth);
 
                 update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
+
+                if (capture) captureHistory[movedPiece][bestMove.to_sq()][capturedPieceType] << bonus;
             }
         }
 
