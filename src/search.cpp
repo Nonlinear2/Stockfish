@@ -191,7 +191,6 @@ void Search::Worker::start_searching() {
         bestThread = threads.get_best_thread()->worker.get();
 
     main_manager()->bestPreviousScore        = bestThread->rootMoves[0].score;
-    main_manager()->bestPreviousAverageScore = bestThread->rootMoves[0].averageScore;
 
     // Send again PV info if we have a new best thread
     if (bestThread != this)
@@ -431,7 +430,7 @@ void Search::Worker::iterative_deepening() {
         {
             int nodesEffort = rootMoves[0].effort * 100 / std::max(size_t(1), size_t(nodes));
 
-            double fallingEval = (1067 + 223 * (mainThread->bestPreviousAverageScore - bestValue)
+            double fallingEval = (1067 + 223 * (mainThread->bestPreviousScore - bestValue)
                                   + 97 * (mainThread->iterValue[iterIdx] - bestValue))
                                / 10000.0;
             fallingEval = std::clamp(fallingEval, 0.580, 1.667);
