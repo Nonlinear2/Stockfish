@@ -1227,11 +1227,10 @@ moves_loop:  // When in check, search starts here
         if (threads.stop.load(std::memory_order_relaxed))
             return VALUE_ZERO;
 
+        RootMove& rm = *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
+        
         if (rootNode)
         {
-            RootMove& rm =
-              *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
-
             rm.effort += nodes - nodeCount;
 
             rm.averageScore =
@@ -1302,7 +1301,9 @@ moves_loop:  // When in check, search starts here
                 {
                     // Reduce other moves if we have found at least one score improvement (~2 Elo)
                     if (depth > 2 && depth < 14 && std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY)
-                        depth -= 2;
+                    {
+                        depth -= 2 + (rootNode && thisThread->bestMoveChanges == 0 && depth > std::max(thisThread->rootDepth / 2, 4));
+                    }
 
                     assert(depth > 0);
                     alpha = value;  // Update alpha! Always alpha < beta
