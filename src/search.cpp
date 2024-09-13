@@ -1227,10 +1227,11 @@ moves_loop:  // When in check, search starts here
         if (threads.stop.load(std::memory_order_relaxed))
             return VALUE_ZERO;
 
-        RootMove& rm = *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
         
         if (rootNode)
         {
+            RootMove& rm = *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
+            
             rm.effort += nodes - nodeCount;
 
             rm.averageScore =
