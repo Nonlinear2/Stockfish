@@ -245,7 +245,6 @@ class SearchManager: public ISearchManager {
     Value                bestPreviousScore;
     Value                bestPreviousAverageScore;
     bool                 stopOnPonderhit;
-    double               totBestMoveChanges;
 
     size_t id;
 
