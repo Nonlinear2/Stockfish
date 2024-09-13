@@ -1597,7 +1597,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 continue;
 
             // Do not search moves with bad enough SEE values (~5 Elo)
-            if (!pos.see_ge(move, -83 - 130*givesCheck + !capture*40))
+            if (!pos.see_ge(move, -83))
                 continue;
         }
 
@@ -1634,6 +1634,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     alpha = value;
                 else
                     break;  // Fail high
+            }
+            else if (pos.see_ge(move, 1))
+            {
+                bestValue = (bestValue + alpha) / 2;
             }
         }
     }
