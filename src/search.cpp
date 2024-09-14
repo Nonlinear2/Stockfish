@@ -1178,7 +1178,7 @@ moves_loop:  // When in check, search starts here
                 const bool doDeeperSearch    = value > (bestValue + 35 + 2 * newDepth);  // (~1 Elo)
                 const bool doShallowerSearch = value < bestValue + 8;                    // (~2 Elo)
 
-                newDepth += doDeeperSearch - doShallowerSearch + (r > 5);
+                newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
@@ -1212,7 +1212,7 @@ moves_loop:  // When in check, search starts here
             if (move == ttData.move && ss->ply <= thisThread->rootDepth * 2)
                 newDepth = std::max(newDepth, 1);
 
-            value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
+            value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth + (value > beta && ttData.move && move != ttData.move), false);
         }
 
         // Step 19. Undo move
