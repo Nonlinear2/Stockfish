@@ -1353,10 +1353,11 @@ moves_loop:  // When in check, search starts here
 
         bonus = std::max(bonus, 0);
 
-        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / 116);
-        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << stat_bonus(depth) * bonus / 180;
+        // do not update conthist for moves that draw by threefold as they are not necessarly good in other cases
+        if (depth > 2 || bestValue != 0)
+            update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, stat_bonus(depth) * bonus / 116);
+
+        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << stat_bonus(depth) * bonus / 180;
 
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
