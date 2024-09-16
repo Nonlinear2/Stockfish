@@ -780,7 +780,7 @@ Value Search::Worker::search(
         assert(eval - beta >= 0);
 
         // Null move dynamic reduction based on depth and eval
-        Depth R = std::min(int(eval - beta) / 202, 6) + depth / 3 + 5;
+        Depth R = std::min(int(eval - beta) / 202, 6) + depth / 3 + 5 + (ss - 1)->currMoveCapture;
 
         ss->currentMove         = Move::null();
         ss->continuationHistory = &thisThread->continuationHistory[0][0][NO_PIECE][0];
@@ -863,6 +863,7 @@ Value Search::Worker::search(
             prefetch(tt.first_entry(pos.key_after(move)));
 
             ss->currentMove = move;
+            ss->currMoveCapture = true;
             ss->continuationHistory =
               &this->continuationHistory[ss->inCheck][true][pos.moved_piece(move)][move.to_sq()];
 
@@ -1111,6 +1112,7 @@ moves_loop:  // When in check, search starts here
 
         // Update the current move (this must be done after singular extension search)
         ss->currentMove = move;
+        ss->currMoveCapture = capture;
         ss->continuationHistory =
           &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
 

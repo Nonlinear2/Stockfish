@@ -65,6 +65,7 @@ struct Stack {
     PieceToHistory* continuationHistory;
     int             ply;
     Move            currentMove;
+    bool            currMoveCapture;
     Move            excludedMove;
     Value           staticEval;
     int             statScore;
