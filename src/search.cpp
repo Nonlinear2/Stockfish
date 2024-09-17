@@ -112,6 +112,12 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth);
 
+void update_all_qsearch_stats(const Position&      pos,
+                              Search::Worker&      workerThread,
+                              Move                 bestMove,
+                              PieceType            captured,
+                              ValueList<Move, 32>& capturesSearched);
+
 }  // namespace
 
 Search::Worker::Worker(SharedState&                    sharedState,
@@ -489,6 +495,7 @@ void Search::Worker::iterative_deepening() {
 void Search::Worker::clear() {
     mainHistory.fill(0);
     captureHistory.fill(-700);
+    qsearchCaptureHistory.fill(-700);
     pawnHistory.fill(-1188);
     pawnCorrectionHistory.fill(0);
     materialCorrectionHistory.fill(0);
@@ -913,7 +920,7 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, &thisThread->pawnHistory);
+                  &thisThread->qsearchCaptureHistory, contHist, &thisThread->pawnHistory);
 
     value = bestValue;
 
@@ -1436,6 +1443,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     int   moveCount;
     Color us = pos.side_to_move();
 
+    ValueList<Move, 32> capturesSearched;
+
     // Step 1. Initialize node
     if (PvNode)
     {
@@ -1474,6 +1483,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         && ttData.value != VALUE_NONE  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
         return ttData.value;
+
 
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
@@ -1516,6 +1526,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
                                DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval,
                                tt.generation());
+
+            // malus for the previous capture that caused the fail high  
+            thisThread->qsearchCaptureHistory[pos.moved_piece((ss - 1)->currentMove)][(ss - 1)->currentMove.to_sq()][pos.captured_piece()] 
+                << -73;
+
             return bestValue;
         }
 
@@ -1533,8 +1548,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // Initialize a MovePicker object for the current position, and prepare to search
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
-    MovePicker mp(pos, ttData.move, DEPTH_QS, &thisThread->mainHistory, &thisThread->captureHistory,
-                  contHist, &thisThread->pawnHistory);
+    MovePicker mp(pos, ttData.move, DEPTH_QS, &thisThread->mainHistory, &thisThread->captureHistory, 
+                  &thisThread->qsearchCaptureHistory, contHist, &thisThread->pawnHistory);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.
@@ -1636,6 +1651,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     break;  // Fail high
             }
         }
+
+        // If the move is worse than some previously searched move,
+        // remember it, to update its stats later.
+        if (capture && move != bestMove && moveCount <= 32)
+            capturesSearched.push_back(move);
     }
 
     // Step 9. Check for mate
@@ -1649,6 +1669,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && bestValue >= beta)
         bestValue = (3 * bestValue + beta) / 4;
+
+    PieceType bestMoveCaptured = type_of(pos.piece_on(bestMove.to_sq()));
+    if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && bestMove && bestMoveCaptured != NO_PIECE_TYPE)
+        update_all_qsearch_stats(pos, *this, bestMove, bestMoveCaptured, capturesSearched);
 
     // Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
@@ -1786,6 +1810,32 @@ void update_all_stats(const Position&      pos,
         moved_piece = pos.moved_piece(move);
         captured    = type_of(pos.piece_on(move.to_sq()));
         captureHistory[moved_piece][move.to_sq()][captured] << -quietMoveMalus;
+    }
+}
+
+
+
+// Updates stats at the end of qsearch() when a bestMove is found
+void update_all_qsearch_stats(const Position&      pos,
+                      Search::Worker&      workerThread,
+                      Move                 bestMove,
+                      PieceType            captured,
+                      ValueList<Move, 32>& capturesSearched) {
+    
+    CapturePieceToHistory& qsearchCaptureHistory = workerThread.qsearchCaptureHistory;
+    Piece                  moved_piece    = pos.moved_piece(bestMove);
+
+    int quietMoveBonus = 500;
+    int quietMoveMalus = -90;
+
+    qsearchCaptureHistory[moved_piece][bestMove.to_sq()][captured] << quietMoveBonus;
+
+    // Decrease stats for all non-best capture moves
+    for (Move move : capturesSearched)
+    {
+        moved_piece = pos.moved_piece(move);
+        captured    = type_of(pos.piece_on(move.to_sq()));
+        qsearchCaptureHistory[moved_piece][move.to_sq()][captured] << -quietMoveMalus;
     }
 }
 
