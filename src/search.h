@@ -281,6 +281,7 @@ class Worker {
     ButterflyHistory rootHistory;
 
     CapturePieceToHistory captureHistory;
+    CapturePieceToHistory qsearchCaptureHistory;
     ContinuationHistory   continuationHistory[2][2];
     PawnHistory           pawnHistory;
 

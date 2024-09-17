@@ -46,10 +46,18 @@
 #include "thread.h"
 #include "timeman.h"
 #include "tt.h"
+#include "tune.h"
 #include "uci.h"
 #include "ucioption.h"
 
 namespace Stockfish {
+int flMalus = -73;
+int bmBonus = 500;
+int bmMalus = -100;
+
+TUNE(SetRange(-8000, 8000), flMalus);
+TUNE(SetRange(-8000, 8000), bmBonus);
+TUNE(SetRange(-8000, 8000), bmMalus);
 
 namespace TB = Tablebases;
 
@@ -935,7 +943,8 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->rootHistory,
-                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory, rootNode);
+                  &thisThread->captureHistory, &thisThread->qsearchCaptureHistory, 
+                  contHist, &thisThread->pawnHistory, rootNode);
 
     value = bestValue;
 
@@ -1549,7 +1558,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
             // malus for the previous capture that caused the fail high  
             thisThread->qsearchCaptureHistory[pos.moved_piece((ss - 1)->currentMove)][(ss - 1)->currentMove.to_sq()][pos.captured_piece()] 
-                << -73;
+                << flMalus;
 
             return bestValue;
         }
@@ -1569,8 +1578,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
     MovePicker mp(pos, ttData.move, DEPTH_QS, &thisThread->mainHistory, &thisThread->rootHistory,
-                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory,
-                  nodeType == Root);
+                  &thisThread->captureHistory, &thisThread->qsearchCaptureHistory, contHist, 
+                  &thisThread->pawnHistory, nodeType == Root);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.
@@ -1847,17 +1856,14 @@ void update_all_qsearch_stats(const Position&      pos,
     CapturePieceToHistory& qsearchCaptureHistory = workerThread.qsearchCaptureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
 
-    int quietMoveBonus = 500;
-    int quietMoveMalus = -90;
-
-    qsearchCaptureHistory[moved_piece][bestMove.to_sq()][captured] << quietMoveBonus;
+    qsearchCaptureHistory[moved_piece][bestMove.to_sq()][captured] << bmBonus;
 
     // Decrease stats for all non-best capture moves
     for (Move move : capturesSearched)
     {
         moved_piece = pos.moved_piece(move);
         captured    = type_of(pos.piece_on(move.to_sq()));
-        qsearchCaptureHistory[moved_piece][move.to_sq()][captured] << -quietMoveMalus;
+        qsearchCaptureHistory[moved_piece][move.to_sq()][captured] << bmMalus;
     }
 }
 
