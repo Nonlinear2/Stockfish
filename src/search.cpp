@@ -1588,7 +1588,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     continue;
                 }
 
-                if (capture && thisThread->captureHistory[pos.moved_piece(move)][move.to_sq()][capturedPieceType] < 500)
+                if (capture && thisThread->captureHistory[pos.moved_piece(move)][move.to_sq()][capturedPieceType] < 0)
                     continue;
             }
 
