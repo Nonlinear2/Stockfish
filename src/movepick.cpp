@@ -151,10 +151,10 @@ void MovePicker::score() {
             PieceType captured = type_of(pos.piece_on(m.to_sq()));
 
             m.value = 7 * int(PieceValue[pos.piece_on(m.to_sq())]) + 
-              (stage == QCAPTURE_INIT)
-              ? (*captureHistory)[pos.moved_piece(m)][m.to_sq()][captured] / 2
-                + (*qsearchCaptureHistory)[pos.moved_piece(m)][m.to_sq()][captured] / 2
-              : (*captureHistory)[pos.moved_piece(m)][m.to_sq()][captured];
+                      (*captureHistory)[pos.moved_piece(m)][m.to_sq()][captured];
+            
+            if (stage == QCAPTURE_INIT)
+                m.value += (*qsearchCaptureHistory)[pos.moved_piece(m)][m.to_sq()][captured];
         }
         else if constexpr (Type == QUIETS)
         {
