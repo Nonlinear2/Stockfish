@@ -1596,6 +1596,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
         givesCheck = pos.gives_check(move);
         capture    = pos.capture_stage(move);
+        Piece capturedPiece = pos.piece_on(move.to_sq());
 
         moveCount++;
 
@@ -1609,7 +1610,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 if (moveCount > 2)
                     continue;
 
-                Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
+                Value futilityValue = futilityBase + PieceValue[capturedPiece];
 
                 // If static eval + value of piece we are going to capture is
                 // much lower than alpha, we can prune this move. (~2 Elo)
@@ -1688,7 +1689,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
         // If the move is worse than some previously searched move,
         // remember it, to update its stats later.
-        if (capture && move != bestMove && moveCount <= 32)
+        if (capturedPiece != NO_PIECE && move != bestMove && moveCount <= 32)
             capturesSearched.push_back(move);
     }
 
