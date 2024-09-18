@@ -46,18 +46,10 @@
 #include "thread.h"
 #include "timeman.h"
 #include "tt.h"
-#include "tune.h"
 #include "uci.h"
 #include "ucioption.h"
 
 namespace Stockfish {
-int flMalus = -73;
-int bmBonus = 500;
-int bmMalus = -100;
-
-TUNE(SetRange(-8000, 8000), flMalus);
-TUNE(SetRange(-8000, 8000), bmBonus);
-TUNE(SetRange(-8000, 8000), bmMalus);
 
 namespace TB = Tablebases;
 
@@ -1558,7 +1550,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
             // malus for the previous capture that caused the fail high  
             thisThread->qsearchCaptureHistory[pos.moved_piece((ss - 1)->currentMove)][(ss - 1)->currentMove.to_sq()][pos.captured_piece()] 
-                << flMalus;
+                << 525;
 
             return bestValue;
         }
@@ -1856,14 +1848,14 @@ void update_all_qsearch_stats(const Position&      pos,
     CapturePieceToHistory& qsearchCaptureHistory = workerThread.qsearchCaptureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
 
-    qsearchCaptureHistory[moved_piece][bestMove.to_sq()][captured] << bmBonus;
+    qsearchCaptureHistory[moved_piece][bestMove.to_sq()][captured] << 1325;
 
     // Decrease stats for all non-best capture moves
     for (Move move : capturesSearched)
     {
         moved_piece = pos.moved_piece(move);
         captured    = type_of(pos.piece_on(move.to_sq()));
-        qsearchCaptureHistory[moved_piece][move.to_sq()][captured] << bmMalus;
+        qsearchCaptureHistory[moved_piece][move.to_sq()][captured] << -603;
     }
 }
 

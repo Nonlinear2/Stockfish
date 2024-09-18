@@ -24,15 +24,8 @@
 
 #include "bitboard.h"
 #include "position.h"
-#include "tune.h"
 
 namespace Stockfish {
-
-int chScalar = 2;
-int qchScalar = 2;
-
-TUNE(SetRange(1, 5), chScalar);
-TUNE(SetRange(1, 5), qchScalar);
 
 namespace {
 
@@ -159,8 +152,8 @@ void MovePicker::score() {
 
             m.value = 7 * int(PieceValue[pos.piece_on(m.to_sq())]) + 
               (stage == QCAPTURE_INIT)
-              ? (*captureHistory)[pos.moved_piece(m)][m.to_sq()][captured] / chScalar
-                + (*qsearchCaptureHistory)[pos.moved_piece(m)][m.to_sq()][captured] / qchScalar
+              ? (*captureHistory)[pos.moved_piece(m)][m.to_sq()][captured] / 2
+                + (*qsearchCaptureHistory)[pos.moved_piece(m)][m.to_sq()][captured] / 2
               : (*captureHistory)[pos.moved_piece(m)][m.to_sq()][captured];
         }
         else if constexpr (Type == QUIETS)
