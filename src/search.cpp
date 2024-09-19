@@ -507,7 +507,7 @@ void Search::Worker::clear() {
     mainHistory.fill(0);
     rootHistory.fill(0);
     captureHistory.fill(-753);
-    qsearchCaptureHistory.fill(-381);
+    qsearchCaptureHistory.fill(-269);
     pawnHistory.fill(-1152);
     pawnCorrectionHistory.fill(0);
     materialCorrectionHistory.fill(0);
@@ -1552,7 +1552,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
             // malus for the previous capture that caused the fail high
             if (prevSq != SQ_NONE)
-                thisThread->qsearchCaptureHistory[pos.piece_on(prevSq)][prevSq][pos.captured_piece()] << -266;
+                thisThread->qsearchCaptureHistory[pos.piece_on(prevSq)][prevSq][pos.captured_piece()] << -332;
 
             return bestValue;
         }
@@ -1850,14 +1850,14 @@ void update_all_qsearch_stats(const Position&      pos,
     CapturePieceToHistory& qsearchCaptureHistory = workerThread.qsearchCaptureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
 
-    qsearchCaptureHistory[moved_piece][bestMove.to_sq()][captured] << 598;
+    qsearchCaptureHistory[moved_piece][bestMove.to_sq()][captured] << 492;
 
     // Decrease stats for all non-best capture moves
     for (Move move : capturesSearched)
     {
         moved_piece = pos.moved_piece(move);
         captured    = type_of(pos.piece_on(move.to_sq()));
-        qsearchCaptureHistory[moved_piece][move.to_sq()][captured] << 67;
+        qsearchCaptureHistory[moved_piece][move.to_sq()][captured] << 78;
     }
 }
 
