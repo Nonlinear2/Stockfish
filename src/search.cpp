@@ -1186,7 +1186,8 @@ moves_loop:  // When in check, search starts here
                 // Post LMR continuation history updates (~1 Elo)
                 int bonus = value >= beta ? stat_bonus(newDepth) : -stat_malus(newDepth);
 
-                update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
+                if (depth > 10 || value != VALUE_DRAW)
+                    update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
         }
 
@@ -1354,7 +1355,7 @@ moves_loop:  // When in check, search starts here
         bonus = std::max(bonus, 0);
 
         // do not update conthist for moves that draw by threefold as they are not necessarly good in other cases
-        if (depth > 2 || bestValue != 0)
+        if (depth > 10 || bestValue != VALUE_DRAW)
             update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, stat_bonus(depth) * bonus / 116);
 
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << stat_bonus(depth) * bonus / 180;
