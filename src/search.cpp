@@ -1572,6 +1572,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
         moveCount++;
 
+        if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && (ss - 1)->currentMove.type_of() == PROMOTION 
+                && move.to_sq() != prevSq && !givesCheck)
+            continue;
+
         // Step 6. Pruning
         if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && pos.non_pawn_material(us))
         {
