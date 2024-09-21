@@ -46,25 +46,10 @@
 #include "thread.h"
 #include "timeman.h"
 #include "tt.h"
-#include "tune.h"
 #include "uci.h"
 #include "ucioption.h"
 
 namespace Stockfish {
-
-int fillValue = -269;
-int flMalus = -332;
-int ttBonus = 100;
-int ttMalus = -100;
-int bmBonus = 500;
-int bmMalus = -80;
-
-TUNE(SetRange(-8000, 8000), fillValue);
-TUNE(SetRange(-8000, 8000), flMalus);
-TUNE(SetRange(-8000, 8000), ttBonus);
-TUNE(SetRange(-8000, 8000), ttMalus);
-TUNE(SetRange(-8000, 8000), bmBonus);
-TUNE(SetRange(-8000, 8000), bmMalus);
 
 namespace TB = Tablebases;
 
@@ -522,7 +507,7 @@ void Search::Worker::clear() {
     mainHistory.fill(0);
     rootHistory.fill(0);
     captureHistory.fill(-753);
-    qsearchCaptureHistory.fill(fillValue);
+    qsearchCaptureHistory.fill(-215);
     pawnHistory.fill(-1152);
     pawnCorrectionHistory.fill(0);
     materialCorrectionHistory.fill(0);
@@ -1524,7 +1509,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     {
         if (prevSq != SQ_NONE && (pos.captured_piece() != NO_PIECE || ((ss - 1)->currentMove).type_of() == PROMOTION))
             thisThread->qsearchCaptureHistory[pos.piece_on(prevSq)][prevSq][pos.captured_piece()] << 
-                (ttData.value >= beta ? ttMalus : ttBonus);
+                (ttData.value >= beta ? -277 : 503);
         return ttData.value;
     }
 
@@ -1573,7 +1558,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
             // malus for the previous capture that caused the fail high
             if (prevSq != SQ_NONE)
-                thisThread->qsearchCaptureHistory[pos.piece_on(prevSq)][prevSq][pos.captured_piece()] << flMalus;
+                thisThread->qsearchCaptureHistory[pos.piece_on(prevSq)][prevSq][pos.captured_piece()] << -636;
 
             return bestValue;
         }
@@ -1870,14 +1855,14 @@ void update_all_qsearch_stats(const Position&      pos,
     CapturePieceToHistory& qsearchCaptureHistory = workerThread.qsearchCaptureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
 
-    qsearchCaptureHistory[moved_piece][bestMove.to_sq()][captured] << bmBonus;
+    qsearchCaptureHistory[moved_piece][bestMove.to_sq()][captured] << 1090;
 
     // Decrease stats for all non-best capture moves
     for (Move move : capturesSearched)
     {
         moved_piece = pos.moved_piece(move);
         captured    = type_of(pos.piece_on(move.to_sq()));
-        qsearchCaptureHistory[moved_piece][move.to_sq()][captured] << bmMalus;
+        qsearchCaptureHistory[moved_piece][move.to_sq()][captured] << -585;
     }
 }
 
