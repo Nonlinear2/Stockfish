@@ -507,7 +507,7 @@ void Search::Worker::clear() {
     mainHistory.fill(0);
     rootHistory.fill(0);
     captureHistory.fill(-753);
-    qsearchCaptureHistory.fill(-215);
+    qsearchCaptureHistory.fill(-78);
     pawnHistory.fill(-1152);
     pawnCorrectionHistory.fill(0);
     materialCorrectionHistory.fill(0);
@@ -1509,7 +1509,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     {
         if (prevSq != SQ_NONE && (pos.captured_piece() != NO_PIECE || ((ss - 1)->currentMove).type_of() == PROMOTION))
             thisThread->qsearchCaptureHistory[pos.piece_on(prevSq)][prevSq][pos.captured_piece()] << 
-                (ttData.value >= beta ? -277 : 503);
+                (ttData.value >= beta ? -580 : 1058);
         return ttData.value;
     }
 
@@ -1558,7 +1558,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
             // malus for the previous capture that caused the fail high
             if (prevSq != SQ_NONE)
-                thisThread->qsearchCaptureHistory[pos.piece_on(prevSq)][prevSq][pos.captured_piece()] << -636;
+                thisThread->qsearchCaptureHistory[pos.piece_on(prevSq)][prevSq][pos.captured_piece()] << -767;
 
             return bestValue;
         }
@@ -1855,14 +1855,14 @@ void update_all_qsearch_stats(const Position&      pos,
     CapturePieceToHistory& qsearchCaptureHistory = workerThread.qsearchCaptureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
 
-    qsearchCaptureHistory[moved_piece][bestMove.to_sq()][captured] << 1090;
+    qsearchCaptureHistory[moved_piece][bestMove.to_sq()][captured] << 1187;
 
     // Decrease stats for all non-best capture moves
     for (Move move : capturesSearched)
     {
         moved_piece = pos.moved_piece(move);
         captured    = type_of(pos.piece_on(move.to_sq()));
-        qsearchCaptureHistory[moved_piece][move.to_sq()][captured] << -585;
+        qsearchCaptureHistory[moved_piece][move.to_sq()][captured] << -733;
     }
 }
 
