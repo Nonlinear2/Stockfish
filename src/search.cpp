@@ -46,34 +46,10 @@
 #include "thread.h"
 #include "timeman.h"
 #include "tt.h"
-#include "tune.h"
 #include "uci.h"
 #include "ucioption.h"
 
 namespace Stockfish {
-int razoringMargin = -501;
-int razoringFactor = -150;
-int razoringDivisor = 25;
-int fpFactor = -150;
-int fpDivisor = 25;
-int nmpMargin = 400;
-int nmpFactor = -150;
-int nmpDivisor = 25;
-int fpcMargin = 300;
-int fpcFactor = -150;
-int fpcDivisor = 25;
-
-TUNE(SetRange(-5000, 5000), razoringMargin);
-TUNE(SetRange(-5000, 5000), razoringFactor);
-TUNE(SetRange(-5000, 5000), razoringDivisor);
-TUNE(SetRange(-5000, 5000), fpFactor);
-TUNE(SetRange(-5000, 5000), fpDivisor);
-TUNE(SetRange(-5000, 5000), nmpMargin);
-TUNE(SetRange(-5000, 5000), nmpFactor);
-TUNE(SetRange(-5000, 5000), nmpDivisor);
-TUNE(SetRange(-5000, 5000), fpcMargin);
-TUNE(SetRange(-5000, 5000), fpcFactor);
-TUNE(SetRange(-5000, 5000), fpcDivisor);
 
 namespace TB = Tablebases;
 
@@ -800,7 +776,7 @@ Value Search::Worker::search(
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
     // search suggests we cannot exceed alpha, return a speculative fail low.
-    if (eval < alpha + razoringMargin - 272 * depth * depth + razoringFactor*correctionMagnitude/razoringDivisor)
+    if (eval < alpha - 457 - 272 * depth * depth - 64*correctionMagnitude/531)
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha && std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY)
@@ -811,7 +787,7 @@ Value Search::Worker::search(
     // The depth condition is important for mate finding.
     if (!ss->ttPv && depth < 13
         && eval - futility_margin(depth, cutNode && !ss->ttHit, improving, opponentWorsening)
-               - (ss - 1)->statScore / 272 + fpFactor*correctionMagnitude/fpDivisor
+               - (ss - 1)->statScore / 272 - 267*correctionMagnitude/1062
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && beta > VALUE_TB_LOSS_IN_MAX_PLY
         && eval < VALUE_TB_WIN_IN_MAX_PLY)
@@ -819,7 +795,7 @@ Value Search::Worker::search(
 
     // Step 9. Null move search with verification search (~35 Elo)
     if (cutNode && (ss - 1)->currentMove != Move::null() && eval >= beta
-        && ss->staticEval >= beta - 23 * depth + nmpMargin + nmpFactor*correctionMagnitude/nmpDivisor 
+        && ss->staticEval >= beta - 23 * depth + 707 - 109*correctionMagnitude/238 
         && !excludedMove && pos.non_pawn_material(us)
         && ss->ply >= thisThread->nmpMinPly && beta > VALUE_TB_LOSS_IN_MAX_PLY)
     {
@@ -1028,7 +1004,7 @@ moves_loop:  // When in check, search starts here
                 // Futility pruning for captures (~2 Elo)
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
-                    Value futilityValue = ss->staticEval + fpcMargin + 238 * lmrDepth + fpcFactor*correctionMagnitude/fpcDivisor
+                    Value futilityValue = ss->staticEval + 580 + 238 * lmrDepth + 251*correctionMagnitude/72
                                         + PieceValue[capturedPiece] + captHist / 7;
                     if (futilityValue <= alpha)
                         continue;
