@@ -981,6 +981,11 @@ moves_loop:  // When in check, search starts here
 
         // Step 14. Pruning at shallow depth (~120 Elo).
         // Depth conditions are important for mate finding.
+
+        if (!rootNode && bestValue > VALUE_TB_LOSS_IN_MAX_PLY && (ss - 1)->currentMove.type_of() == PROMOTION 
+                && move.to_sq() != prevSq && !givesCheck && !capture && depth < 5)
+            continue;
+
         if (!rootNode && pos.non_pawn_material(us) && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~8 Elo)
@@ -1571,10 +1576,6 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         capture    = pos.capture_stage(move);
 
         moveCount++;
-
-        if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && (ss - 1)->currentMove.type_of() == PROMOTION 
-                && move.to_sq() != prevSq && !givesCheck)
-            continue;
 
         // Step 6. Pruning
         if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && pos.non_pawn_material(us))
