@@ -559,7 +559,7 @@ Value Search::Worker::search(
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    bool  givesCheck, improving, priorCapture, opponentWorsening, CanStaticEvalPrune;
     bool  capture, ttCapture;
     Piece movedPiece;
 
@@ -574,6 +574,7 @@ Value Search::Worker::search(
     ss->moveCount      = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    CanStaticEvalPrune = true;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -768,10 +769,12 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
+    CanStaticEvalPrune = (!ttHit || pos.see_ge(ttData.move, 0));
+
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
     // search suggests we cannot exceed alpha, return a speculative fail low.
-    if (eval < alpha - 501 - 272 * depth * depth)
+    if (CanStaticEvalPrune && eval < alpha - 501 - 272 * depth * depth)
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha && std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY)
@@ -785,7 +788,7 @@ Value Search::Worker::search(
                - (ss - 1)->statScore / 272
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && beta > VALUE_TB_LOSS_IN_MAX_PLY
-        && eval < VALUE_TB_WIN_IN_MAX_PLY)
+        && eval < VALUE_TB_WIN_IN_MAX_PLY && CanStaticEvalPrune)
         return beta + (eval - beta) / 3;
 
     // Step 9. Null move search with verification search (~35 Elo)
