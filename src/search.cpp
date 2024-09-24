@@ -769,7 +769,7 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
-    CanStaticEvalPrune = (!ttHit || pos.see_ge(ttData.move, 0));
+    CanStaticEvalPrune = (!ttData.move || pos.see_ge(ttData.move, 0));
 
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
