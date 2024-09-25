@@ -560,7 +560,7 @@ Value Search::Worker::search(
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening, CanStaticEvalPrune;
-    bool  capture, ttCapture;
+    bool  capture, ttCapture, ttValueUsed;
     Piece movedPiece;
 
     ValueList<Move, 32> capturesSearched;
@@ -575,6 +575,7 @@ Value Search::Worker::search(
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
     CanStaticEvalPrune = true;
+    ttValueUsed        = false;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -738,7 +739,10 @@ Value Search::Worker::search(
         // ttValue can be used as a better position evaluation (~7 Elo)
         if (ttData.value != VALUE_NONE
             && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
+        {
             eval = ttData.value;
+            ttValueUsed = true;
+        }
     }
     else
     {
@@ -769,7 +773,7 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
-    CanStaticEvalPrune = (!ttData.move || pos.see_ge(ttData.move, 0));
+    CanStaticEvalPrune = (ttValueUsed || !ttData.move || pos.see_ge(ttData.move, 0));
 
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
