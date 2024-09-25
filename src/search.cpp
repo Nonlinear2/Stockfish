@@ -560,7 +560,7 @@ Value Search::Worker::search(
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
-    bool  capture, ttCapture;
+    bool  capture, ttCapture, bestMoveCapture;
     Piece movedPiece;
 
     ValueList<Move, 32> capturesSearched;
@@ -574,6 +574,7 @@ Value Search::Worker::search(
     ss->moveCount      = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    bestMoveCapture    = false;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -989,6 +990,8 @@ moves_loop:  // When in check, search starts here
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r;
 
+            bool bestMoveGoodSee = pos.see_ge(bestMove, 0);
+
             if (capture || givesCheck)
             {
                 Piece capturedPiece = pos.piece_on(move.to_sq());
@@ -1006,7 +1009,7 @@ moves_loop:  // When in check, search starts here
 
                 // SEE based pruning for captures and checks (~11 Elo)
                 int seeHist = std::clamp(captHist / 32, -159 * depth, 160 * depth);
-                if (!pos.see_ge(move, -167 * depth - seeHist) && pos.see_ge(bestMove, 0))
+                if (!pos.see_ge(move, -167 * depth - seeHist) && (!bestMoveCapture || bestMoveGoodSee))
                     continue;
             }
             else
@@ -1039,7 +1042,7 @@ moves_loop:  // When in check, search starts here
                 lmrDepth = std::max(lmrDepth, 0);
 
                 // Prune moves with negative SEE (~4 Elo)
-                if (!pos.see_ge(move, -24 * lmrDepth * lmrDepth))
+                if (!pos.see_ge(move, -24 * lmrDepth * lmrDepth) && (bestMoveCapture || bestMoveGoodSee))
                     continue;
             }
         }
@@ -1304,6 +1307,7 @@ moves_loop:  // When in check, search starts here
             if (value + inc > alpha)
             {
                 bestMove = move;
+                bestMoveCapture = pos.capture_stage(bestMove);
 
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     update_pv(ss->pv, move, (ss + 1)->pv);
