@@ -928,7 +928,8 @@ moves_loop:  // When in check, search starts here
                                         (ss - 6)->continuationHistory};
 
 
-    MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->rootHistory,
+    MovePicker mp(pos, ttData.move, ((ss - 2)->inCheck || priorCapture) ? Move::none() : (ss - 2)->bestMove,
+                  depth, &thisThread->mainHistory, &thisThread->rootHistory,
                   &thisThread->captureHistory, contHist, &thisThread->pawnHistory, rootNode);
 
     value = bestValue;
@@ -1304,6 +1305,7 @@ moves_loop:  // When in check, search starts here
             if (value + inc > alpha)
             {
                 bestMove = move;
+                ss->bestMove = move;
 
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
                     update_pv(ss->pv, move, (ss + 1)->pv);
@@ -1554,7 +1556,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // Initialize a MovePicker object for the current position, and prepare to search
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
-    MovePicker mp(pos, ttData.move, DEPTH_QS, &thisThread->mainHistory, &thisThread->rootHistory,
+    MovePicker mp(pos, ttData.move, Move::none(), DEPTH_QS, &thisThread->mainHistory, &thisThread->rootHistory,
                   &thisThread->captureHistory, contHist, &thisThread->pawnHistory,
                   nodeType == Root);
 
