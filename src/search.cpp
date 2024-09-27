@@ -634,7 +634,7 @@ Value Search::Worker::search(
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
     {
         // If ttMove is quiet, update move sorting heuristics on TT hit (~2 Elo)
-        if (ttData.move && ttData.value >= beta)
+        if (ttData.move && ttData.value >= beta && ttData.value != VALUE_DRAW)
         {
             // Bonus for a quiet ttMove that fails high (~2 Elo)
             if (!ttCapture)
@@ -1372,15 +1372,17 @@ moves_loop:  // When in check, search starts here
         bonus = std::max(bonus, 0);
 
         if (bestValue != VALUE_DRAW)
+        {
             update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, stat_bonus(depth) * bonus / 107);
 
-        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << stat_bonus(depth) * bonus / 174;
+            thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
+            << stat_bonus(depth) * bonus / 174;
 
 
-        if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
-            thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << stat_bonus(depth) * bonus / 25;
+            if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
+                thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
+                << stat_bonus(depth) * bonus / 25;
+        }
     }
 
     // Bonus when search fails low and there is a TT move
