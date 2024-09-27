@@ -1039,8 +1039,15 @@ moves_loop:  // When in check, search starts here
                 lmrDepth = std::max(lmrDepth, 0);
 
                 // Prune moves with negative SEE (~4 Elo)
-                if (!pos.see_ge(move, -(24 - 10*(priorCapture && bestMove.to_sq() == prevSq)) * lmrDepth * lmrDepth))
+                if (!pos.see_ge(move, -24 * lmrDepth * lmrDepth))
                     continue;
+
+                // if move doesn't recapture, and doesn't attack anything, then it's probably bad.
+                if (priorCapture && bestMove.to_sq() == prevSq && 
+                    !(attacks_bb(type_of(movedPiece), move.to_sq(), pos.pieces()) & pos.pieces(~us)))
+                {
+                    continue;
+                }
             }
         }
 
