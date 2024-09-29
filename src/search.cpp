@@ -310,7 +310,7 @@ void Search::Worker::iterative_deepening() {
 
             // Reset aspiration window starting size
             Value avg = rootMoves[pvIdx].averageScore;
-            delta     = 5 + avg * avg / 11797;
+            delta     = 5 + std::abs(rootMoves[pvIdx].meanSquaredScore) / 13797;
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
@@ -1252,6 +1252,9 @@ moves_loop:  // When in check, search starts here
 
             rm.averageScore =
               rm.averageScore != -VALUE_INFINITE ? (value + rm.averageScore) / 2 : value;
+
+            rm.meanSquaredScore =
+              rm.meanSquaredScore != -VALUE_INFINITE ? (value*std::abs(value) + rm.meanSquaredScore) / 2 : value*std::abs(value);
 
             // PV move or new best move?
             if (moveCount == 1 || value > alpha)
