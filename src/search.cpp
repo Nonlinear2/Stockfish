@@ -590,7 +590,7 @@ Value Search::Worker::search(
             || ss->ply >= MAX_PLY)
             return (ss->ply >= MAX_PLY && !ss->inCheck)
                    ? evaluate(networks[numaAccessToken], pos, refreshTable,
-                              thisThread->optimism[us])
+                              thisThread->optimism[us]).first
                    : value_draw(thisThread->nodes);
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
@@ -728,7 +728,7 @@ Value Search::Worker::search(
         unadjustedStaticEval = ttData.eval;
         if (unadjustedStaticEval == VALUE_NONE)
             unadjustedStaticEval =
-              evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
+              evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]).first;
         else if (PvNode)
             Eval::NNUE::hint_common_parent_position(pos, networks[numaAccessToken], refreshTable);
 
@@ -742,7 +742,7 @@ Value Search::Worker::search(
     else
     {
         unadjustedStaticEval =
-          evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
+          evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]).first;
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
 
         // Static evaluation is saved as it was before adjustment by correction history
@@ -1479,7 +1479,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // Step 2. Check for an immediate draw or maximum ply reached
     if (pos.is_draw(ss->ply) || ss->ply >= MAX_PLY)
         return (ss->ply >= MAX_PLY && !ss->inCheck)
-               ? evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us])
+               ? evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]).first
                : VALUE_DRAW;
 
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
@@ -1501,6 +1501,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
+    bool smallNet = false;
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
@@ -1510,8 +1511,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             // Never assume anything about values stored in TT
             unadjustedStaticEval = ttData.eval;
             if (unadjustedStaticEval == VALUE_NONE)
-                unadjustedStaticEval =
-                  evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
+            {
+                auto v = evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
+                unadjustedStaticEval = v.first;
+                smallNet = v.second;
+            }
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
 
@@ -1523,15 +1527,26 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         else
         {
             // In case of null move search, use previous static eval with opposite sign
-            unadjustedStaticEval =
-              (ss - 1)->currentMove != Move::null()
-                ? evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us])
-                : -(ss - 1)->staticEval;
+            if ((ss - 1)->currentMove != Move::null())
+            {
+                auto v = evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
+                unadjustedStaticEval = v.first;
+                smallNet = v.second;
+            } 
+            else
+            {
+                unadjustedStaticEval = -(ss - 1)->staticEval;
+            }
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
         }
 
         // Stand pat. Return immediately if static value is at least beta
+        if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && bestValue - beta < 50 && smallNet)
+        {
+            unadjustedStaticEval = Stockfish::Eval::evaluate_big_net(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
+            ss->staticEval = bestValue = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
+        }
         if (bestValue >= beta)
         {
             if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY)

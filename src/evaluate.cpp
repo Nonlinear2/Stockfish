@@ -52,10 +52,10 @@ bool Eval::use_smallnet(const Position& pos) {
 
 // Evaluate is the evaluator for the outer world. It returns a static evaluation
 // of the position from the point of view of the side to move.
-Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
-                     const Position&                pos,
-                     Eval::NNUE::AccumulatorCaches& caches,
-                     int                            optimism) {
+std::pair<Value, bool> Eval::evaluate(const Eval::NNUE::Networks&    networks,
+                                    const Position&                pos,
+                                    Eval::NNUE::AccumulatorCaches& caches,
+                                    int                            optimism) {
 
     assert(!pos.checkers());
 
@@ -92,6 +92,39 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
+    return {v, smallNet};
+}
+
+Value Eval::evaluate_big_net(const Eval::NNUE::Networks&    networks,
+                             const Position&                pos,
+                             Eval::NNUE::AccumulatorCaches& caches,
+                             int                            optimism) {
+
+    assert(!pos.checkers());
+
+    int  v;
+
+    auto [psqt, positional] = networks.big.evaluate(pos, &caches.big);
+
+    Value nnue = (125 * psqt + 131 * positional) / 128;
+
+    // Blend optimism and eval with nnue complexity
+    int nnueComplexity = std::abs(psqt - positional);
+    optimism += optimism * nnueComplexity / 453;
+    nnue -= nnue * nnueComplexity / 17864;
+
+    int material = 532 * pos.count<PAWN>() + pos.non_pawn_material();
+    v = (nnue * (73921 + material) + optimism * (8112 + material)) / 74715;
+
+    // Evaluation grain (to get more alpha-beta cuts) with randomization (for robustness)
+    v = (v / 16) * 16 - 1 + (pos.key() & 0x2);
+
+    // Damp down the evaluation linearly when shuffling
+    v -= v * pos.rule50_count() / 212;
+
+    // Guarantee evaluation does not hit the tablebase range
+    v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+
     return v;
 }
 
@@ -117,7 +150,7 @@ std::string Eval::trace(Position& pos, const Eval::NNUE::Networks& networks) {
     v                       = pos.side_to_move() == WHITE ? v : -v;
     ss << "NNUE evaluation        " << 0.01 * UCIEngine::to_cp(v, pos) << " (white side)\n";
 
-    v = evaluate(networks, pos, *caches, VALUE_ZERO);
+    v = evaluate(networks, pos, *caches, VALUE_ZERO).first;
     v = pos.side_to_move() == WHITE ? v : -v;
     ss << "Final evaluation       " << 0.01 * UCIEngine::to_cp(v, pos) << " (white side)";
     ss << " [with scaled NNUE, ...]";
