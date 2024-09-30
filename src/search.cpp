@@ -1202,7 +1202,9 @@ moves_loop:  // When in check, search starts here
                 // Post LMR continuation history updates (~1 Elo)
                 int bonus = value >= beta ? (1 + 2 * (moveCount > depth)) * stat_bonus(newDepth)
                                           : -stat_malus(newDepth);
-                update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
+                
+                if (value != VALUE_DRAW)
+                    update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
         }
 
@@ -1370,8 +1372,9 @@ moves_loop:  // When in check, search starts here
 
         bonus = std::max(bonus, 0);
 
-        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / 107);
+        if (value != VALUE_DRAW)
+            update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, stat_bonus(depth) * bonus / 107);
+
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
           << stat_bonus(depth) * bonus / 174;
 
@@ -1404,6 +1407,7 @@ moves_loop:  // When in check, search starts here
 
     // Adjust correction history
     if (!ss->inCheck && (!bestMove || !pos.capture(bestMove))
+        && (bestValue != VALUE_DRAW)
         && !(bestValue >= beta && bestValue <= ss->staticEval)
         && !(!bestMove && bestValue >= ss->staticEval))
     {
