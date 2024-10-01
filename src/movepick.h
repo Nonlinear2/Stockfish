@@ -201,7 +201,7 @@ class MovePicker {
                const PawnHistory*,
                bool);
     MovePicker(const Position&, Move, int, const CapturePieceToHistory*);
-    Move next_move(bool skipQuiets = false);
+    Move next_move(bool skipQuiets = false, int* numCapturesGenerated = NULL);
 
    private:
     template<PickType T, typename Pred>
