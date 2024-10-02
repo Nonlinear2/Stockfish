@@ -66,6 +66,7 @@ struct Stack {
     int             ply;
     Move            currentMove;
     Move            excludedMove;
+    Move            ttMove = Move::none();
     Value           staticEval;
     int             statScore;
     int             moveCount;
