@@ -841,7 +841,7 @@ Value Search::Worker::search(
     // For cutNodes, if depth is high enough, decrease depth by 2 if there is no ttMove,
     // or by 1 if there is a ttMove with an upper bound.
     if (cutNode && depth >= 7 && (!ttData.move || ttData.bound == BOUND_UPPER))
-        depth -= 1 + !ttData.move + (!ttData.move && !(ss - 2)->ttMove);
+        depth -= 1 + !ttData.move;
 
     // Step 11. ProbCut (~10 Elo)
     // If we have a good enough capture (or queen promotion) and a reduced search
@@ -929,7 +929,7 @@ moves_loop:  // When in check, search starts here
                                         (ss - 6)->continuationHistory};
 
 
-    MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->rootHistory,
+    MovePicker mp(pos, ttData.move, priorCapture ? (ss - 2)->ttMove : Move::none(), depth, &thisThread->mainHistory, &thisThread->rootHistory,
                   &thisThread->captureHistory, contHist, &thisThread->pawnHistory, rootNode);
 
     value = bestValue;
@@ -1558,7 +1558,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // Initialize a MovePicker object for the current position, and prepare to search
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
-    MovePicker mp(pos, ttData.move, DEPTH_QS, &thisThread->mainHistory, &thisThread->rootHistory,
+    MovePicker mp(pos, ttData.move, Move::none(), DEPTH_QS, &thisThread->mainHistory, &thisThread->rootHistory,
                   &thisThread->captureHistory, contHist, &thisThread->pawnHistory,
                   nodeType == Root);
 

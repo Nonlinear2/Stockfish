@@ -80,6 +80,7 @@ void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 // MovePicker constructor for the main search and for the quiescence search
 MovePicker::MovePicker(const Position&              p,
                        Move                         ttm,
+                       Move                         pttm,
                        Depth                        d,
                        const ButterflyHistory*      mh,
                        const ButterflyHistory*      rh,
@@ -94,6 +95,7 @@ MovePicker::MovePicker(const Position&              p,
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
+    priorTtMove(pttm),
     depth(d),
     rootNode(rn) {
 
@@ -146,7 +148,8 @@ void MovePicker::score() {
         if constexpr (Type == CAPTURES)
             m.value =
               7 * int(PieceValue[pos.piece_on(m.to_sq())])
-              + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
+              + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))]
+              + (m == priorTtMove)*1000;
 
         else if constexpr (Type == QUIETS)
         {
@@ -181,6 +184,8 @@ void MovePicker::score() {
 
             if (rootNode)
                 m.value += 4 * (*rootHistory)[pos.side_to_move()][m.from_to()];
+
+            m.value += (m == priorTtMove)*2000;
         }
 
         else  // Type == EVASIONS
