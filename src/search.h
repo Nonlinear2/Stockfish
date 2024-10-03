@@ -94,7 +94,7 @@ struct RootMove {
     Value             score            = -VALUE_INFINITE;
     Value             previousScore    = -VALUE_INFINITE;
     Value             averageScore     = -VALUE_INFINITE;
-    Value             meanSquaredScore = -VALUE_INFINITE;
+    Value             meanSquaredScore = -VALUE_INFINITE*VALUE_INFINITE;
     Value             uciScore         = -VALUE_INFINITE;
     bool              scoreLowerbound  = false;
     bool              scoreUpperbound  = false;
