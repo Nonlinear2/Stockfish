@@ -1198,7 +1198,7 @@ moves_loop:  // When in check, search starts here
                 int bonus = value >= beta ? (1 + 2 * (moveCount > depth)) * stat_bonus(newDepth)
                                           : -stat_malus(newDepth);
                 
-                if (std::abs(value - VALUE_DRAW) < 2)
+                if (std::abs(value - VALUE_DRAW) > 1)
                     update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
         }
@@ -1366,7 +1366,7 @@ moves_loop:  // When in check, search starts here
 
         bonus = std::max(bonus, 0);
 
-        if (std::abs(bestValue - VALUE_DRAW) < 2)
+        if (std::abs(bestValue - VALUE_DRAW) > 1)
             update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, stat_bonus(depth) * bonus / 107);
 
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
@@ -1401,7 +1401,7 @@ moves_loop:  // When in check, search starts here
 
     // Adjust correction history
     if (!ss->inCheck && (!bestMove || !pos.capture(bestMove))
-        && (std::abs(bestValue - VALUE_DRAW) < 2)
+        && (std::abs(bestValue - VALUE_DRAW) > 1)
         && !(bestValue >= beta && bestValue <= ss->staticEval)
         && !(!bestMove && bestValue >= ss->staticEval))
     {
