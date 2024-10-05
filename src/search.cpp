@@ -46,10 +46,39 @@
 #include "thread.h"
 #include "timeman.h"
 #include "tt.h"
+#include "tune.h"
 #include "uci.h"
 #include "ucioption.h"
 
 namespace Stockfish {
+
+int qpcvScalar = 6245;
+int qmcvScalar = 3442;
+int qmacvScalar = 3471;
+int qmicvScalar = 5958;
+int qnpcvScalar = 6566;
+int qDivisor = 131072;
+
+int pcvScalar = 6245;
+int mcvScalar = 3442;
+int macvScalar = 3471;
+int micvScalar = 5958;
+int npcvScalar = 6566;
+int Divisor = 131072;
+
+TUNE(SetRange(-30000, 30000), qpcvScalar);
+TUNE(SetRange(-30000, 30000), qmcvScalar);
+TUNE(SetRange(-30000, 30000), qmacvScalar);
+TUNE(SetRange(-30000, 30000), qmicvScalar);
+TUNE(SetRange(-30000, 30000), qnpcvScalar);
+TUNE(SetRange(-500000, 500000), qDivisor);
+
+TUNE(SetRange(-30000, 30000), pcvScalar);
+TUNE(SetRange(-30000, 30000), mcvScalar);
+TUNE(SetRange(-30000, 30000), macvScalar);
+TUNE(SetRange(-30000, 30000), micvScalar);
+TUNE(SetRange(-30000, 30000), npcvScalar);
+TUNE(SetRange(-500000, 500000), Divisor);
 
 namespace TB = Tablebases;
 
@@ -79,7 +108,7 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
 // does not hit the tablebase range.
-Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos) {
+Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos, bool qsearch = false) {
     const Color us    = pos.side_to_move();
     const auto  pcv   = w.pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)];
     const auto  mcv   = w.materialCorrectionHistory[us][material_index(pos)];
@@ -87,9 +116,15 @@ Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos) {
     const auto  micv  = w.minorPieceCorrectionHistory[us][minor_piece_index(pos)];
     const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][us][non_pawn_index<WHITE>(pos)];
     const auto  bnpcv = w.nonPawnCorrectionHistory[BLACK][us][non_pawn_index<BLACK>(pos)];
-    const auto  cv =
-      (6245 * pcv + 3442 * mcv + 3471 * macv + 5958 * micv + 6566 * (wnpcv + bnpcv)) / 131072;
-    v += cv;
+
+    if (qsearch)
+    {
+        v += (qpcvScalar * pcv + qmcvScalar * mcv + qmacvScalar * macv + qmicvScalar * micv + qnpcvScalar * (wnpcv + bnpcv)) / qDivisor;
+    }
+    else
+    {
+        v += (pcvScalar * pcv + mcvScalar * mcv + macvScalar * macv + micvScalar * micv + npcvScalar * (wnpcv + bnpcv)) / Divisor;
+    } 
     return std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 }
 
@@ -1507,7 +1542,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 unadjustedStaticEval =
                   evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
             ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
+              to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, true);
 
             // ttValue can be used as a better position evaluation (~13 Elo)
             if (std::abs(ttData.value) < VALUE_TB_WIN_IN_MAX_PLY
@@ -1522,7 +1557,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 ? evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us])
                 : -(ss - 1)->staticEval;
             ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
+              to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, true);
         }
 
         // Stand pat. Return immediately if static value is at least beta
