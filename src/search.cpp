@@ -729,16 +729,27 @@ Value Search::Worker::search(
 
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
 
+        if ((ss - 2)->ttEval != VALUE_NONE && !priorCapture)
+            eval = (3*eval + (ss - 2)->ttEval)/4;
+
         // ttValue can be used as a better position evaluation (~7 Elo)
         if (ttData.value != VALUE_NONE
             && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
+        {
             eval = ttData.value;
+            if (ttData.bound == BOUND_EXACT && !ttCapture)
+                ss->ttEval = ttData.value;
+        }
     }
     else
     {
         unadjustedStaticEval =
           evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
+
+
+        if ((ss - 2)->ttEval != VALUE_NONE && !priorCapture)
+            eval = (3*eval + (ss - 2)->ttEval)/4;
 
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),

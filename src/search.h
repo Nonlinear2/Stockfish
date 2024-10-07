@@ -72,6 +72,7 @@ struct Stack {
     bool            inCheck;
     bool            ttPv;
     bool            ttHit;
+    Value           ttEval = VALUE_NONE;
     int             cutoffCnt;
 };
 
