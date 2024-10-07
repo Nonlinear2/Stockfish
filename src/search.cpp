@@ -57,28 +57,24 @@ int qmcvScalar = 3442;
 int qmacvScalar = 3471;
 int qmicvScalar = 5958;
 int qnpcvScalar = 6566;
-int qDivisor = 131072;
 
 int pcvScalar = 6245;
 int mcvScalar = 3442;
 int macvScalar = 3471;
 int micvScalar = 5958;
 int npcvScalar = 6566;
-int Divisor = 131072;
 
 TUNE(SetRange(-30000, 30000), qpcvScalar);
 TUNE(SetRange(-30000, 30000), qmcvScalar);
 TUNE(SetRange(-30000, 30000), qmacvScalar);
 TUNE(SetRange(-30000, 30000), qmicvScalar);
 TUNE(SetRange(-30000, 30000), qnpcvScalar);
-TUNE(SetRange(-500000, 500000), qDivisor);
 
 TUNE(SetRange(-30000, 30000), pcvScalar);
 TUNE(SetRange(-30000, 30000), mcvScalar);
 TUNE(SetRange(-30000, 30000), macvScalar);
 TUNE(SetRange(-30000, 30000), micvScalar);
 TUNE(SetRange(-30000, 30000), npcvScalar);
-TUNE(SetRange(-500000, 500000), Divisor);
 
 namespace TB = Tablebases;
 
@@ -108,7 +104,8 @@ constexpr int futility_move_count(bool improving, Depth depth) {
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
 // does not hit the tablebase range.
-Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos, bool qsearch = false) {
+template<bool qsearch>
+Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos) {
     const Color us    = pos.side_to_move();
     const auto  pcv   = w.pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)];
     const auto  mcv   = w.materialCorrectionHistory[us][material_index(pos)];
@@ -119,11 +116,11 @@ Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos, bo
 
     if (qsearch)
     {
-        v += (qpcvScalar * pcv + qmcvScalar * mcv + qmacvScalar * macv + qmicvScalar * micv + qnpcvScalar * (wnpcv + bnpcv)) / qDivisor;
+        v += (qpcvScalar * pcv + qmcvScalar * mcv + qmacvScalar * macv + qmicvScalar * micv + qnpcvScalar * (wnpcv + bnpcv)) / 131072;
     }
     else
     {
-        v += (pcvScalar * pcv + mcvScalar * mcv + macvScalar * macv + micvScalar * micv + npcvScalar * (wnpcv + bnpcv)) / Divisor;
+        v += (pcvScalar * pcv + mcvScalar * mcv + macvScalar * macv + micvScalar * micv + npcvScalar * (wnpcv + bnpcv)) / 131072;
     } 
     return std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 }
@@ -762,7 +759,7 @@ Value Search::Worker::search(
         else if (PvNode)
             Eval::NNUE::hint_common_parent_position(pos, networks[numaAccessToken], refreshTable);
 
-        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
+        ss->staticEval = eval = to_corrected_static_eval<false>(unadjustedStaticEval, *thisThread, pos);
 
         // ttValue can be used as a better position evaluation (~7 Elo)
         if (ttData.value != VALUE_NONE
@@ -773,7 +770,7 @@ Value Search::Worker::search(
     {
         unadjustedStaticEval =
           evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
-        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
+        ss->staticEval = eval = to_corrected_static_eval<false>(unadjustedStaticEval, *thisThread, pos);
 
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
@@ -1542,7 +1539,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 unadjustedStaticEval =
                   evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
             ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, true);
+              to_corrected_static_eval<true>(unadjustedStaticEval, *thisThread, pos);
 
             // ttValue can be used as a better position evaluation (~13 Elo)
             if (std::abs(ttData.value) < VALUE_TB_WIN_IN_MAX_PLY
@@ -1557,7 +1554,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 ? evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us])
                 : -(ss - 1)->staticEval;
             ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, true);
+              to_corrected_static_eval<true>(unadjustedStaticEval, *thisThread, pos);
         }
 
         // Stand pat. Return immediately if static value is at least beta
