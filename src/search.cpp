@@ -729,7 +729,7 @@ Value Search::Worker::search(
 
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
 
-        eval += (!priorCapture && (ss - 2)->numLegalCaptures > 7) * 25;
+        eval += (!priorCapture && (ss - 2)->numLegalCaptures > 7 && (ss - 1)->numLegalCaptures < 3) * 20;
         // ttValue can be used as a better position evaluation (~7 Elo)
         if (ttData.value != VALUE_NONE
             && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
@@ -740,7 +740,7 @@ Value Search::Worker::search(
         unadjustedStaticEval =
           evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos);
-        eval += (!priorCapture && (ss - 2)->numLegalCaptures > 5) * 20;
+        eval += (!priorCapture && (ss - 2)->numLegalCaptures > 5 && (ss - 1)->numLegalCaptures < 3) * 15;
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
                        unadjustedStaticEval, tt.generation());
