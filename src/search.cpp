@@ -99,8 +99,6 @@ int stat_bonus(Depth d) { return std::min(179 * d - 108, 1598); }
 // History and stats update malus, based on depth
 int stat_malus(Depth d) { return std::min(820 * d - 261, 2246); }
 
-// Add a small random component to draw evaluations to avoid 3-fold blindness
-Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
 Value value_to_tt(Value v, int ply);
 Value value_from_tt(Value v, int ply, int r50c);
 void  update_pv(Move* pv, Move move, const Move* childPv);
@@ -536,7 +534,7 @@ Value Search::Worker::search(
     // Check if we have an upcoming move that draws by repetition
     if (!rootNode && alpha < VALUE_DRAW && pos.upcoming_repetition(ss->ply))
     {
-        alpha = value_draw(this->nodes);
+        alpha = VALUE_DRAW;
         if (alpha >= beta)
             return alpha;
     }
@@ -586,7 +584,7 @@ Value Search::Worker::search(
             return (ss->ply >= MAX_PLY && !ss->inCheck)
                    ? evaluate(networks[numaAccessToken], pos, refreshTable,
                               thisThread->optimism[us])
-                   : value_draw(thisThread->nodes);
+                   : VALUE_DRAW;
 
         // Step 3. Mate distance pruning. Even if we mate at the next move our score
         // would be at best mate_in(ss->ply + 1), but if alpha is already bigger because
@@ -1197,7 +1195,8 @@ moves_loop:  // When in check, search starts here
                 // Post LMR continuation history updates (~1 Elo)
                 int bonus = value >= beta ? (1 + 2 * (moveCount > depth)) * stat_bonus(newDepth)
                                           : -stat_malus(newDepth);
-                update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
+                if (value != VALUE_DRAW)
+                    update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
         }
 
@@ -1364,8 +1363,9 @@ moves_loop:  // When in check, search starts here
 
         bonus = std::max(bonus, 0);
 
-        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / 107);
+        if (bestValue != VALUE_DRAW)
+            update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, stat_bonus(depth) * bonus / 107);
+            
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
           << stat_bonus(depth) * bonus / 174;
 
@@ -1398,6 +1398,7 @@ moves_loop:  // When in check, search starts here
 
     // Adjust correction history
     if (!ss->inCheck && (!bestMove || !pos.capture(bestMove))
+        && (bestValue != VALUE_DRAW)
         && !(bestValue >= beta && bestValue <= ss->staticEval)
         && !(!bestMove && bestValue >= ss->staticEval))
     {
@@ -1438,7 +1439,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // Check if we have an upcoming move that draws by repetition (~1 Elo)
     if (alpha < VALUE_DRAW && pos.upcoming_repetition(ss->ply))
     {
-        alpha = value_draw(this->nodes);
+        alpha = VALUE_DRAW;
         if (alpha >= beta)
             return alpha;
     }
