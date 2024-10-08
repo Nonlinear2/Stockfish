@@ -46,35 +46,10 @@
 #include "thread.h"
 #include "timeman.h"
 #include "tt.h"
-#include "tune.h"
 #include "uci.h"
 #include "ucioption.h"
 
 namespace Stockfish {
-
-int qpcvScalar = 6245;
-int qmcvScalar = 3442;
-int qmacvScalar = 3471;
-int qmicvScalar = 5958;
-int qnpcvScalar = 6566;
-
-int pcvScalar = 6245;
-int mcvScalar = 3442;
-int macvScalar = 3471;
-int micvScalar = 5958;
-int npcvScalar = 6566;
-
-TUNE(SetRange(-30000, 30000), qpcvScalar);
-TUNE(SetRange(-30000, 30000), qmcvScalar);
-TUNE(SetRange(-30000, 30000), qmacvScalar);
-TUNE(SetRange(-30000, 30000), qmicvScalar);
-TUNE(SetRange(-30000, 30000), qnpcvScalar);
-
-TUNE(SetRange(-30000, 30000), pcvScalar);
-TUNE(SetRange(-30000, 30000), mcvScalar);
-TUNE(SetRange(-30000, 30000), macvScalar);
-TUNE(SetRange(-30000, 30000), micvScalar);
-TUNE(SetRange(-30000, 30000), npcvScalar);
 
 namespace TB = Tablebases;
 
@@ -116,11 +91,11 @@ Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos) {
 
     if (qsearch)
     {
-        v += (qpcvScalar * pcv + qmcvScalar * mcv + qmacvScalar * macv + qmicvScalar * micv + qnpcvScalar * (wnpcv + bnpcv)) / 131072;
+        v += (6856 * pcv + 3215 * mcv + 3789 * macv + 4934 * micv + 7025 * (wnpcv + bnpcv)) / 131072;
     }
     else
     {
-        v += (pcvScalar * pcv + mcvScalar * mcv + macvScalar * macv + micvScalar * micv + npcvScalar * (wnpcv + bnpcv)) / 131072;
+        v += (7316 * pcv + 3163 * mcv + 4268 * macv + 7598 * micv + 8397 * (wnpcv + bnpcv)) / 131072;
     } 
     return std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 }
