@@ -114,7 +114,8 @@ void update_all_stats(const Position&      pos,
                       Square               prevSq,
                       ValueList<Move, 32>& quietsSearched,
                       ValueList<Move, 32>& capturesSearched,
-                      Depth                depth);
+                      Depth                depth,
+                      bool                 drawMove);
 
 }  // namespace
 
@@ -1197,7 +1198,9 @@ moves_loop:  // When in check, search starts here
                 // Post LMR continuation history updates (~1 Elo)
                 int bonus = value >= beta ? (1 + 2 * (moveCount > depth)) * stat_bonus(newDepth)
                                           : -stat_malus(newDepth);
-                update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
+                
+                if (std::abs(value) > 1 || !pos.has_repeated())
+                    update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
         }
 
@@ -1350,7 +1353,8 @@ moves_loop:  // When in check, search starts here
     // If there is a move that produces search value greater than alpha,
     // we update the stats of searched moves.
     else if (bestMove)
-        update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth);
+        update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth, 
+            (std::abs(bestValue) < 2 && pos.has_repeated()));
 
     // Bonus for prior countermove that caused the fail low
     else if (!priorCapture && prevSq != SQ_NONE)
@@ -1398,6 +1402,7 @@ moves_loop:  // When in check, search starts here
 
     // Adjust correction history
     if (!ss->inCheck && (!bestMove || !pos.capture(bestMove))
+        && (std::abs(bestValue) > 1 || !pos.has_repeated())
         && !(bestValue >= beta && bestValue <= ss->staticEval)
         && !(!bestMove && bestValue >= ss->staticEval))
     {
@@ -1761,7 +1766,8 @@ void update_all_stats(const Position&      pos,
                       Square               prevSq,
                       ValueList<Move, 32>& quietsSearched,
                       ValueList<Move, 32>& capturesSearched,
-                      Depth                depth) {
+                      Depth                depth,
+                      bool                 drawMove) {
 
     CapturePieceToHistory& captureHistory = workerThread.captureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
@@ -1772,7 +1778,8 @@ void update_all_stats(const Position&      pos,
 
     if (!pos.capture_stage(bestMove))
     {
-        update_quiet_histories(pos, ss, workerThread, bestMove, quietMoveBonus);
+        if (!drawMove)
+            update_quiet_histories(pos, ss, workerThread, bestMove, quietMoveBonus);
 
         // Decrease stats for all non-best quiet moves
         for (Move move : quietsSearched)
