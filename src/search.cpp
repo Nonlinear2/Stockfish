@@ -1452,7 +1452,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     Value bestValue, value, futilityBase;
     bool  pvHit, givesCheck, capture;
     int   moveCount;
-    Color us = pos.side_to_move();
+    Color us          = pos.side_to_move();
+    bool  ttValueUsed = false;
 
     // Step 1. Initialize node
     if (PvNode)
@@ -1512,7 +1513,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             // ttValue can be used as a better position evaluation (~13 Elo)
             if (std::abs(ttData.value) < VALUE_TB_WIN_IN_MAX_PLY
                 && (ttData.bound & (ttData.value > bestValue ? BOUND_LOWER : BOUND_UPPER)))
+            {
+                ttValueUsed = true;
                 bestValue = ttData.value;
+            }
         }
         else
         {
@@ -1528,7 +1532,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         // Stand pat. Return immediately if static value is at least beta
         if (bestValue >= beta)
         {
-            if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY)
+            if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && !ttValueUsed)
                 bestValue = (3 * bestValue + beta) / 4;
             if (!ss->ttHit)
                 ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
