@@ -1465,6 +1465,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     bestMove           = Move::none();
     ss->inCheck        = pos.checkers();
     moveCount          = 0;
+    bool bestValueAccurate = false;
 
     // Used to send selDepth info to GUI (selDepth counts from 1, ply from 0)
     if (PvNode && thisThread->selDepth < ss->ply + 1)
@@ -1512,7 +1513,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             // ttValue can be used as a better position evaluation (~13 Elo)
             if (std::abs(ttData.value) < VALUE_TB_WIN_IN_MAX_PLY
                 && (ttData.bound & (ttData.value > bestValue ? BOUND_LOWER : BOUND_UPPER)))
+            {
                 bestValue = ttData.value;
+                bestValueAccurate = (ttData.depth != DEPTH_QS);
+            }
         }
         else
         {
@@ -1528,7 +1532,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         // Stand pat. Return immediately if static value is at least beta
         if (bestValue >= beta)
         {
-            if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY)
+            if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && !bestValueAccurate)
                 bestValue = (3 * bestValue + beta) / 4;
             if (!ss->ttHit)
                 ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
@@ -1657,7 +1661,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         return mated_in(ss->ply);  // Plies to mate from the root
     }
 
-    if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && bestValue >= beta && moveCount != 0)
+    if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && bestValue >= beta)
         bestValue = (3 * bestValue + beta) / 4;
 
     // Save gathered info in transposition table. The static evaluation
