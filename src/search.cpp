@@ -1517,7 +1517,14 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     if (!PvNode && ttData.depth >= DEPTH_QS
         && ttData.value != VALUE_NONE  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
+    {
+        ss->ttHitDepth = ttData.depth;
         return ttData.value;
+    }
+    else
+    {
+        ss->ttHitDepth = 0;
+    }
 
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
@@ -1686,7 +1693,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     }
 
     if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && bestValue >= beta)
-        bestValue = (3 * bestValue + beta) / 4;
+        bestValue = (std::max((ss + 1)->ttHitDepth, 3) * bestValue + beta) / (std::max((ss + 1)->ttHitDepth, 3) + 1);
 
     // Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
