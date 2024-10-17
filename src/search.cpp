@@ -1692,7 +1692,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     }
 
     if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && bestValue >= beta && !(ss + 1)->isTTValue)
-        bestValue = (5 * bestValue + 2*beta) / 7;
+        bestValue = (3 * bestValue + 2*beta) / 5;
 
     // Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
