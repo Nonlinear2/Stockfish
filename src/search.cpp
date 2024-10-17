@@ -1602,7 +1602,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         {
             // Futility pruning and moveCount pruning (~10 Elo)
             if (!givesCheck && move.to_sq() != prevSq && futilityBase > VALUE_TB_LOSS_IN_MAX_PLY
-                && move.type_of() != PROMOTION && correctionMagnitude < 170)
+                && move.type_of() != PROMOTION)
             {
                 if (moveCount > 2)
                     continue;
@@ -1635,8 +1635,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                      <= 5036)
                 continue;
 
-            // Do not search moves with bad enough SEE values (~5 Elo)
-            if (!pos.see_ge(move, -82))
+            // Do not search moves with bad enough SEE values (~5 Elo
+            if (!pos.see_ge(move, -82 - correctionMagnitude/10))
                 continue;
         }
 
