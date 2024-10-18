@@ -179,6 +179,9 @@ class Position {
     void put_piece(Piece pc, Square s);
     void remove_piece(Square s);
 
+
+    bool legal_king_moves();
+
    private:
     // Initialization helpers (used while setting up a position)
     void set_castling_right(Color c, Square rfrom);
