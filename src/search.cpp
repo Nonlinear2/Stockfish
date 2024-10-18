@@ -993,11 +993,7 @@ moves_loop:  // When in check, search starts here
 
         // Step 14. Pruning at shallow depth (~120 Elo).
         // Depth conditions are important for mate finding.
-        if (!rootNode && pos.non_pawn_material(us) && bestValue > VALUE_TB_LOSS_IN_MAX_PLY &&
-            // don't prune if there can be a stalemate trap.
-            (depth > 4 || ss->inCheck || !givesCheck || alpha >= VALUE_DRAW || pos.legal_king_moves() 
-              || popcount(pos.pieces(us) & ~pos.pieces(PAWN, KING)) != 1)
-            )
+        if (!rootNode && pos.non_pawn_material(us) && bestValue > VALUE_TB_LOSS_IN_MAX_PLY)
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold (~8 Elo)
             moveCountPruning = moveCount >= futility_move_count(improving, depth);
@@ -1599,7 +1595,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         moveCount++;
 
         // Step 6. Pruning
-        if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && pos.non_pawn_material(us))
+        if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && pos.non_pawn_material(us) && 
+            (ss->inCheck || !givesCheck || alpha >= VALUE_DRAW || pos.legal_king_moves() 
+              || popcount(pos.pieces(us) & ~pos.pieces(PAWN, KING)) != 1)
+           )
         {
             // Futility pruning and moveCount pruning (~10 Elo)
             if (!givesCheck && move.to_sq() != prevSq && futilityBase > VALUE_TB_LOSS_IN_MAX_PLY
