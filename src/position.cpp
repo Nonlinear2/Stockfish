@@ -1260,6 +1260,27 @@ bool Position::upcoming_repetition(int ply) const {
     return false;
 }
 
+// does not assure that there is a stalemate
+bool Position::can_stalemate() const {
+    Color us = side_to_move();
+    Bitboard pawn = pieces(us, PAWN);
+    Bitboard other = pieces(us) & ~(pawn | pieces(us, KING));
+
+    if (popcount(other) > 1 || legal_king_moves())
+        return false;
+
+    PieceType last_piece = type_of(piece_on(lsb(other)));
+    if (last_piece != ROOK && last_piece != QUEEN)
+        return false;
+
+    pawn = (us == WHITE) ? shift<NORTH>(pawn) : shift<SOUTH>(pawn);
+
+    // if our pawn is blocked by the piece we want to move, there will be no stalemate
+    if (pawn & (~pieces() | other))
+        return false;
+
+    return true;
+}
 
 // Flips position with the white and black sides reversed. This
 // is only useful for debugging e.g. for finding evaluation symmetry bugs.
@@ -1347,7 +1368,7 @@ bool Position::pos_is_ok() const {
     return true;
 }
 
-bool Position::legal_king_moves(){
+bool Position::legal_king_moves() const {
     Color us         = side_to_move();
     const Square ksq = square<KING>(us);
     Bitboard b = attacks_bb<KING>(ksq) & ~pieces(us);

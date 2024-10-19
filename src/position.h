@@ -164,6 +164,7 @@ class Position {
     bool  is_chess960() const;
     bool  is_draw(int ply) const;
     bool  upcoming_repetition(int ply) const;
+    bool  can_stalemate() const;
     bool  has_repeated() const;
     int   rule50_count() const;
     Value non_pawn_material(Color c) const;
@@ -180,7 +181,7 @@ class Position {
     void remove_piece(Square s);
 
 
-    bool legal_king_moves();
+    bool legal_king_moves() const;
 
    private:
     // Initialization helpers (used while setting up a position)

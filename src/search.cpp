@@ -1019,8 +1019,7 @@ moves_loop:  // When in check, search starts here
                 // SEE based pruning for captures and checks (~11 Elo)
                 int seeHist = std::clamp(captHist / 32, -159 * depth, 160 * depth);
                 if (!pos.see_ge(move, -167 * depth - seeHist) && 
-                    (ss->inCheck || !givesCheck || alpha >= VALUE_DRAW || 
-                     pos.legal_king_moves() || popcount(pos.pieces(us) & ~pos.pieces(PAWN, KING)) != 1))
+                    (ss->inCheck || !givesCheck || alpha >= VALUE_DRAW || !pos.can_stalemate()))
                     continue;
             }
             else
@@ -1597,7 +1596,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         moveCount++;
 
         // Step 6. Pruning
-        if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && pos.non_pawn_material(us))
+        if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && pos.non_pawn_material(us) &&
+            (ss->inCheck || !givesCheck || alpha >= VALUE_DRAW || !pos.can_stalemate()))
         {
             // Futility pruning and moveCount pruning (~10 Elo)
             if (!givesCheck && move.to_sq() != prevSq && futilityBase > VALUE_TB_LOSS_IN_MAX_PLY
