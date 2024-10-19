@@ -1018,7 +1018,9 @@ moves_loop:  // When in check, search starts here
 
                 // SEE based pruning for captures and checks (~11 Elo)
                 int seeHist = std::clamp(captHist / 32, -159 * depth, 160 * depth);
-                if (!pos.see_ge(move, -167 * depth - seeHist))
+                if (!pos.see_ge(move, -167 * depth - seeHist) && 
+                    (ss->inCheck || !givesCheck || alpha >= VALUE_DRAW || 
+                     pos.legal_king_moves() || popcount(pos.pieces(us) & ~pos.pieces(PAWN, KING)) != 1))
                     continue;
             }
             else

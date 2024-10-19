@@ -1347,4 +1347,16 @@ bool Position::pos_is_ok() const {
     return true;
 }
 
+bool Position::legal_king_moves(){
+    Color us         = side_to_move();
+    const Square ksq = square<KING>(us);
+    Bitboard b = attacks_bb<KING>(ksq) & ~pieces(us);
+    while (b)
+    {
+        if (legal(Move(ksq, pop_lsb(b))))
+            return true;
+    }
+    return false;
+}
+
 }  // namespace Stockfish
