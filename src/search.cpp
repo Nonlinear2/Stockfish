@@ -1313,9 +1313,8 @@ moves_loop:  // When in check, search starts here
           (value == bestValue && (int(nodes) & 15) == 0 && ss->ply + 2 >= thisThread->rootDepth
            && std::abs(value) + 1 < VALUE_TB_WIN_IN_MAX_PLY);
 
-        if (inc == 0)
-           inc += 2*(value == bestValue - 1 && (int(nodes) & 31) == 0 && ss->ply + 1 >= thisThread->rootDepth
-           && std::abs(value) + 2 < VALUE_TB_WIN_IN_MAX_PLY);
+        inc += 2*(value == bestValue - 1 && (int(nodes) & 127) == 0 && ss->ply >= thisThread->rootDepth
+                  && std::abs(value) + 2 < VALUE_TB_WIN_IN_MAX_PLY);
 
         if (value + inc > bestValue)
         {
