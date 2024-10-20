@@ -105,8 +105,7 @@ void TTEntry::save(
         assert(d < 256 + DEPTH_ENTRY_OFFSET);
 
         // if the bounds of the new and old data are complementary, we can update the bound to be exact.
-        if (uint16_t(k) == key16 && ((genBound8 & 0x3) ^ b) == BOUND_EXACT 
-            && value16 == v && depth8+1 >= d - DEPTH_ENTRY_OFFSET)
+        if (uint16_t(k) == key16 && ((genBound8 & 0x3) ^ b) == BOUND_EXACT && std::abs(value16 - v) < 5)
             b = BOUND_EXACT;
 
         key16     = uint16_t(k);
