@@ -1539,9 +1539,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             if (std::abs(ttData.value) < VALUE_TB_WIN_IN_MAX_PLY
                 && (ttData.bound & (ttData.value > bestValue ? BOUND_LOWER : BOUND_UPPER)))
                 bestValue = ttData.value;
-            else if (std::abs(ttData.value) + 10 < VALUE_TB_WIN_IN_MAX_PLY && ttData.bound &&
+            else if (std::abs(ttData.value) + 25 < VALUE_TB_WIN_IN_MAX_PLY && ttData.bound &&
                      std::abs(ttData.value - bestValue) < 30)
-                bestValue += (ttData.bound == BOUND_LOWER) ? 10 : -10;
+                bestValue += (ttData.bound == BOUND_LOWER) ? 25 : -25;
         }
         else
         {
