@@ -94,7 +94,7 @@ void TTEntry::save(
   Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, uint8_t generation8) {
 
     // Preserve the old ttmove if we don't have a new one
-    if (uint16_t(k) != key16 || (m && (!move16 || depth8 - 4 <= d - DEPTH_ENTRY_OFFSET)))
+    if (uint16_t(k) != key16 || (m && (!move16 || depth8 - 6 <= d - DEPTH_ENTRY_OFFSET)))
         move16 = m;
 
     // Overwrite less valuable entries (cheapest checks first)
