@@ -1592,7 +1592,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         givesCheck = pos.gives_check(move);
         capture    = pos.capture_stage(move);
 
-        if (!capture && !givesCheck && !ss->inCheck && ttData.depth > 3)
+        if (!capture && !givesCheck && !ss->inCheck)
             continue;
 
         moveCount++;
