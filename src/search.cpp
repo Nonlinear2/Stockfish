@@ -1592,7 +1592,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         givesCheck = pos.gives_check(move);
         capture    = pos.capture_stage(move);
 
-        if (!capture && !givesCheck && !ss->inCheck)
+        if (!capture && !givesCheck && !ss->inCheck && pos.non_pawn_material(us))
             continue;
 
         moveCount++;
