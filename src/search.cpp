@@ -636,13 +636,6 @@ Value Search::Worker::search(
     // to save indentation, we list the condition in all code between here and there.
 
 
-    dbg_hit_on(
-        !PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
-        && ttData.value != VALUE_NONE  // Can happen when !ttHit or when access race in probe()
-        && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER))
-        && (pos.rule50_count() < 90)
-    );
-
     // At non-PV nodes we check for an early TT cutoff
     if (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
         && ttData.value != VALUE_NONE  // Can happen when !ttHit or when access race in probe()
