@@ -114,7 +114,7 @@ void TTEntry::save(
 }
 
 void TTEntry::update_generation(uint8_t generation8) {
-    genBound8 = uint8_t(generation8 | genBound8 << 5);
+    genBound8 = uint8_t(generation8 | (genBound8 & 0x7));
 }
 
 
