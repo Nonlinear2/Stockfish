@@ -1168,6 +1168,9 @@ moves_loop:  // When in check, search starts here
         if (cutNode)
             r += 2 - (ttData.depth >= depth && ss->ttPv);
 
+        if (cutNode && ttData.depth >= depth - 4 && std::abs(ttData.value) < VALUE_TB_WIN_IN_MAX_PLY && ttData.value >= beta)
+            r += 1;
+
         // Increase reduction if ttMove is a capture but the current move is not a capture (~3 Elo)
         if (ttCapture && !capture)
             r += 1 + (depth < 8);
