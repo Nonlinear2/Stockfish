@@ -566,7 +566,7 @@ Value Search::Worker::search(
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    bool  givesCheck, improving, priorCapture, opponentWorsening, simplePosition;
     bool  capture, ttCapture;
     Piece movedPiece;
 
@@ -777,6 +777,8 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
+    simplePosition = (ttData.bound == BOUND_EXACT && std::abs(ss->staticEval - ttData.value) < 20);
+
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
     // search suggests we cannot exceed alpha, return a speculative fail low.
@@ -855,7 +857,7 @@ Value Search::Worker::search(
     // Step 11. ProbCut (~10 Elo)
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 189 - 53 * improving - 30 * opponentWorsening;
+    probCutBeta = beta + 189 - 53 * improving - 30 * opponentWorsening - 10*simplePosition;
     if (!PvNode && depth > 3
         && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
         // If value from transposition table is lower than probCutBeta, don't attempt
