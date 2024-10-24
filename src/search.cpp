@@ -1592,10 +1592,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         givesCheck = pos.gives_check(move);
         capture    = pos.capture_stage(move);
 
-        if (!capture && !givesCheck && !ss->inCheck && pos.non_pawn_material(us))
-            continue;
 
         moveCount++;
+
+        if (!capture && !givesCheck && !ss->inCheck)
+            continue;
 
         // Step 6. Pruning
         if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && pos.non_pawn_material(us))
