@@ -1001,7 +1001,7 @@ moves_loop:  // When in check, search starts here
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r;
 
-            if (capture || givesCheck)
+            if (capture != givesCheck)
             {
                 Piece capturedPiece = pos.piece_on(move.to_sq());
                 int   captHist =
