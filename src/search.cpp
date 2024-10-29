@@ -639,7 +639,7 @@ Value Search::Worker::search(
     if (!PvNode && !excludedMove
         && ttData.value != VALUE_NONE  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER))
-        && ttData.depth > depth - (ttData.value <= beta) - (ttData.eval > beta + 400 && ttData.value > beta + 100))
+        && ttData.depth > depth - (ttData.value <= beta) - (ttData.eval > beta + 450 && ttData.value > beta + 250))
     {
         // If ttMove is quiet, update move sorting heuristics on TT hit (~2 Elo)
         if (ttData.move && ttData.value >= beta)
