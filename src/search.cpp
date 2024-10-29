@@ -856,7 +856,7 @@ Value Search::Worker::search(
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
     probCutBeta = beta + 191 - 53 * improving - 30 * opponentWorsening 
-                       - 17*(ttData.depth >= depth - 2 && (ttData.bound & BOUND_LOWER) 
+                       - 17*(ttData.depth >= depth - 1 && (ttData.bound & BOUND_LOWER) 
                              && ttData.value != VALUE_NONE && ttData.value > ss->staticEval + 350);
     if (!PvNode && depth > 3
         && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
