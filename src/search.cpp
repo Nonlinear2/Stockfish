@@ -1180,8 +1180,8 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 2;
 
-        if (ttData.value != VALUE_NONE && (ttData.bound & BOUND_LOWER) && ttData.value > ss->staticEval + 400)
-            r--;
+        if ((ttData.bound & BOUND_UPPER) && ttData.value < ss->staticEval && !pos.see_ge(move, 1))
+            r++;
 
         ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
                       + (*contHist[0])[movedPiece][move.to_sq()]
