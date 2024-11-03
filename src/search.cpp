@@ -200,7 +200,8 @@ void Search::Worker::start_searching() {
         bestThread = threads.get_best_thread()->worker.get();
 
     main_manager()->bestPreviousScore        = bestThread->rootMoves[0].score;
-    main_manager()->bestPreviousAverageScore = bestThread->rootMoves[0].averageScore;
+    Value mss = bestThread->rootMoves[0].meanSquaredScore;
+    main_manager()->bestPreviousAverageScore = (mss < 0 ? -1 : 1) * std::sqrt(std::abs(mss));
 
     // Send again PV info if we have a new best thread
     if (bestThread != this)
@@ -310,8 +311,9 @@ void Search::Worker::iterative_deepening() {
             selDepth = 0;
 
             // Reset aspiration window starting size
-            delta     = 5 + std::abs(rootMoves[pvIdx].meanSquaredScore) / 13797;
-            Value avg = rootMoves[pvIdx].averageScore;
+            Value mss = rootMoves[pvIdx].meanSquaredScore;
+            delta     = 5 + std::abs(mss) / 13797;
+            Value avg = (mss < 0 ? -1 : 1) * std::sqrt(std::abs(mss));
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
@@ -1258,9 +1260,6 @@ moves_loop:  // When in check, search starts here
               *std::find(thisThread->rootMoves.begin(), thisThread->rootMoves.end(), move);
 
             rm.effort += nodes - nodeCount;
-
-            rm.averageScore =
-              rm.averageScore != -VALUE_INFINITE ? (value + rm.averageScore) / 2 : value;
 
             rm.meanSquaredScore = rm.meanSquaredScore != -VALUE_INFINITE * VALUE_INFINITE
                                   ? (value * std::abs(value) + rm.meanSquaredScore) / 2
