@@ -1197,7 +1197,7 @@ moves_loop:  // When in check, search starts here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
 
             // Do a full-depth search when reduced LMR search fails high
-            if (value > alpha && d < newDepth)
+            if (value >= alpha && d < newDepth)
             {
                 // Adjust full-depth search based on LMR results - if the result was
                 // good enough search deeper, if it was bad enough search shallower.
@@ -1227,8 +1227,8 @@ moves_loop:  // When in check, search starts here
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
-        // otherwise let the parent node fail low with value <= alpha and try another move.
-        if (PvNode && (moveCount == 1 || value > alpha))
+        // otherwise let the parent node fail low with value < alpha and try another move.
+        if (PvNode && (moveCount == 1 || value >= alpha))
         {
             (ss + 1)->pv    = pv;
             (ss + 1)->pv[0] = Move::none();
