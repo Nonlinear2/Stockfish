@@ -736,13 +736,14 @@ Value Search::Worker::search(
         else if (PvNode)
             Eval::NNUE::hint_common_parent_position(pos, networks[numaAccessToken], refreshTable);
 
-        ss->staticEval = eval =
-          to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, ss);
-
+        ss->staticEval = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, ss);
+        eval = unadjustedStaticEval;
         // ttValue can be used as a better position evaluation (~7 Elo)
         if (ttData.value != VALUE_NONE
             && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
             eval = ttData.value;
+        
+        eval = to_corrected_static_eval(eval, *thisThread, pos, ss);
     }
     else
     {
