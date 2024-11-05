@@ -831,7 +831,11 @@ Value Search::Worker::search(
             thisThread->nmpMinPly = 0;
 
             if (v >= beta)
+            {
+                ttWriter.write(posKey, value_to_tt(v, ss->ply), ss->ttPv, BOUND_LOWER,
+                        depth - R + 1, Move::none(), unadjustedStaticEval, tt.generation());
                 return nullValue;
+            }
         }
     }
 
