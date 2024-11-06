@@ -748,8 +748,8 @@ Value Search::Worker::search(
     {
         unadjustedStaticEval =
             ((ss - 1)->currentMove == Move::null() && pos.game_ply() > 50)
-            ? -(ss - 1)->staticEval;
-            : evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us])
+            ? -(ss - 1)->staticEval
+            : evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
         ss->staticEval = eval =
           to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, ss);
 
@@ -1543,8 +1543,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             // In case of null move search, use previous static eval with opposite sign
             unadjustedStaticEval =
               (ss - 1)->currentMove == Move::null()
-                ? -(ss - 1)->staticEval;
-                : evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us])
+                ? -(ss - 1)->staticEval
+                : evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, ss);
         }
