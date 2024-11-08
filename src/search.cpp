@@ -74,7 +74,7 @@ Value futility_margin(Depth d, bool noTtCutNode, bool improving, bool oppWorseni
 }
 
 constexpr int futility_move_count(bool improving, Depth depth, bool cutNode) {
-    return (3 + 7 * depth * depth / (9 - cutNode)) / (2 - improving);
+    return (3 + 7 * depth * depth / (8 - 2*cutNode)) / (2 - improving);
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
