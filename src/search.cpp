@@ -863,7 +863,7 @@ Value Search::Worker::search(
     {
         assert(probCutBeta < VALUE_INFINITE && probCutBeta > beta);
 
-        MovePicker mp(pos, ttData.move, probCutBeta - ss->staticEval - 40*cutNode, &thisThread->captureHistory);
+        MovePicker mp(pos, ttData.move, probCutBeta - ss->staticEval, &thisThread->captureHistory);
         Piece      captured;
 
         while ((move = mp.next_move()) != Move::none())
@@ -913,7 +913,7 @@ Value Search::Worker::search(
                 ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
                                depth - 3, move, unadjustedStaticEval, tt.generation());
                 return std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY ? value - (probCutBeta - beta)
-                                                                 : value;
+                                                                 : (3*value + probCutBeta) / 4;
             }
         }
 
