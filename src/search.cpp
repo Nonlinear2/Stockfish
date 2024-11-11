@@ -863,9 +863,7 @@ Value Search::Worker::search(
     {
         assert(probCutBeta < VALUE_INFINITE && probCutBeta > beta);
 
-        MovePicker mp(pos, ttData.move, 
-                      cutNode ? std::min(0, probCutBeta - ss->staticEval) : probCutBeta - ss->staticEval,
-                      &thisThread->captureHistory);
+        MovePicker mp(pos, ttData.move, probCutBeta - ss->staticEval - 40*cutNode, &thisThread->captureHistory);
         Piece      captured;
 
         while ((move = mp.next_move()) != Move::none())
