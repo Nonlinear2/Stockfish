@@ -852,7 +852,7 @@ Value Search::Worker::search(
     // Step 11. ProbCut (~10 Elo)
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 194 - 53 * improving - 30 * opponentWorsening - 25*cutNode;
+    probCutBeta = beta + 189 - 53 * improving - 30 * opponentWorsening;
     if (!PvNode && depth > 3
         && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY
         // If value from transposition table is lower than probCutBeta, don't attempt
@@ -863,7 +863,9 @@ Value Search::Worker::search(
     {
         assert(probCutBeta < VALUE_INFINITE && probCutBeta > beta);
 
-        MovePicker mp(pos, ttData.move, probCutBeta - ss->staticEval, &thisThread->captureHistory);
+        MovePicker mp(pos, ttData.move, 
+                      cutNode ? std::min(0, probCutBeta - ss->staticEval) : probCutBeta - ss->staticEval,
+                      &thisThread->captureHistory);
         Piece      captured;
 
         while ((move = mp.next_move()) != Move::none())
