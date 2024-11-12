@@ -913,7 +913,7 @@ Value Search::Worker::search(
                 ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
                                depth - 3, move, unadjustedStaticEval, tt.generation());
                 return std::abs(value) < VALUE_TB_WIN_IN_MAX_PLY ? value - (probCutBeta - beta)
-                                                                 : (2*value + probCutBeta) / 3;
+                                                                 : (4*value + probCutBeta) / 5;
             }
         }
 
