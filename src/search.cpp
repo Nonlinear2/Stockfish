@@ -63,7 +63,7 @@ int reduction2 = 795;
 int reduction3 = 1024;
 int reduction4 = 1341;
 
-TUNE(delta1, delta2, optimism1, optimism2, falling1, falling2, falling3);
+TUNE(delta1, delta2, optimism1, optimism2, falling1, falling2, falling3, reduction1, reduction2, reduction3, reduction4);
 
 namespace TB = Tablebases;
 
