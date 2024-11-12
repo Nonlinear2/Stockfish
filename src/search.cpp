@@ -54,7 +54,7 @@ namespace Stockfish {
 int delta1 = 5;
 int delta2 = 14284;
 int optimism1 = 129;
-int optimism2 = 91;
+int optimism2 = 92;
 int falling1 = 110;
 int falling2 = 20;
 int falling3 = 10;
