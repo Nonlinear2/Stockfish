@@ -53,12 +53,16 @@
 namespace Stockfish {
 
 int delta1 = 5;
-int delta2 = 13797;
-int optimism1 = 132;
-int optimism2 = 89;
+int delta2 = 14284;
+int optimism1 = 129;
+int optimism2 = 91;
 int falling1 = 110;
 int falling2 = 20;
 int falling3 = 10;
+int reduction1 = 1239;
+int reduction2 = 795;
+int reduction3 = 1024;
+int reduction4 = 1341;
 
 TUNE(delta1, delta2, optimism1, optimism2, falling1, falling2, falling3);
 
@@ -1707,7 +1711,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
 Depth Search::Worker::reduction(bool i, Depth d, int mn, int delta) const {
     int reductionScale = reductions[d] * reductions[mn];
-    return (reductionScale + 1239 - delta * 795 / rootDelta) / 1024 + (!i && reductionScale > 1341);
+    return (reductionScale + reduction1 - delta * reduction2 / rootDelta) / reduction3 + (!i && reductionScale > reduction4);
 }
 
 // elapsed() returns the time elapsed since the search started. If the
