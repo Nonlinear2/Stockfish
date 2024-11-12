@@ -46,7 +46,6 @@
 #include "thread.h"
 #include "timeman.h"
 #include "tt.h"
-#include "tune.h"
 #include "uci.h"
 #include "ucioption.h"
 
