@@ -46,10 +46,21 @@
 #include "thread.h"
 #include "timeman.h"
 #include "tt.h"
+#include "tune.h"
 #include "uci.h"
 #include "ucioption.h"
 
 namespace Stockfish {
+
+int delta1 = 5;
+int delta2 = 13797;
+int optimism1 = 132;
+int optimism2 = 89;
+int falling1 = 110;
+int falling2 = 20;
+int falling3 = 10;
+
+TUNE(delta1, delta2, optimism1, optimism2, falling1, falling2, falling3);
 
 namespace TB = Tablebases;
 
@@ -312,13 +323,13 @@ void Search::Worker::iterative_deepening() {
 
             // Reset aspiration window starting size
             Value mss = rootMoves[pvIdx].meanSquaredScore;
-            delta     = 5 + std::abs(mss) / 14284;
+            delta     = delta1 + std::abs(mss) / delta2;
             Value avg = (mss < 0 ? -1 : 1) * std::sqrt(std::abs(mss));
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
             // Adjust optimism based on root move's averageScore (~4 Elo)
-            optimism[us]  = 129 * avg / (std::abs(avg) + 92);
+            optimism[us]  = optimism1 * avg / (std::abs(avg) + optimism2);
             optimism[~us] = -optimism[us];
 
             // Start with a small aspiration window and, in the case of a fail
@@ -445,8 +456,8 @@ void Search::Worker::iterative_deepening() {
         {
             int nodesEffort = rootMoves[0].effort * 100 / std::max(size_t(1), size_t(nodes));
 
-            double fallingEval = (110 + 21 * (mainThread->bestPreviousAverageScore - bestValue)
-                                  + 10 * (mainThread->iterValue[iterIdx] - bestValue))
+            double fallingEval = (falling1 + falling2 * (mainThread->bestPreviousAverageScore - bestValue)
+                                  + falling3 * (mainThread->iterValue[iterIdx] - bestValue))
                                / 1000.0;
             fallingEval = std::clamp(fallingEval, 0.580, 1.667);
 
