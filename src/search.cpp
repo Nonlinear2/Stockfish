@@ -56,12 +56,15 @@ int delta1 = 5;
 int delta2 = 13461;
 int optimism1 = 150;
 int optimism2 = 85;
+int falling1 = 110;
+int falling2 = 20;
+int falling3 = 10;
 int reduction1 = 1304;
 int reduction2 = 814;
 int reduction3 = 1423;
 int reduction4 = 1135;
 
-TUNE(delta1, delta2, optimism1, optimism2, reduction1, reduction2, reduction3, reduction4);
+TUNE(delta1, delta2, optimism1, optimism2, falling1, falling2, falling3, reduction1, reduction2, reduction3, reduction4);
 
 namespace TB = Tablebases;
 
@@ -457,9 +460,9 @@ void Search::Worker::iterative_deepening() {
         {
             int nodesEffort = rootMoves[0].effort * 100 / std::max(size_t(1), size_t(nodes));
 
-            double fallingEval = (11 + 2 * (mainThread->bestPreviousAverageScore - bestValue)
-                                  + (mainThread->iterValue[iterIdx] - bestValue))
-                               / 100.0;
++            double fallingEval = (falling1 + falling2 * (mainThread->bestPreviousAverageScore - bestValue)
++                                  + falling3 * (mainThread->iterValue[iterIdx] - bestValue))
++                               / 1000.0;
             fallingEval = std::clamp(fallingEval, 0.580, 1.667);
 
             // If the bestMove is stable over several iterations, reduce time accordingly
