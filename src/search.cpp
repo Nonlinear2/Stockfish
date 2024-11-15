@@ -52,6 +52,17 @@
 
 namespace Stockfish {
 
+int delta1 = 5;
+int delta2 = 13461;
+int optimism1 = 150;
+int optimism2 = 85;
+int reduction1 = 1304;
+int reduction2 = 814;
+int reduction3 = 1423;
+int reduction4 = 1135;
+
+TUNE(delta1, delta2, optimism1, optimism2, falling1, falling2, falling3, reduction1, reduction2, reduction3, reduction4);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -201,7 +212,8 @@ void Search::Worker::start_searching() {
         bestThread = threads.get_best_thread()->worker.get();
 
     main_manager()->bestPreviousScore        = bestThread->rootMoves[0].score;
-    main_manager()->bestPreviousAverageScore = bestThread->rootMoves[0].averageScore;
+    Value mss = bestThread->rootMoves[0].meanSquaredScore;
+    main_manager()->bestPreviousAverageScore = (mss < 0 ? -1 : 1) * std::sqrt(std::abs(mss));
 
     // Send again PV info if we have a new best thread
     if (bestThread != this)
@@ -311,13 +323,14 @@ void Search::Worker::iterative_deepening() {
             selDepth = 0;
 
             // Reset aspiration window starting size
-            delta     = 5 + std::abs(rootMoves[pvIdx].meanSquaredScore) / 13461;
-            Value avg = rootMoves[pvIdx].averageScore;
+            Value mss = rootMoves[pvIdx].meanSquaredScore;
+            delta     = delta1 + std::abs(mss) / delta2;
+            Value avg = (mss < 0 ? -1 : 1) * std::sqrt(std::abs(mss));
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
             // Adjust optimism based on root move's averageScore (~4 Elo)
-            optimism[us]  = 150 * avg / (std::abs(avg) + 85);
+            optimism[us]  = optimism1 * avg / (std::abs(avg) + optimism2);
             optimism[~us] = -optimism[us];
 
             // Start with a small aspiration window and, in the case of a fail
@@ -1269,9 +1282,6 @@ moves_loop:  // When in check, search starts here
 
             rm.effort += nodes - nodeCount;
 
-            rm.averageScore =
-              rm.averageScore != -VALUE_INFINITE ? (value + rm.averageScore) / 2 : value;
-
             rm.meanSquaredScore = rm.meanSquaredScore != -VALUE_INFINITE * VALUE_INFINITE
                                   ? (value * std::abs(value) + rm.meanSquaredScore) / 2
                                   : value * std::abs(value);
@@ -1707,7 +1717,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
 Depth Search::Worker::reduction(bool i, Depth d, int mn, int delta) const {
     int reductionScale = reductions[d] * reductions[mn];
-    return (reductionScale + 1304 - delta * 814 / rootDelta) + (!i && reductionScale > 1423) * 1135;
+    return (reductionScale + reduction1 - delta * reduction2 / rootDelta) + (!i && reductionScale > reduction3) * reduction4;
 }
 
 // elapsed() returns the time elapsed since the search started. If the
