@@ -1435,7 +1435,7 @@ moves_loop:  // When in check, search starts here
                        bestValue >= beta    ? BOUND_LOWER
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
-                       depth - highDepthReduction, bestMove, unadjustedStaticEval, tt.generation());
+                       depth, bestMove, unadjustedStaticEval, tt.generation());
 
     // Adjust correction history
     if (!ss->inCheck && (!bestMove || !pos.capture(bestMove))
@@ -1444,7 +1444,7 @@ moves_loop:  // When in check, search starts here
     {
         const auto m = (ss - 1)->currentMove;
 
-        auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth / 8,
+        auto bonus = std::clamp(int(bestValue - ss->staticEval) * (depth - highDepthReduction) / 8,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         thisThread->pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)]
           << bonus * 107 / 128;
