@@ -52,20 +52,6 @@
 
 namespace Stockfish {
 
-int delta1 = 5;
-int delta2 = 13461;
-int optimism1 = 150;
-int optimism2 = 85;
-int falling1 = 110;
-int falling2 = 20;
-int falling3 = 10;
-int reduction1 = 1304;
-int reduction2 = 814;
-int reduction3 = 1423;
-int reduction4 = 1135;
-
-TUNE(delta1, delta2, optimism1, optimism2, falling1, falling2, falling3, reduction1, reduction2, reduction3, reduction4);
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -327,13 +313,13 @@ void Search::Worker::iterative_deepening() {
 
             // Reset aspiration window starting size
             Value mss = rootMoves[pvIdx].meanSquaredScore;
-            delta     = delta1 + std::abs(mss) / delta2;
+            delta     = 5 + std::abs(mss) / 13674;
             Value avg = (mss < 0 ? -1 : 1) * std::sqrt(std::abs(mss));
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
             // Adjust optimism based on root move's averageScore (~4 Elo)
-            optimism[us]  = optimism1 * avg / (std::abs(avg) + optimism2);
+            optimism[us]  = 146 * avg / (std::abs(avg) + 86);
             optimism[~us] = -optimism[us];
 
             // Start with a small aspiration window and, in the case of a fail
@@ -460,8 +446,8 @@ void Search::Worker::iterative_deepening() {
         {
             int nodesEffort = rootMoves[0].effort * 100 / std::max(size_t(1), size_t(nodes));
 
-            double fallingEval = (falling1 + falling2 * (mainThread->bestPreviousAverageScore - bestValue)
-                                  + falling3 * (mainThread->iterValue[iterIdx] - bestValue))
+            double fallingEval = (104 + 19 * (mainThread->bestPreviousAverageScore - bestValue)
+                                  + 11 * (mainThread->iterValue[iterIdx] - bestValue))
                                / 1000.0;
             fallingEval = std::clamp(fallingEval, 0.580, 1.667);
 
@@ -1720,7 +1706,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
 Depth Search::Worker::reduction(bool i, Depth d, int mn, int delta) const {
     int reductionScale = reductions[d] * reductions[mn];
-    return (reductionScale + reduction1 - delta * reduction2 / rootDelta) + (!i && reductionScale > reduction3) * reduction4;
+    return (reductionScale + 1164 - delta * 824 / rootDelta) + (!i && reductionScale > 1499) * 1138;
 }
 
 // elapsed() returns the time elapsed since the search started. If the
