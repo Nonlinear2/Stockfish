@@ -947,6 +947,7 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    Depth totalSearchedDepth = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1216,12 +1217,19 @@ moves_loop:  // When in check, search starts here
                 newDepth += doDeeperSearch - doShallowerSearch;
 
                 if (newDepth > d)
+                {
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
+                    totalSearchedDepth += newDepth * (!PvNode || value <= alpha);
+                }
+                else
+                    totalSearchedDepth += d * !PvNode;
 
                 // Post LMR continuation history updates (~1 Elo)
                 int bonus = 2 * (value >= beta) * stat_bonus(newDepth);
                 update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
+            else
+                totalSearchedDepth += d;
         }
 
         // Step 18. Full-depth search when LMR is skipped
@@ -1232,8 +1240,10 @@ moves_loop:  // When in check, search starts here
                 r += 2037;
 
             // Note that if expected reduction is high, we reduce search depth by 1 here (~9 Elo)
+            Depth fullDepth = newDepth - (r > 2983);
             value =
-              -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth - (r > 2983), !cutNode);
+              -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, fullDepth, !cutNode);
+            totalSearchedDepth += fullDepth;
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
@@ -1248,6 +1258,7 @@ moves_loop:  // When in check, search starts here
                 newDepth = std::max(newDepth, 1);
 
             value = -search<PV>(pos, ss + 1, -beta, -alpha, newDepth, false);
+            totalSearchedDepth += newDepth;
         }
 
         // Step 19. Undo move
@@ -1360,12 +1371,16 @@ moves_loop:  // When in check, search starts here
         }
     }
 
+    bool highDepthReduction = depth != 1 ? totalSearchedDepth < ((depth - 1) - 6) * moveCount : false;
+
     // Step 21. Check for mate and stalemate
     // All legal moves have been searched and if there are no legal moves, it
     // must be a mate or a stalemate. If we are in a singular extension search then
     // return a fail low score.
 
     assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
+
+    depth -= highDepthReduction; // will improve implementation if test passes
 
     // Adjust best value for fail high cases at non-pv nodes
     if (!PvNode && bestValue >= beta && std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY
@@ -1406,6 +1421,8 @@ moves_loop:  // When in check, search starts here
     // Bonus when search fails low and there is a TT move
     else if (ttData.move && !allNode)
         thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * 23 / 100;
+
+    depth += highDepthReduction;
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
