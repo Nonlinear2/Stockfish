@@ -51,6 +51,9 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+int adjust[9] = {6, 11, 6, 6, 6, 6, 6, 15, 6};
+
+TUNE(SetRange(1, 1000), adjust);
 
 namespace TB = Tablebases;
 
@@ -947,7 +950,7 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
-    Depth totalSearchedDepth = 0;
+    int totalSearchedDepth = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1371,8 +1374,6 @@ moves_loop:  // When in check, search starts here
         }
     }
 
-    bool highDepthReduction = totalSearchedDepth < ((depth - 1) - 6) * moveCount;
-
     // Step 21. Check for mate and stalemate
     // All legal moves have been searched and if there are no legal moves, it
     // must be a mate or a stalemate. If we are in a singular extension search then
@@ -1380,23 +1381,32 @@ moves_loop:  // When in check, search starts here
 
     assert(moveCount || !ss->inCheck || excludedMove || !MoveList<LEGAL>(pos).size());
 
+    Depth effectiveDepth[9];
+    std::fill_n(effectiveDepth, 9, depth);
+
+    if (moveCount != 0)
+        for (int i = 0; i < 9; i++)
+            effectiveDepth[i] = std::max(1,
+                (int)std::round((adjust[i] * depth + (float)totalSearchedDepth / moveCount)/(adjust[i] + 1))
+            );
+
     // Adjust best value for fail high cases at non-pv nodes
     if (!PvNode && bestValue >= beta && std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY
         && std::abs(beta) < VALUE_TB_WIN_IN_MAX_PLY && std::abs(alpha) < VALUE_TB_WIN_IN_MAX_PLY)
-        bestValue = (bestValue * depth + beta) / (depth + 1);
-
+        bestValue = (bestValue * effectiveDepth[0] + beta) / (effectiveDepth[0] + 1);
+    
     if (!moveCount)
         bestValue = excludedMove ? alpha : ss->inCheck ? mated_in(ss->ply) : VALUE_DRAW;
 
     // If there is a move that produces search value greater than alpha,
     // we update the stats of searched moves.
     else if (bestMove)
-        update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth);
+        update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, effectiveDepth[1]);
 
     // Bonus for prior countermove that caused the fail low
     else if (!priorCapture && prevSq != SQ_NONE)
     {
-        int bonus = (117 * (depth > 5) + 39 * !allNode + 168 * ((ss - 1)->moveCount > 8)
+        int bonus = (117 * (effectiveDepth[2] > 5) + 39 * !allNode + 168 * ((ss - 1)->moveCount > 8)
                      + 115 * (!ss->inCheck && bestValue <= ss->staticEval - 108)
                      + 119 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 83));
 
@@ -1406,19 +1416,19 @@ moves_loop:  // When in check, search starts here
         bonus = std::max(bonus, 0);
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / 93);
-        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << stat_bonus(depth) * bonus / 179;
+                                      stat_bonus(effectiveDepth[3]) * bonus / 93);
 
+        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
+          << stat_bonus(effectiveDepth[4]) * bonus / 179;
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << stat_bonus(depth) * bonus / 24;
+              << stat_bonus(effectiveDepth[5]) * bonus / 24;
     }
 
     // Bonus when search fails low and there is a TT move
     else if (ttData.move && !allNode)
-        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * 23 / 100;
+        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(effectiveDepth[6]) * 23 / 100;
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
@@ -1435,7 +1445,7 @@ moves_loop:  // When in check, search starts here
                        bestValue >= beta    ? BOUND_LOWER
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
-                       depth, bestMove, unadjustedStaticEval, tt.generation());
+                       effectiveDepth[7], bestMove, unadjustedStaticEval, tt.generation());
 
     // Adjust correction history
     if (!ss->inCheck && (!bestMove || !pos.capture(bestMove))
@@ -1444,7 +1454,7 @@ moves_loop:  // When in check, search starts here
     {
         const auto m = (ss - 1)->currentMove;
 
-        auto bonus = std::clamp(int(bestValue - ss->staticEval) * (std::max(1, depth - 2*highDepthReduction)) / 8,
+        auto bonus = std::clamp(int(bestValue - ss->staticEval) * effectiveDepth[8] / 8,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         thisThread->pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)]
           << bonus * 107 / 128;
