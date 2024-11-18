@@ -1371,7 +1371,7 @@ moves_loop:  // When in check, search starts here
         }
     }
 
-    bool highDepthReduction = depth != 1 ? totalSearchedDepth < ((depth - 1) - 6) * moveCount : false;
+    bool highDepthReduction = totalSearchedDepth < ((depth - 1) - 6) * moveCount;
 
     // Step 21. Check for mate and stalemate
     // All legal moves have been searched and if there are no legal moves, it
@@ -1444,7 +1444,7 @@ moves_loop:  // When in check, search starts here
     {
         const auto m = (ss - 1)->currentMove;
 
-        auto bonus = std::clamp(int(bestValue - ss->staticEval) * (depth - highDepthReduction) / 8,
+        auto bonus = std::clamp(int(bestValue - ss->staticEval) * (std::max(1, depth - 2*highDepthReduction)) / 8,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         thisThread->pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)]
           << bonus * 107 / 128;
