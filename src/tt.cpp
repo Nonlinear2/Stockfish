@@ -105,7 +105,7 @@ void TTEntry::save(
         assert(d < 256 + DEPTH_ENTRY_OFFSET);
 
         if (uint16_t(k) == key16 && d - DEPTH_ENTRY_OFFSET < depth8 && 
-            (genBound8 & 0x3) & (v >= value16 ? BOUND_UPPER : BOUND_LOWER))
+            (genBound8 & 0x3) & b & (v >= value16 ? BOUND_UPPER : BOUND_LOWER))
             v = (4*v + value16)/5;
 
         key16     = uint16_t(k);
