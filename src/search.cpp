@@ -52,7 +52,7 @@
 
 namespace Stockfish {
 
-int adjust[9] = {13, 4, 13, 8, 3, 9, 24, 74, 11};
+int adjust[9] = {27, 4, 32, 27, 11, 8, 41, 91, 14};
 
 namespace TB = Tablebases;
 
@@ -1444,7 +1444,7 @@ moves_loop:  // When in check, search starts here
                        bestValue >= beta    ? BOUND_LOWER
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
-                       effectiveDepth[7], bestMove, unadjustedStaticEval, tt.generation());
+                       depth, bestMove, unadjustedStaticEval, tt.generation());
 
     // Adjust correction history
     if (!ss->inCheck && (!bestMove || !pos.capture(bestMove))
