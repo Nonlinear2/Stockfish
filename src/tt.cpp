@@ -106,7 +106,7 @@ void TTEntry::save(
 
         // if the bounds of the new and old data are complementary, we can update the bound to be exact.
         if (uint16_t(k) == key16 && ((genBound8 & 0x3) ^ b) == BOUND_EXACT 
-            && value16 == v && depth8 == d - DEPTH_ENTRY_OFFSET && d < 5)
+            && value16 == v && depth8 >= d - DEPTH_ENTRY_OFFSET && d < 5)
             b = BOUND_EXACT;
 
         key16     = uint16_t(k);
