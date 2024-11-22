@@ -1386,7 +1386,7 @@ moves_loop:  // When in check, search starts here
     if (moveCount != 0)
         for (int i = 0; i < 9; i++)
             effectiveDepth[i] = std::max(1,
-                (int)std::round((adjust[i] * depth + (float)totalSearchedDepth / moveCount)/(adjust[i] + 1))
+                (int)std::round((adjust[i] * depth + (float)totalSearchedDepth / 6)/(adjust[i] + 1))
             );
 
     // Adjust best value for fail high cases at non-pv nodes
