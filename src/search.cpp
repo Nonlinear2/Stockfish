@@ -1694,6 +1694,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && bestValue >= beta)
         bestValue = (3 * bestValue + beta) / 4;
 
+    if (std::abs(bestValue + 10) < VALUE_TB_WIN_IN_MAX_PLY && ttData.move &&
+        !pos.capture_stage(ttData.move) && bestValue + 10 < beta && !ss->inCheck)
+        bestValue += 10;
+
     // Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
     ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), pvHit,
