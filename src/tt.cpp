@@ -104,9 +104,9 @@ void TTEntry::save(
         assert(d > DEPTH_ENTRY_OFFSET);
         assert(d < 256 + DEPTH_ENTRY_OFFSET);
 
-        if (uint16_t(k) == key16 && d - DEPTH_ENTRY_OFFSET < depth8 && 
-            (genBound8 & 0x3) & b & (v >= value16 ? BOUND_UPPER : BOUND_LOWER))
-            v = (4*v + value16)/5;
+        if (uint16_t(k) == key16 && d - DEPTH_ENTRY_OFFSET < depth8 && ((genBound8 & 0x3) & b) == BOUND_EXACT
+            && d < 8 && std::abs(v) < VALUE_TB_WIN_IN_MAX_PLY)
+            v = (v + value16)/2;
 
         key16     = uint16_t(k);
         depth8    = uint8_t(d - DEPTH_ENTRY_OFFSET);
