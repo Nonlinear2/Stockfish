@@ -1689,7 +1689,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     }
 
     if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && bestValue >= beta)
-        bestValue = (3 * bestValue + beta) / 4;
+    {
+        bool adjust = (ttData.value < beta && (ttData.bound & BOUND_UPPER)); // will be true on pvNodes only
+        bestValue = (3 * bestValue + (1 + adjust)*beta) / (4 + adjust);
+    }
 
     // Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
