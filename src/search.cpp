@@ -1691,10 +1691,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && bestValue >= beta)
         bestValue = (3 * bestValue + beta) / 4;
 
-    else if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && 
-        ttData.depth > DEPTH_QS && ttData.value != VALUE_NONE
+    else if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY 
+        && std::abs(ttData.value) < VALUE_TB_WIN_IN_MAX_PLY
+        && ttData.depth > DEPTH_QS
         && (ttData.bound & (bestValue >= ttData.value ? BOUND_LOWER : BOUND_UPPER)))
-        bestValue = (5*bestValue + ttData.value) / 6;
+        bestValue = (4*bestValue + ttData.value) / 5;
 
     // Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
