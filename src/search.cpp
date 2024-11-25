@@ -1608,8 +1608,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     continue;
 
                 Value futilityValue = futilityBase + 
-                    (move.type_of() == EN_PASSANT) ? PawnValue
-                                                   : PieceValue[pos.piece_on(move.to_sq())];
+                    (move.type_of() == EN_PASSANT ? PawnValue
+                                                   : PieceValue[pos.piece_on(move.to_sq())]);
 
                 // If static eval + value of piece we are going to capture is
                 // much lower than alpha, we can prune this move. (~2 Elo)
@@ -1621,9 +1621,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
                 // If static exchange evaluation is low enough
                 // we can prune this move. (~2 Elo)
-                if ((move.type_of() == EN_PASSANT)
-                        ? alpha - futilityBase >= PawnValue
-                        : !pos.see_ge(move, alpha - futilityBase))
+                if ((move.type_of() != EN_PASSANT) && !pos.see_ge(move, alpha - futilityBase))
                 {
                     bestValue = std::min(alpha, futilityBase);
                     continue;
