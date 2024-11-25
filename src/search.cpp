@@ -1691,7 +1691,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && bestValue >= beta)
         bestValue = (3 * bestValue + beta) / 4;
 
-    else if (ttData.depth > DEPTH_QS && ttData.value != VALUE_NONE
+    else if (std::abs(bestValue) < VALUE_TB_WIN_IN_MAX_PLY && 
+        ttData.depth > DEPTH_QS && ttData.value != VALUE_NONE
         && (ttData.bound & (bestValue >= ttData.value ? BOUND_LOWER : BOUND_UPPER)))
         bestValue = (5*bestValue + ttData.value) / 6;
 
