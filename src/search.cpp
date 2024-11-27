@@ -868,7 +868,7 @@ Value Search::Worker::search(
         assert(probCutBeta < VALUE_INFINITE && probCutBeta > beta);
 
         MovePicker mp(pos, ttData.move, probCutBeta - ss->staticEval, &thisThread->captureHistory);
-        Piece      captured;
+        PieceType  captured;
 
         while ((move = mp.next_move()) != Move::none())
         {
@@ -883,7 +883,8 @@ Value Search::Worker::search(
             assert(pos.capture_stage(move));
 
             movedPiece = pos.moved_piece(move);
-            captured   = pos.piece_on(move.to_sq());
+            captured   = move.type_of() == EN_PASSANT ? PieceType::PAWN
+                                                      : type_of(pos.piece_on(move.to_sq()));
 
 
             // Prefetch the TT entry for the resulting position
@@ -910,7 +911,7 @@ Value Search::Worker::search(
 
             if (value >= probCutBeta)
             {
-                thisThread->captureHistory[movedPiece][move.to_sq()][type_of(captured)] << 1300;
+                thisThread->captureHistory[movedPiece][move.to_sq()][captured] << 1300;
 
                 // Save ProbCut data into transposition table
                 ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
@@ -1003,15 +1004,16 @@ moves_loop:  // When in check, search starts here
 
             if (capture || givesCheck)
             {
-                Piece capturedPiece = pos.piece_on(move.to_sq());
-                int   captHist =
-                  thisThread->captureHistory[movedPiece][move.to_sq()][type_of(capturedPiece)];
+                PieceType capturedType = move.type_of() == EN_PASSANT ? PieceType::PAWN
+                                                                   : type_of(pos.piece_on(move.to_sq()));
+                int captHist =
+                  thisThread->captureHistory[movedPiece][move.to_sq()][capturedType];
 
                 // Futility pruning for captures (~2 Elo)
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
                     Value futilityValue = ss->staticEval + 287 + 253 * lmrDepth
-                                        + PieceValue[capturedPiece] + captHist / 7;
+                                        + PieceValue[capturedType] + captHist / 7;
                     if (futilityValue <= alpha)
                         continue;
                 }
@@ -1125,8 +1127,9 @@ moves_loop:  // When in check, search starts here
 
             // Extension for capturing the previous moved piece (~1 Elo at LTC)
             else if (PvNode && move.to_sq() == prevSq
-                     && thisThread->captureHistory[movedPiece][move.to_sq()]
-                                                  [type_of(pos.piece_on(move.to_sq()))]
+                && thisThread->captureHistory[movedPiece][move.to_sq()]
+                                             [move.type_of() == EN_PASSANT ? PieceType::PAWN
+                                                                           : type_of(pos.piece_on(move.to_sq()))]
                           > 4321)
                 extension = 1;
         }
@@ -1812,7 +1815,7 @@ void update_all_stats(const Position&      pos,
     else
     {
         // Increase stats for the best move in case it was a capture move
-        captured = type_of(pos.piece_on(bestMove.to_sq()));
+        captured = bestMove.type_of() == EN_PASSANT ? PieceType::PAWN : type_of(pos.piece_on(bestMove.to_sq()));
         captureHistory[moved_piece][bestMove.to_sq()][captured] << bonus;
     }
 
@@ -1825,7 +1828,7 @@ void update_all_stats(const Position&      pos,
     for (Move move : capturesSearched)
     {
         moved_piece = pos.moved_piece(move);
-        captured    = type_of(pos.piece_on(move.to_sq()));
+        captured = move.type_of() == EN_PASSANT ? PieceType::PAWN : type_of(pos.piece_on(move.to_sq()));
         captureHistory[moved_piece][move.to_sq()][captured] << -malus;
     }
 }
