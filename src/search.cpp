@@ -629,6 +629,7 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+    bool ttBadSee = ttData.move && !pos.see_ge(ttData.move, 0);
 
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
@@ -1076,7 +1077,7 @@ moves_loop:  // When in check, search starts here
             if (!rootNode && move == ttData.move && !excludedMove
                 && depth >= 4 - (thisThread->completedDepth > 33) + ss->ttPv
                 && std::abs(ttData.value) < VALUE_TB_WIN_IN_MAX_PLY && (ttData.bound & BOUND_LOWER)
-                && ttData.depth >= depth - 3)
+                && ttData.depth >= depth - 3 - (ttBadSee && depth > 4))
             {
                 Value singularBeta  = ttData.value - (56 + 79 * (ss->ttPv && !PvNode)) * depth / 64;
                 Depth singularDepth = newDepth / 2;
