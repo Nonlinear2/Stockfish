@@ -579,6 +579,7 @@ Value Search::Worker::search(
     ss->moveCount      = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    int initialNodeCount = thisThread->nodes;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -1419,7 +1420,8 @@ moves_loop:  // When in check, search starts here
                        bestValue >= beta    ? BOUND_LOWER
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
-                       depth, bestMove, unadjustedStaticEval, tt.generation());
+                       depth + (depth < 5 && (thisThread->nodes - initialNodeCount) / depth > 150),
+                       bestMove, unadjustedStaticEval, tt.generation());
 
     // Adjust correction history
     if (!ss->inCheck && !(bestMove && pos.capture(bestMove))
