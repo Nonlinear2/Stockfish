@@ -100,7 +100,8 @@ Value to_corrected_static_eval(Value v, const Worker& w, const Position& pos, St
 }
 
 // History and stats update bonus, based on depth
-int stat_bonus(Depth d) { return std::min(168 * d - 100, 1718); }
+int stat_bonus(Depth d, int npd) {
+    return std::min(168 * d + (npd - 2) * 10 - 100, 1718); }
 
 // History and stats update malus, based on depth
 int stat_malus(Depth d) { return std::min(768 * d - 257, 2351); }
@@ -645,7 +646,8 @@ Value Search::Worker::search(
         {
             // Bonus for a quiet ttMove that fails high (~2 Elo)
             if (!ttCapture)
-                update_quiet_histories(pos, ss, *this, ttData.move, stat_bonus(depth));
+                update_quiet_histories(pos, ss, *this, ttData.move,
+                    stat_bonus(depth, 2));
 
             // Extra penalty for early quiet moves of
             // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
@@ -1217,7 +1219,7 @@ moves_loop:  // When in check, search starts here
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
                 // Post LMR continuation history updates (~1 Elo)
-                int bonus = 2 * (value >= beta) * stat_bonus(newDepth);
+                int bonus = 2 * (value >= beta) * stat_bonus(newDepth, 2);
                 update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
         }
@@ -1376,8 +1378,7 @@ moves_loop:  // When in check, search starts here
     // If there is a move that produces search value greater than alpha,
     // we update the stats of searched moves.
     else if (bestMove)
-        update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched,
-            depth + (depth < 5 && (thisThread->nodes - initialNodeCount) / depth > 150));
+        update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth);
 
     // Bonus for prior countermove that caused the fail low
     else if (!priorCapture && prevSq != SQ_NONE)
@@ -1392,19 +1393,19 @@ moves_loop:  // When in check, search starts here
         bonus = std::max(bonus, 0);
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / 93);
+                                      stat_bonus(depth, (thisThread->nodes - initialNodeCount) / depth) * bonus / 93);
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << stat_bonus(depth) * bonus / 179;
+          << stat_bonus(depth, (thisThread->nodes - initialNodeCount) / depth) * bonus / 179;
 
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << stat_bonus(depth) * bonus / 24;
+              << stat_bonus(depth, (thisThread->nodes - initialNodeCount) / depth) * bonus / 24;
     }
 
     // Bonus when search fails low and there is a TT move
     else if (ttData.move && !allNode)
-        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * 23 / 100;
+        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth, (thisThread->nodes - initialNodeCount) / depth) * 23 / 100;
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
@@ -1800,7 +1801,7 @@ void update_all_stats(const Position&      pos,
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
 
-    int bonus = stat_bonus(depth);
+    int bonus = stat_bonus(depth, 2);
     int malus = stat_malus(depth);
 
     if (!pos.capture_stage(bestMove))
