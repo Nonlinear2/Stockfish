@@ -1605,7 +1605,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta,
             if (!givesCheck && move.to_sq() != prevSq && futilityBase > VALUE_TB_LOSS_IN_MAX_PLY
                 && move.type_of() != PROMOTION)
             {
-                if (moveCount > 2 - (depth < -rootDepth*rootDepth/6 - 5))
+                dbg_hit_on((depth < -5) && (depth < -17*rootDepth/(rootDepth+10)));
+                if (moveCount > 2 - (depth < -5) && (depth < -17*rootDepth/(rootDepth+10)))
                     continue;
 
                 Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
