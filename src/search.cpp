@@ -1089,8 +1089,8 @@ moves_loop:  // When in check, search starts here
 
                 if (value < singularBeta)
                 {
-                    int doubleMargin = 249 * PvNode - 194 * (!ttCapture) - 100*ttBadSee;
-                    int tripleMargin = 94 + 287 * PvNode - 249 * (!ttCapture) - 150*ttBadSee + 99 * ss->ttPv;
+                    int doubleMargin = 249 * PvNode - 194 * (!ttCapture) - 100*(ttBadSee && ttCapture);
+                    int tripleMargin = 94 + 287 * PvNode - 249 * (!ttCapture) - 150*(ttBadSee && ttCapture) + 99 * ss->ttPv;
 
                     extension = 1 + (value < singularBeta - doubleMargin)
                               + (value < singularBeta - tripleMargin);
