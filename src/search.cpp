@@ -635,7 +635,7 @@ Value Search::Worker::search(
 
     // At non-PV nodes we check for an early TT cutoff
     if (!PvNode && !excludedMove 
-        && (ttData.depth > depth - (ttData.value <= beta) || (std::abs(ttData.value) >= VALUE_TB_WIN_IN_MAX_PLY && depth < 5))
+        && (ttData.depth > depth - (ttData.value <= beta) - (std::abs(ttData.value) >= VALUE_TB_WIN_IN_MAX_PLY && depth < 7))
         && ttData.value != VALUE_NONE  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER))
         && (cutNode == (ttData.value >= beta) || depth > 8))
