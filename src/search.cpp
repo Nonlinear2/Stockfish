@@ -629,6 +629,7 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+    bool ttBadSee = ttData.move && !pos.see_ge(ttData.move, -135) && ttData.value > 0 && PvNode;
 
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
@@ -1085,8 +1086,8 @@ moves_loop:  // When in check, search starts here
 
                 if (value < singularBeta)
                 {
-                    int doubleMargin = 249 * PvNode - 194 * !ttCapture;
-                    int tripleMargin = 94 + 287 * PvNode - 249 * !ttCapture + 99 * ss->ttPv;
+                    int doubleMargin = 249 * PvNode - 194 * (!ttCapture || ttBadSee);
+                    int tripleMargin = 94 + 287 * PvNode - 249 * (!ttCapture || ttBadSee) + 99 * ss->ttPv;
 
                     extension = 1 + (value < singularBeta - doubleMargin)
                               + (value < singularBeta - tripleMargin);
