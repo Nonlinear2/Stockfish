@@ -97,6 +97,11 @@ void TTEntry::save(
     if (m || uint16_t(k) != key16)
         move16 = m;
 
+    // if the bounds of the new and old data are complementary, we can update the bound to be exact.
+    if (uint16_t(k) == key16 && ((genBound8 & 0x3) ^ b) == BOUND_EXACT 
+        && value16 == v && depth8 >= d - DEPTH_ENTRY_OFFSET && depth8 + DEPTH_ENTRY_OFFSET < 11 && d < 3)
+        b = BOUND_EXACT;
+
     // Overwrite less valuable entries (cheapest checks first)
     if (b == BOUND_EXACT || uint16_t(k) != key16 || d - DEPTH_ENTRY_OFFSET + 2 * pv > depth8 - 4
         || relative_age(generation8))
