@@ -113,6 +113,9 @@ void  update_pv(Move* pv, Move move, const Move* childPv);
 void  update_continuation_histories(Stack* ss, Piece pc, Square to, int bonus);
 void  update_quiet_histories(
    const Position& pos, Stack* ss, Search::Worker& workerThread, Move move, int bonus);
+bool generic_data(Value value, const Position& pos) {
+    return !is_valid(value) || (!is_decisive(value) && !pos.has_just_repeated());
+}
 void update_all_stats(const Position&      pos,
                       Stack*               ss,
                       Search::Worker&      workerThread,
@@ -643,12 +646,13 @@ Value Search::Worker::search(
         if (ttData.move && ttData.value >= beta)
         {
             // Bonus for a quiet ttMove that fails high (~2 Elo)
-            if (!ttCapture)
+            if (!ttCapture && generic_data(ttData.value, pos))
                 update_quiet_histories(pos, ss, *this, ttData.move, stat_bonus(depth));
 
             // Extra penalty for early quiet moves of
             // the previous ply (~1 Elo on STC, ~2 Elo on LTC)
-            if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture)
+            if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 2 && !priorCapture
+                && generic_data(ttData.value, pos))
                 update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                               -stat_malus(depth + 1));
         }
@@ -909,7 +913,8 @@ Value Search::Worker::search(
 
             if (value >= probCutBeta)
             {
-                thisThread->captureHistory[movedPiece][move.to_sq()][type_of(captured)] << 1300;
+                if (generic_data(value, pos))
+                    thisThread->captureHistory[movedPiece][move.to_sq()][type_of(captured)] << 1300;
 
                 // Save ProbCut data into transposition table
                 ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
@@ -1217,7 +1222,8 @@ moves_loop:  // When in check, search starts here
 
                 // Post LMR continuation history updates (~1 Elo)
                 int bonus = 2 * (value >= beta) * stat_bonus(newDepth);
-                update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
+                if (generic_data(value, pos))
+                    update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
         }
 
@@ -1388,15 +1394,17 @@ moves_loop:  // When in check, search starts here
 
         bonus = std::max(bonus, 0);
 
-        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / 93);
-        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << stat_bonus(depth) * bonus / 179;
+        if (generic_data(bestValue, pos))
+        {
+            update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
+                                        stat_bonus(depth) * bonus / 93);
+            thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
+            << stat_bonus(depth) * bonus / 179;
 
-
-        if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
-            thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << stat_bonus(depth) * bonus / 24;
+            if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
+                thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
+                << stat_bonus(depth) * bonus / 24;
+        }
     }
 
     else if (priorCapture && prevSq != SQ_NONE)
@@ -1404,12 +1412,13 @@ moves_loop:  // When in check, search starts here
         // bonus for prior countermoves that caused the fail low
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
-        thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)]
-          << stat_bonus(depth) * 2;
+        if (generic_data(bestValue, pos))
+            thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)]
+            << stat_bonus(depth) * 2;
     }
 
     // Bonus when search fails low and there is a TT move
-    else if (ttData.move && !allNode)
+    else if (ttData.move && !allNode && generic_data(bestValue, pos))
         thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * 23 / 100;
 
     if (PvNode)
