@@ -629,7 +629,7 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
-    bool ttBadSee = ttData.move && !pos.see_ge(ttData.move, -140) && ttData.value > 0 && PvNode;
+    bool ttBadSee = ttData.move && !pos.see_ge(ttData.move, -140) && ttData.value > -150 && PvNode;
 
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
