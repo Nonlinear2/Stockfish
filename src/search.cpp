@@ -782,8 +782,11 @@ Value Search::Worker::search(
     if (eval < alpha - 469 - 307 * depth * depth)
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
+
         if (value < alpha && !is_decisive(value))
             return value;
+        else
+            eval = std::max(eval, value);
     }
 
     // Step 8. Futility pruning: child node (~40 Elo)
