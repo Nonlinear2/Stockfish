@@ -786,7 +786,7 @@ Value Search::Worker::search(
         if (value < alpha && !is_decisive(value))
             return value;
         else
-            eval = (eval + value)/2;
+            eval = (3*eval + value)/4;
     }
 
     // Step 8. Futility pruning: child node (~40 Elo)
