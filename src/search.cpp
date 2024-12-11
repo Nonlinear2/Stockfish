@@ -714,6 +714,7 @@ Value Search::Worker::search(
 
     // Step 6. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
+    bool ttEval = false;
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -744,7 +745,10 @@ Value Search::Worker::search(
         // ttValue can be used as a better position evaluation (~7 Elo)
         if (is_valid(ttData.value)
             && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
+        {
             eval = ttData.value;
+            ttEval = true;
+        }
     }
     else
     {
@@ -785,8 +789,8 @@ Value Search::Worker::search(
 
         if (value < alpha && !is_decisive(value))
             return value;
-        else
-            eval = (3*eval + value)/4;
+        else if (!ttEval)
+            eval = (2*eval + value)/3;
     }
 
     // Step 8. Futility pruning: child node (~40 Elo)
