@@ -99,7 +99,7 @@ void TTEntry::save(
 
     // if the bounds of the new and old data are complementary, we can update the bound to be exact.
     if (uint16_t(k) == key16 && ((genBound8 & 0x3) ^ b) == BOUND_EXACT 
-        && value16 == v && depth8 >= d - DEPTH_ENTRY_OFFSET && depth8 + DEPTH_ENTRY_OFFSET < 15 && d < 3)
+        && value16 == v && std::abs(depth8 - (d - DEPTH_ENTRY_OFFSET)) < 6 && depth8 + DEPTH_ENTRY_OFFSET < 15 && d < 15)
         b = BOUND_EXACT;
 
     // Overwrite less valuable entries (cheapest checks first)
