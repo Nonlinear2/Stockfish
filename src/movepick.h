@@ -72,7 +72,7 @@ class MovePicker {
     int                          threshold;
     Depth                        depth;
     int                          ply;
-    Square                       priorSq;
+    Square                       priorSq = Square::SQ_NONE;
     bool                         skipQuiets = false;
     ExtMove                      moves[MAX_MOVES];
 };
