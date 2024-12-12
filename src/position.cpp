@@ -1059,6 +1059,7 @@ void Position::undo_null_move() {
     sideToMove = ~sideToMove;
 }
 
+Key Position::other_key() const { return adjust_key50<false>(st->key ^ Zobrist::side); }
 
 // Computes the new hash key after the given move. Needed
 // for speculative prefetch. It doesn't recognize special moves like castling,
