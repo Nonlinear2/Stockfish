@@ -1590,8 +1590,12 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                                : VALUE_NONE;
 
         if (is_valid(rTtData.value) && !is_decisive(rTtData.value) && 
-            rTtData.depth >= DEPTH_QS && -rTtData.value >= beta && (rTtData.bound & BOUND_UPPER))
-            return -rTtData.value;
+            rTtData.depth >= DEPTH_QS  && (rTtData.bound & BOUND_UPPER))
+        {
+            bestValue = std::max(bestValue, -rTtData.value);
+            if (-rTtData.value >= beta)
+                return -rTtData.value;
+        }
     }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
