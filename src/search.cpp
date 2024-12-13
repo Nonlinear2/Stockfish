@@ -659,7 +659,7 @@ Value Search::Worker::search(
             return ttData.value;
     }
 
-    if (!PvNode && !ttHit && depth < 10 && !excludedMove && pos.rule50_count() < 90 && cutNode)
+    if (!PvNode && !ttHit && depth < 8 && !excludedMove && pos.rule50_count() < 90)
     {
         auto [rTtHit, rTtData, rTtWriter] = tt.probe(pos.other_key());
         rTtData.value = rTtHit ? value_from_tt(rTtData.value, ss->ply, pos.rule50_count())
