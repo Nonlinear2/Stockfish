@@ -659,13 +659,13 @@ Value Search::Worker::search(
             return ttData.value;
     }
 
-    if (!PvNode && !ttHit && depth < 8 && !excludedMove && pos.rule50_count() < 90)
+    if (!PvNode && !ttHit && depth < 7 && !excludedMove && pos.rule50_count() < 90 && cutNode)
     {
         auto [rTtHit, rTtData, rTtWriter] = tt.probe(pos.other_key());
         rTtData.value = rTtHit ? value_from_tt(rTtData.value, ss->ply, pos.rule50_count())
                                : VALUE_NONE;
         if (is_valid(rTtData.value) && !is_decisive(rTtData.value) && 
-            rTtData.depth > depth && -rTtData.value >= beta && (rTtData.bound & BOUND_UPPER))
+            rTtData.depth > depth && -rTtData.value > beta && (rTtData.bound & BOUND_UPPER))
             return -rTtData.value;
     }
 
