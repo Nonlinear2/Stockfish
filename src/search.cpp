@@ -1531,6 +1531,16 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
         return ttData.value;
 
+    if (!PvNode && !ttHit && (ss - 1)->currentMove != Move::null())
+    {
+        auto [rTtHit, rTtData, rTtWriter] = tt.probe(pos.other_key());
+        rTtData.value = rTtHit ? value_from_tt(rTtData.value, ss->ply, pos.rule50_count())
+                               : VALUE_NONE;
+        if (is_valid(rTtData.value) && !is_decisive(rTtData.value) && 
+            rTtData.depth >= DEPTH_QS && -rTtData.value >= beta && (rTtData.bound & BOUND_UPPER))
+            return -rTtData.value;
+    }
+
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
     if (ss->inCheck)
