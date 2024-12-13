@@ -1531,6 +1531,19 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
         return ttData.value;
 
+    // qs nmp
+    if (!PvNode && (!ttHit || ttData.bound == BOUND_LOWER) && beta - ttData.value < 100
+        && (ss - 1)->currentMove != Move::null() && pos.non_pawn_material(us) && !is_loss(beta))
+    {
+        auto [rTtHit, rTtData, rTtWriter] = tt.probe(pos.other_key());
+        rTtData.value = rTtHit ? value_from_tt(rTtData.value, ss->ply, pos.rule50_count())
+                               : VALUE_NONE;
+
+        if (is_valid(rTtData.value) && !is_decisive(rTtData.value) && 
+            rTtData.depth >= DEPTH_QS && -rTtData.value >= beta && (rTtData.bound & BOUND_UPPER))
+            return -rTtData.value;
+    }
+
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
     if (ss->inCheck)
@@ -1579,23 +1592,6 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             alpha = bestValue;
 
         futilityBase = ss->staticEval + 306;
-    }
-
-    // qs nmp
-    if (!PvNode && !ttHit && (ss - 1)->currentMove != Move::null() &&
-        ss->staticEval >= beta - 421 && pos.non_pawn_material(us) && !is_loss(beta))
-    {
-        auto [rTtHit, rTtData, rTtWriter] = tt.probe(pos.other_key());
-        rTtData.value = rTtHit ? value_from_tt(rTtData.value, ss->ply, pos.rule50_count())
-                               : VALUE_NONE;
-
-        if (is_valid(rTtData.value) && !is_decisive(rTtData.value) && 
-            rTtData.depth >= DEPTH_QS  && (rTtData.bound & BOUND_UPPER))
-        {
-            bestValue = std::max(bestValue, -rTtData.value);
-            if (-rTtData.value >= beta)
-                return -rTtData.value;
-        }
     }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
