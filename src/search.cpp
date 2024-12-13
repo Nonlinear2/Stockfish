@@ -1533,7 +1533,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // qs nmp
     if (!PvNode
-        && (ttData.bound == BOUND_LOWER && is_valid(ttData.value) && beta - ttData.value < 100)
+        && (ttData.bound == BOUND_LOWER && is_valid(ttData.value) && beta - ttData.value < 300)
         && (ss - 1)->currentMove != Move::null() && pos.non_pawn_material(us) && !is_decisive(beta))
     {
         auto [rTtHit, rTtData, rTtWriter] = tt.probe(pos.other_key());
