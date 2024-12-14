@@ -1488,6 +1488,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     Key   posKey;
     Move  move, bestMove;
     Value bestValue, value, futilityBase;
+    bestValue = -VALUE_INFINITE;
     bool  pvHit, givesCheck, capture;
     int   moveCount;
     Color us = pos.side_to_move();
@@ -1532,7 +1533,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         return ttData.value;
 
     // qs nmp
-    if (!PvNode
+    if (!PvNode && !ss->inCheck
         && (ttData.bound == BOUND_LOWER && is_valid(ttData.value) && beta - ttData.value < 170)
         && (ss - 1)->currentMove != Move::null() && pos.non_pawn_material(us) && !is_decisive(beta))
     {
@@ -1540,10 +1541,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         rTtData.value = rTtHit ? value_from_tt(rTtData.value, ss->ply, pos.rule50_count())
                                : VALUE_NONE;
         if (is_valid(rTtData.value) && !is_decisive(rTtData.value) && 
-            rTtData.depth >= DEPTH_QS && -rTtData.value >= beta && (rTtData.bound & BOUND_UPPER))
+            rTtData.depth >= DEPTH_QS && (rTtData.bound & BOUND_UPPER))
         {
-            bestValue = std::max(bestValue, -rTtData.value);
-            return -rTtData.value;
+            if (-rTtData.value >= beta)
+                return -rTtData.value;
+            bestValue = -rTtData.value;
         }
     }
 
@@ -1560,8 +1562,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             if (!is_valid(unadjustedStaticEval))
                 unadjustedStaticEval =
                   evaluate(networks[numaAccessToken], pos, refreshTable, thisThread->optimism[us]);
-            ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, ss);
+            ss->staticEval = to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, ss);
+
+            bestValue = std::max(bestValue, ss->staticEval);
 
             // ttValue can be used as a better position evaluation (~13 Elo)
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
