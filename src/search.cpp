@@ -1533,7 +1533,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // qs nmp
     if (!PvNode
-        && (ttData.bound == BOUND_LOWER && is_valid(ttData.value) && beta - ttData.value < 300)
+        && (ttData.bound == BOUND_LOWER && is_valid(ttData.value) && beta - ttData.value < 170)
         && (ss - 1)->currentMove != Move::null() && pos.non_pawn_material(us) && !is_decisive(beta))
     {
         auto [rTtHit, rTtData, rTtWriter] = tt.probe(pos.other_key());
@@ -1541,7 +1541,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                                : VALUE_NONE;
         if (is_valid(rTtData.value) && !is_decisive(rTtData.value) && 
             rTtData.depth >= DEPTH_QS && -rTtData.value >= beta && (rTtData.bound & BOUND_UPPER))
+        {
+            bestValue = std::max(bestValue, -rTtData.value);
             return -rTtData.value;
+        }
     }
 
     // Step 4. Static evaluation of the position
