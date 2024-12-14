@@ -784,6 +784,9 @@ Value Search::Worker::search(
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha && !is_decisive(value))
             return value;
+
+        if (!is_decisive(value))
+            improving = true;
     }
 
     // Step 8. Futility pruning: child node (~40 Elo)
