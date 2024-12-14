@@ -785,7 +785,7 @@ Value Search::Worker::search(
         if (value < alpha && !is_decisive(value))
             return value;
 
-        if (!is_decisive(value))
+        if (!is_decisive(value) && value >= beta)
             improving = true;
     }
 
