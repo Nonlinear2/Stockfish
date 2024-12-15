@@ -74,7 +74,7 @@ struct Stack {
     bool                        ttPv;
     bool                        ttHit;
     int                         cutoffCnt;
-    bool                        nmpTtHit = false;
+    Value                       nmpLowerBound = VALUE_TB_LOSS_IN_MAX_PLY;
 };
 
 

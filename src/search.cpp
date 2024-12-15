@@ -634,6 +634,11 @@ Value Search::Worker::search(
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
 
+    if (!PvNode && ttData.depth >= depth && is_valid(ttData.value)
+        && (ttData.bound & BOUND_UPPER) && (ss - 1)->currentMove == Move::null()
+        && !is_decisive(ttData.value))
+        ss->nmpLowerBound = ttData.value;
+
     // At non-PV nodes we check for an early TT cutoff
     if (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
         && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
@@ -656,13 +661,8 @@ Value Search::Worker::search(
 
         // Partial workaround for the graph history interaction problem
         // For high rule50 counts don't produce transposition table cutoffs.
-        if (pos.rule50_count() < 90){
-            if ((ss - 1)->currentMove == Move::null()
-                && !is_decisive(ttData.value) && ttData.bound == BOUND_UPPER)
-                ss->nmpTtHit = true;
-
+        if (pos.rule50_count() < 90)
             return ttData.value;
-        }
     }
 
     // Step 5. Tablebases probe
@@ -823,10 +823,10 @@ Value Search::Worker::search(
 
         pos.undo_null_move();
 
-        if ((ss + 1)->nmpTtHit)
+        if (!is_loss((ss + 1)->nmpLowerBound))
         {
-            nmpLowerBound = nullValue;
-            (ss + 1)->nmpTtHit = false;
+            nmpLowerBound = (ss + 1)->nmpLowerBound;
+            (ss + 1)->nmpLowerBound = VALUE_TB_LOSS_IN_MAX_PLY;
         }
 
         // Do not return unproven mate or TB scores
@@ -867,7 +867,7 @@ Value Search::Worker::search(
     // Step 11. ProbCut (~10 Elo)
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 187 - 53 * improving - 25*(!is_loss(nmpLowerBound) && (beta - nmpLowerBound < 20));
+    probCutBeta = beta + 187 - 56 * improving - 25*(!is_loss(nmpLowerBound) && (beta - nmpLowerBound < 50));
     if (!PvNode && depth > 3
         && !is_decisive(beta)
         // If value from transposition table is lower than probCutBeta, don't attempt
