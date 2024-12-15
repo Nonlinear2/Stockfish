@@ -1369,9 +1369,9 @@ moves_loop:  // When in check, search starts here
         bestValue = (bestValue * depth + beta) / (depth + 1);
 
     Value ttValueDifference = 
-        (moveCount && is_valid(ttData.value) && !is_decisive(ttData.value)
-         && !is_decisive(bestValue) && depth > 7 && ttData.depth > 7) ? 
-            std::clamp((bestValue - ttData.value)/3, -45, 65):
+        (moveCount && is_valid(ttData.value) && !is_decisive(ttData.value) && 
+         ttData.bound == BOUND_EXACT && !is_decisive(bestValue) && depth > 8 && ttData.depth >= depth - 3) ? 
+            std::clamp((bestValue - ttData.value)/2, -55, 75):
             0;
 
     if (!moveCount)
@@ -1395,14 +1395,14 @@ moves_loop:  // When in check, search starts here
         bonus = std::max(bonus, 0);
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / 93);
+                                      stat_bonus(depth) * bonus / 93 + ttValueDifference);
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << stat_bonus(depth) * bonus / 179;
+          << stat_bonus(depth) * bonus / 179 + ttValueDifference;
 
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << stat_bonus(depth) * bonus / 24;
+              << stat_bonus(depth) * bonus / 24 + ttValueDifference;
     }
 
     else if (priorCapture && prevSq != SQ_NONE)
@@ -1411,12 +1411,12 @@ moves_loop:  // When in check, search starts here
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
         thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)]
-          << stat_bonus(depth) * 2;
+          << stat_bonus(depth) * 2 + ttValueDifference;
     }
 
     // Bonus when search fails low and there is a TT move
     else if (ttData.move && !allNode)
-        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * 23 / 100 + ttValueDifference;
+        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * 23 / 100 + ttValueDifference/2;
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
