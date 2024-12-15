@@ -637,7 +637,7 @@ Value Search::Worker::search(
     if (!PvNode && ttData.depth >= depth && is_valid(ttData.value)
         && (ttData.bound & BOUND_UPPER) && (ss - 1)->currentMove == Move::null()
         && !is_decisive(ttData.value))
-        ss->nmpLowerBound = ttData.value;
+        (ss - 1)->nmpLowerBound = -ttData.value;
 
     // At non-PV nodes we check for an early TT cutoff
     if (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
@@ -823,10 +823,10 @@ Value Search::Worker::search(
 
         pos.undo_null_move();
 
-        if (!is_loss((ss + 1)->nmpLowerBound))
+        if (!is_loss(ss->nmpLowerBound))
         {
-            nmpLowerBound = (ss + 1)->nmpLowerBound;
-            (ss + 1)->nmpLowerBound = VALUE_TB_LOSS_IN_MAX_PLY;
+            nmpLowerBound = ss->nmpLowerBound;
+            ss->nmpLowerBound = VALUE_TB_LOSS_IN_MAX_PLY;
         }
 
         // Do not return unproven mate or TB scores
