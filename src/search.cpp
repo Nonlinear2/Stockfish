@@ -52,18 +52,6 @@
 
 namespace Stockfish {
 
-int a1 = 50, a2 = 50, a3 = 50, a4 = 50, a5 = 50;
-
-int b1 = 117, b2 = 39, b3 = 168, b4 = 115, b5 = 108, b6 = 119, b7 = 83,
-    b8 = 113, b9 = 300,
-    b10 = 93, b11 = 179, b12 = 24, b13 = 23;
-
-int c1 = -50, c2 = 100;
-
-TUNE(a1, a2, a3, a4, a5,
-     b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13,
-     c1, c2);
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1382,7 +1370,7 @@ moves_loop:  // When in check, search starts here
 
     Value ttValueDifference = 
         (moveCount && is_valid(ttData.value) && !is_decisive(ttData.value) && !is_decisive(bestValue) && depth > 7) ? 
-            std::clamp(bestValue - ttData.value, c1, c2):
+            std::clamp(bestValue - ttData.value, -49, 100):
             0;
 
     if (!moveCount)
@@ -1396,25 +1384,25 @@ moves_loop:  // When in check, search starts here
     // Bonus for prior countermove that caused the fail low
     else if (!priorCapture && prevSq != SQ_NONE)
     {
-        int bonus = (b1 * (depth > 5) + b2 * !allNode + b3 * ((ss - 1)->moveCount > 8)
-                     + b4 * (!ss->inCheck && bestValue <= ss->staticEval - b5)
-                     + b6 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - b7));
+        int bonus = (114 * (depth > 5) + 39 * !allNode + 178 * ((ss - 1)->moveCount > 8)
+                     + 115 * (!ss->inCheck && bestValue <= ss->staticEval - 113)
+                     + 121 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 82));
 
         // Proportional to "how much damage we have to undo"
-        bonus += std::min(-(ss - 1)->statScore / b8, b9);
+        bonus += std::min(-(ss - 1)->statScore / 113, 317);
 
         bonus = std::max(bonus, 0);
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / b10 + ttValueDifference * 100/a1);
+                                      stat_bonus(depth) * bonus / 84 + ttValueDifference * 100/52);
 
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << stat_bonus(depth) * bonus / b11 + ttValueDifference * 100/a2;
+          << stat_bonus(depth) * bonus / 174 + ttValueDifference * 100/49;
 
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << stat_bonus(depth) * bonus / b12 + ttValueDifference * 100/a3;
+              << stat_bonus(depth) * bonus / 25 + ttValueDifference * 100/48;
     }
 
     else if (priorCapture && prevSq != SQ_NONE)
@@ -1423,12 +1411,12 @@ moves_loop:  // When in check, search starts here
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
         thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)]
-          << stat_bonus(depth) * 2 + ttValueDifference * 100/a4;
+          << stat_bonus(depth) * 2 + ttValueDifference * 100/49;
     }
 
     // Bonus when search fails low and there is a TT move
     else if (ttData.move && !allNode)
-        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * b13 / 100 + ttValueDifference * 100/a5;
+        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * 22/100 + ttValueDifference * 100/52;
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
