@@ -1385,25 +1385,24 @@ moves_loop:  // When in check, search starts here
     // Bonus for prior countermove that caused the fail low
     else if (!priorCapture && prevSq != SQ_NONE)
     {
-        int bonus = (114 * (depth > 5) + 39 * !allNode + 178 * ((ss - 1)->moveCount > 8)
-                     + 115 * (!ss->inCheck && bestValue <= ss->staticEval - 113)
-                     + 121 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 82));
+        int bonus = (117 * (depth > 5) + 39 * !allNode + 168 * ((ss - 1)->moveCount > 8)
+                     + 115 * (!ss->inCheck && bestValue <= ss->staticEval - 108)
+                     + 119 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 83));
 
         // Proportional to "how much damage we have to undo"
-        bonus += std::min(-(ss - 1)->statScore / 113, 317);
+        bonus += std::min(-(ss - 1)->statScore / 113, 300);
 
         bonus = std::max(bonus, 0);
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / 84 + ttValueDifference);
-
+                                      stat_bonus(depth) * bonus / 93);
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << stat_bonus(depth) * bonus / 174 + ttValueDifference;
+          << stat_bonus(depth) * bonus / 179;
 
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << stat_bonus(depth) * bonus / 25 + ttValueDifference;
+              << stat_bonus(depth) * bonus / 24;
     }
 
     else if (priorCapture && prevSq != SQ_NONE)
@@ -1412,12 +1411,12 @@ moves_loop:  // When in check, search starts here
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
         thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)]
-          << stat_bonus(depth) * 2 + ttValueDifference;
+          << stat_bonus(depth) * 2;
     }
 
     // Bonus when search fails low and there is a TT move
     else if (ttData.move && !allNode)
-        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * 22/100 + ttValueDifference;
+        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * 23 / 100 + ttValueDifference;
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
