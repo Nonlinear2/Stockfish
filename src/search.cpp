@@ -1011,6 +1011,9 @@ moves_loop:  // When in check, search starts here
                                         + PieceValue[capturedPiece] + captHist / 7;
                     if (futilityValue <= alpha)
                         continue;
+                    
+                    if (depth < 4 && !pos.see_ge(move, -35 * lmrDepth * lmrDepth + (alpha - futilityValue)))
+                        continue;
                 }
 
                 // SEE based pruning for captures and checks (~11 Elo)
