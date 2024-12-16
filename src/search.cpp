@@ -60,7 +60,7 @@ int b1 = 117, b2 = 39, b3 = 168, b4 = 115, b5 = 108, b6 = 119, b7 = 83,
 
 int c1 = -50, c2 = 100;
 
-int d1 = 7, d2 = 7;
+int d1 = 5, d2 = 5;
 
 TUNE(a1, a2, a3, a4, a5,
      b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13,
@@ -1384,7 +1384,7 @@ moves_loop:  // When in check, search starts here
         bestValue = (bestValue * depth + beta) / (depth + 1);
 
     Value ttValueDifference = 
-        (moveCount && is_valid(ttData.value) && !is_decisive(ttData.value) && !is_decisive(bestValue)
+        (moveCount && PvNode && bestMove && is_valid(ttData.value) && !is_decisive(ttData.value) && !is_decisive(bestValue)
          && depth > d1 && ttData.depth > d2 && ttData.bound == BOUND_EXACT) ? 
             std::clamp(bestValue - ttData.value, c1, c2):
             0;
