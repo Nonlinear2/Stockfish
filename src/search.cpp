@@ -1369,8 +1369,7 @@ moves_loop:  // When in check, search starts here
         bestValue = (bestValue * depth + beta) / (depth + 1);
 
     Value ttValueDifference = 
-        (moveCount && is_valid(ttData.value) && !is_decisive(ttData.value)
-         && !is_decisive(bestValue) && depth > 7 && ttData.depth > 7) ? 
+        (moveCount && is_valid(ttData.value) && !is_decisive(ttData.value) && !is_decisive(bestValue) && depth > 7) ? 
             std::clamp(bestValue - ttData.value, -49, 100):
             0;
 
