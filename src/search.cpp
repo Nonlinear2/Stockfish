@@ -1371,7 +1371,7 @@ moves_loop:  // When in check, search starts here
     Value ttValueDifference = 
         (moveCount && is_valid(ttData.value) && !is_decisive(ttData.value)
          && !is_decisive(bestValue) && depth > 7 && ttData.depth > 7) ? 
-            std::clamp((bestValue - ttData.value)/3, -45, 65):
+            std::clamp(bestValue - ttData.value, -49, 100):
             0;
 
     if (!moveCount)
@@ -1395,15 +1395,15 @@ moves_loop:  // When in check, search starts here
         bonus = std::max(bonus, 0);
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      stat_bonus(depth) * bonus / 84 + ttValueDifference);
+                                      stat_bonus(depth) * bonus / 84 + ttValueDifference * 100/52);
 
         thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << stat_bonus(depth) * bonus / 174 + ttValueDifference;
+          << stat_bonus(depth) * bonus / 174 + ttValueDifference * 100/49;
 
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << stat_bonus(depth) * bonus / 25 + ttValueDifference;
+              << stat_bonus(depth) * bonus / 25 + ttValueDifference * 100/48;
     }
 
     else if (priorCapture && prevSq != SQ_NONE)
@@ -1412,12 +1412,12 @@ moves_loop:  // When in check, search starts here
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
         thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)]
-          << stat_bonus(depth) * 2 + ttValueDifference;
+          << stat_bonus(depth) * 2 + ttValueDifference * 100/49;
     }
 
     // Bonus when search fails low and there is a TT move
     else if (ttData.move && !allNode)
-        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * 22/100 + ttValueDifference;
+        thisThread->mainHistory[us][ttData.move.from_to()] << stat_bonus(depth) * 22/100 + ttValueDifference * 100/52;
 
     if (PvNode)
         bestValue = std::min(bestValue, maxValue);
