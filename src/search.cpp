@@ -867,7 +867,7 @@ Value Search::Worker::search(
     // Step 11. ProbCut (~10 Elo)
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 187 - 56 * improving - 18*(!is_loss(nmpLowerBound) && (beta <= nmpLowerBound + 20));
+    probCutBeta = beta + 187 - 56 * improving;
     if (!PvNode && depth > 3
         && !is_decisive(beta)
         // If value from transposition table is lower than probCutBeta, don't attempt
@@ -936,7 +936,7 @@ Value Search::Worker::search(
 moves_loop:  // When in check, search starts here
 
     // Step 12. A small Probcut idea (~4 Elo)
-    probCutBeta = beta + 417;
+    probCutBeta = beta + 417 - 17*(!is_loss(nmpLowerBound) && (beta <= nmpLowerBound + 15));
     if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - 4 && ttData.value >= probCutBeta
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value))
         return probCutBeta;
