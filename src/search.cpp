@@ -1012,7 +1012,7 @@ moves_loop:  // When in check, search starts here
                     if (futilityValue <= alpha)
                         continue;
                     
-                    if (depth < 4 && !pos.see_ge(move, -35 * lmrDepth * lmrDepth + std::min(alpha - ss->staticEval - 50, 0)))
+                    if (!pos.see_ge(move, -40 * lmrDepth * lmrDepth + std::min(alpha - ss->staticEval - 50, 0)))
                         continue;
                 }
 
