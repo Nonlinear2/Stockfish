@@ -1319,7 +1319,7 @@ moves_loop:  // When in check, search starts here
         int inc = (value == bestValue && ss->ply + 2 >= thisThread->rootDepth
                    && (int(nodes) & 15) == 0 && !is_win(std::abs(value) + 1));
 
-        int double_inc = 2 * (PvNode && ss->ply + 1 >= thisThread->rootDepth
+        int double_inc = 2 * (ss->ply + 1 >= thisThread->rootDepth && depth > 8
                 && (int(nodes) & 31) == 0 && !is_win(std::abs(value) + 2)
                 && !is_singular && value == bestValue - 1);
 
