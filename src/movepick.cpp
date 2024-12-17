@@ -210,7 +210,7 @@ Move MovePicker::select(Pred filter) {
 // This is the most important method of the MovePicker class. We emit one
 // new pseudo-legal move on every call until there are no more moves left,
 // picking the move with the highest score from a list of generated moves.
-Move MovePicker::next_move() {
+Move MovePicker::next_move(int* numCapturesGenerated) {
 
     auto quiet_threshold = [](Depth d) { return -3560 * d; };
 
@@ -230,6 +230,9 @@ top:
     case QCAPTURE_INIT :
         cur = endBadCaptures = moves;
         endMoves             = generate<CAPTURES>(pos, cur);
+
+        if (numCapturesGenerated != NULL)
+            *numCapturesGenerated = endMoves - cur;
 
         score<CAPTURES>();
         partial_insertion_sort(cur, endMoves, std::numeric_limits<int>::min());
