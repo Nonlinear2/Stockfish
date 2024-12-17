@@ -942,6 +942,7 @@ moves_loop:  // When in check, search starts here
 
     value = bestValue;
 
+    bool singleLegalMove = (mp.stage == 8 && excludedMove == Move::none()); // EVASION_INIT
     int moveCount = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
@@ -967,6 +968,8 @@ moves_loop:  // When in check, search starts here
 
         ss->moveCount = ++moveCount;
 
+        singleLegalMove &= (mp.endMoves == mp.moves+1);
+
         if (rootNode && is_mainthread() && nodes > 10000000)
         {
             main_manager()->updates.onIter(
@@ -975,7 +978,7 @@ moves_loop:  // When in check, search starts here
         if (PvNode)
             (ss + 1)->pv = nullptr;
 
-        extension  = 0;
+        extension  = singleLegalMove;
         capture    = pos.capture_stage(move);
         movedPiece = pos.moved_piece(move);
         givesCheck = pos.gives_check(move);
