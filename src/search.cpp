@@ -946,7 +946,6 @@ moves_loop:  // When in check, search starts here
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
-    bool is_singular = true;
     while ((move = mp.next_move()) != Move::none())
     {
         assert(move.is_ok());
@@ -1127,8 +1126,6 @@ moves_loop:  // When in check, search starts here
                                                   [type_of(pos.piece_on(move.to_sq()))]
                           > 4321)
                 extension = 1;
-            else
-                is_singular = false;
         }
 
         // Add extension to new depth
@@ -1319,9 +1316,8 @@ moves_loop:  // When in check, search starts here
         int inc = (value == bestValue && ss->ply + 2 >= thisThread->rootDepth
                    && (int(nodes) & 15) == 0 && !is_win(std::abs(value) + 1));
 
-        int double_inc = 2 * (ss->ply + 1 >= thisThread->rootDepth && depth > 8
-                && (int(nodes) & 31) == 0 && !is_win(std::abs(value) + 2)
-                && !is_singular && value == bestValue - 1);
+        int double_inc = 2 * (allNode && ss->ply + 1 >= thisThread->rootDepth && depth > 8
+                && (int(nodes) & 31) == 0 && !is_win(std::abs(value) + 2) && value == bestValue - 1);
 
         if (value + inc + double_inc > bestValue)
         {
