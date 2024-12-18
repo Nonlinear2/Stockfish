@@ -130,6 +130,9 @@ enum StatsType {
 // see https://www.chessprogramming.org/Butterfly_Boards (~11 elo)
 using ButterflyHistory = Stats<int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
 
+// accessed by [color][from_to][opponent king sq]
+using CheckHistory = Stats<int16_t, 10692, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB), SQUARE_NB>;
+
 // LowPlyHistory is adressed by play and move's from and to squares, used
 // to improve move ordering near the root
 using LowPlyHistory = Stats<int16_t, 7183, LOW_PLY_HISTORY_SIZE, int(SQUARE_NB) * int(SQUARE_NB)>;

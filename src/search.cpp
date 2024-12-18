@@ -52,6 +52,21 @@
 
 namespace Stockfish {
 
+int a1 = -758, a2 = 33, a3 = -161, a4 = 156, a5 = 33, a6 = -161, a7 = 156, a8 = -162;
+int s1 = 0, s2 = 1000;
+
+TUNE(SetRange(-3000, 3000), a1);
+TUNE(SetRange(-250, 250), a2);
+TUNE(SetRange(-1000, 1000), a3);
+TUNE(SetRange(-1000, 1000), a4);
+TUNE(SetRange(-250, 250), a5);
+TUNE(SetRange(-1000, 1000), a6);
+TUNE(SetRange(-1000, 1000), a7);
+TUNE(SetRange(-1000, 1000), a8);
+
+TUNE(SetRange(-5000, 5000), s1);
+TUNE(SetRange(-10000, 10000), s2);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -503,6 +518,7 @@ void Search::Worker::clear() {
     mainHistory.fill(0);
     lowPlyHistory.fill(0);
     captureHistory.fill(-758);
+    checkHistory.fill(a1);
     pawnHistory.fill(-1158);
     pawnCorrectionHistory.fill(0);
     majorPieceCorrectionHistory.fill(0);
@@ -576,6 +592,7 @@ Value Search::Worker::search(
     ss->inCheck        = pos.checkers();
     priorCapture       = pos.captured_piece();
     Color us           = pos.side_to_move();
+    Square oppKingSq   = pos.square<KING>(~pos.side_to_move());
     ss->moveCount      = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
@@ -1014,8 +1031,14 @@ moves_loop:  // When in check, search starts here
                 }
 
                 // SEE based pruning for captures and checks (~11 Elo)
-                int seeHist = std::clamp(captHist / 33, -161 * depth, 156 * depth);
-                if (!pos.see_ge(move, -162 * depth - seeHist))
+                int seeHist = std::clamp(captHist / a2, a3 * depth, a4 * depth);
+                int seeCheckHist = 0;
+
+                if (givesCheck && !capture)
+                    seeCheckHist = std::clamp(thisThread->checkHistory[us][move.from_to()][oppKingSq] / a5,
+                                              a6 * depth, a7 * depth);
+
+                if (!pos.see_ge(move, a8 * depth - seeHist - seeCheckHist))
                     continue;
             }
             else
@@ -1189,6 +1212,10 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore * 1287 / 16384;
+
+        r += s1;
+        if (givesCheck && !capture)
+            r += checkHistory[us][move.from_to()][oppKingSq] * s2 / 1000;
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
@@ -1800,7 +1827,10 @@ void update_all_stats(const Position&      pos,
                       Depth                depth) {
 
     CapturePieceToHistory& captureHistory = workerThread.captureHistory;
+    CheckHistory&          checkHistory   = workerThread.checkHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
+    Color                  us             = pos.side_to_move();
+    Square                 oppKingSquare     = pos.square<KING>(~us);
     PieceType              captured;
 
     int bonus = stat_bonus(depth);
@@ -1810,9 +1840,18 @@ void update_all_stats(const Position&      pos,
     {
         update_quiet_histories(pos, ss, workerThread, bestMove, bonus);
 
+        if (pos.gives_check(bestMove))
+            checkHistory[us][bestMove.from_to()][oppKingSquare] << bonus;
+
         // Decrease stats for all non-best quiet moves
         for (Move move : quietsSearched)
+        {
             update_quiet_histories(pos, ss, workerThread, move, -malus);
+
+            if (pos.gives_check(move))
+                checkHistory[us][move.from_to()][oppKingSquare] << -malus;
+
+        }
     }
     else
     {
