@@ -1547,7 +1547,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, ss);
 
-            bestValue += (!pos.captured_piece() && (ss - 2)->numLegalCaptures > 8) * 19;
+            bestValue += (!pos.captured_piece() && (ss - 2)->numLegalCaptures > 8) * 8;
 
             // ttValue can be used as a better position evaluation (~13 Elo)
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
@@ -1563,7 +1563,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 : -(ss - 1)->staticEval;
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, ss);
-            bestValue += (!pos.captured_piece() && (ss - 2)->numLegalCaptures > 8) * 19;
+            bestValue += (!pos.captured_piece() && (ss - 2)->numLegalCaptures > 8) * 8;
         }
 
         // Stand pat. Return immediately if static value is at least beta
