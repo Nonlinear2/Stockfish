@@ -538,7 +538,7 @@ Value Search::Worker::search(
 
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
-        return qsearch < PvNode ? PV : NonPV > (pos, ss, alpha, beta) + ((int(nodes) & 511) == 0) * (- 1 + Value(this->nodes & 0x2));
+        return qsearch < PvNode ? PV : NonPV > (pos, ss, alpha, beta) + ((int(nodes) & 16383) == 0) * (- 1 + Value(this->nodes & 0x2));
 
     // Limit the depth if extensions made it too large
     depth = std::min(depth, MAX_PLY - 1);
@@ -845,7 +845,7 @@ Value Search::Worker::search(
 
     // Use qsearch if depth <= 0
     if (depth <= 0)
-        return qsearch<PV>(pos, ss, alpha, beta) + ((int(nodes) & 511) == 0) * (- 1 + Value(nodes & 0x2));
+        return qsearch<PV>(pos, ss, alpha, beta) + ((int(nodes) & 16383) == 0) * (- 1 + Value(nodes & 0x2));
 
     // For cutNodes, if depth is high enough, decrease depth by 2 if there is no ttMove,
     // or by 1 if there is a ttMove with an upper bound.
