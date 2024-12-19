@@ -52,21 +52,6 @@
 
 namespace Stockfish {
 
-int a1 = -758, a2 = 33, a3 = -161, a4 = 156, a5 = 33, a6 = -161, a7 = 156, a8 = -162;
-int s1 = 0, s2 = 1000;
-
-TUNE(SetRange(-3000, 3000), a1);
-TUNE(SetRange(-250, 250), a2);
-TUNE(SetRange(-1000, 1000), a3);
-TUNE(SetRange(-1000, 1000), a4);
-TUNE(SetRange(-250, 250), a5);
-TUNE(SetRange(-1000, 1000), a6);
-TUNE(SetRange(-1000, 1000), a7);
-TUNE(SetRange(-1000, 1000), a8);
-
-TUNE(SetRange(-5000, 5000), s1);
-TUNE(SetRange(-10000, 10000), s2);
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -518,7 +503,7 @@ void Search::Worker::clear() {
     mainHistory.fill(0);
     lowPlyHistory.fill(0);
     captureHistory.fill(-758);
-    checkHistory.fill(a1);
+    checkHistory.fill(-581);
     pawnHistory.fill(-1158);
     pawnCorrectionHistory.fill(0);
     majorPieceCorrectionHistory.fill(0);
@@ -1031,14 +1016,14 @@ moves_loop:  // When in check, search starts here
                 }
 
                 // SEE based pruning for captures and checks (~11 Elo)
-                int seeHist = std::clamp(captHist / a2, a3 * depth, a4 * depth);
+                int seeHist = std::clamp(captHist / 71, -181 * depth, 189 * depth);
                 int seeCheckHist = 0;
 
                 if (givesCheck && !capture)
-                    seeCheckHist = std::clamp(thisThread->checkHistory[us][move.from_to()][oppKingSq] / a5,
-                                              a6 * depth, a7 * depth);
+                    seeCheckHist = std::clamp(thisThread->checkHistory[us][move.from_to()][oppKingSq] / 59,
+                                              -134 * depth, 361 * depth);
 
-                if (!pos.see_ge(move, a8 * depth - seeHist - seeCheckHist))
+                if (!pos.see_ge(move, -220 * depth - seeHist - seeCheckHist))
                     continue;
             }
             else
@@ -1213,9 +1198,7 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore * 1287 / 16384;
 
-        r += s1;
-        if (givesCheck && !capture)
-            r += checkHistory[us][move.from_to()][oppKingSq] * s2 / 1000;
+        r += 264;
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
