@@ -940,7 +940,8 @@ moves_loop:  // When in check, search starts here
 
 
     MovePicker mp(pos, ttData.move, depth, &thisThread->mainHistory, &thisThread->lowPlyHistory,
-                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory, ss->ply);
+                  &thisThread->captureHistory, &thisThread->checkHistory, oppKingSq,
+                  contHist, &thisThread->pawnHistory, ss->ply);
 
     value = bestValue;
 
@@ -1016,14 +1017,8 @@ moves_loop:  // When in check, search starts here
                 }
 
                 // SEE based pruning for captures and checks (~11 Elo)
-                int seeHist = std::clamp(captHist / 71, -181 * depth, 189 * depth);
-                int seeCheckHist = 0;
-
-                if (givesCheck && !capture)
-                    seeCheckHist = std::clamp(thisThread->checkHistory[us][move.from_to()][oppKingSq] / 59,
-                                              -134 * depth, 361 * depth);
-
-                if (!pos.see_ge(move, -220 * depth - seeHist - seeCheckHist))
+                int seeHist = std::clamp(captHist / 33, -161 * depth, 156 * depth);
+                if (!pos.see_ge(move, -162 * depth - seeHist))
                     continue;
             }
             else
@@ -1197,8 +1192,6 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore * 1287 / 16384;
-
-        r += 264;
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
@@ -1501,6 +1494,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     bool  pvHit, givesCheck, capture;
     int   moveCount;
     Color us = pos.side_to_move();
+    Square oppKingSquare = pos.square<KING>(~us);
 
     // Step 1. Initialize node
     if (PvNode)
@@ -1600,7 +1594,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // the moves. We presently use two stages of move generator in quiescence search:
     // captures, or evasions only when in check.
     MovePicker mp(pos, ttData.move, DEPTH_QS, &thisThread->mainHistory, &thisThread->lowPlyHistory,
-                  &thisThread->captureHistory, contHist, &thisThread->pawnHistory, ss->ply);
+                  &thisThread->captureHistory, &thisThread->checkHistory, oppKingSquare,
+                  contHist, &thisThread->pawnHistory, ss->ply);
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.
@@ -1823,7 +1818,7 @@ void update_all_stats(const Position&      pos,
     {
         update_quiet_histories(pos, ss, workerThread, bestMove, bonus);
 
-        if (pos.gives_check(bestMove))
+        if (pos.check_squares(type_of(moved_piece)) & bestMove.to_sq())
             checkHistory[us][bestMove.from_to()][oppKingSquare] << bonus;
 
         // Decrease stats for all non-best quiet moves
@@ -1831,7 +1826,7 @@ void update_all_stats(const Position&      pos,
         {
             update_quiet_histories(pos, ss, workerThread, move, -malus);
 
-            if (pos.gives_check(move))
+            if (pos.check_squares(type_of(moved_piece)) & bestMove.to_sq())
                 checkHistory[us][move.from_to()][oppKingSquare] << -malus;
 
         }

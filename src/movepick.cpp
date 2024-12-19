@@ -84,6 +84,8 @@ MovePicker::MovePicker(const Position&              p,
                        const ButterflyHistory*      mh,
                        const LowPlyHistory*         lph,
                        const CapturePieceToHistory* cph,
+                       const CheckHistory*          ckh,
+                       Square                       oks,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
                        int                          pl) :
@@ -91,6 +93,8 @@ MovePicker::MovePicker(const Position&              p,
     mainHistory(mh),
     lowPlyHistory(lph),
     captureHistory(cph),
+    checkHistory(ckh),
+    oppKingSquare(oks),
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
@@ -165,7 +169,10 @@ void MovePicker::score() {
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += bool(pos.check_squares(pt) & to) * 16384;
+            bool givesCheck = (pos.check_squares(pt) & to);
+            m.value += givesCheck * 15384;
+            if (givesCheck)
+                m.value += thisThread->checkHistory[pos.side_to_move()][move.from_to()][oppKingSquare];
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 51700

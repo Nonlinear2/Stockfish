@@ -44,6 +44,8 @@ class MovePicker {
                const ButterflyHistory*,
                const LowPlyHistory*,
                const CapturePieceToHistory*,
+               const CheckHistory*,
+               Square,
                const PieceToHistory**,
                const PawnHistory*,
                int);
@@ -63,6 +65,8 @@ class MovePicker {
     const ButterflyHistory*      mainHistory;
     const LowPlyHistory*         lowPlyHistory;
     const CapturePieceToHistory* captureHistory;
+    const CheckHistory*          checkHistory;
+    Square                       oppKingSquare;
     const PieceToHistory**       continuationHistory;
     const PawnHistory*           pawnHistory;
     Move                         ttMove;
