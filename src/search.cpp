@@ -538,7 +538,7 @@ Value Search::Worker::search(
 
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
-        return qsearch < PvNode ? PV : NonPV > (pos, ss, alpha, beta) + ((int(nodes) & 16383) == 0) * (- 1 + Value(this->nodes & 0x2));
+        return qsearch < PvNode ? PV : NonPV > (pos, ss, alpha, beta);
 
     // Limit the depth if extensions made it too large
     depth = std::min(depth, MAX_PLY - 1);
@@ -845,7 +845,7 @@ Value Search::Worker::search(
 
     // Use qsearch if depth <= 0
     if (depth <= 0)
-        return qsearch<PV>(pos, ss, alpha, beta) + ((int(nodes) & 16383) == 0) * (- 1 + Value(nodes & 0x2));
+        return qsearch<PV>(pos, ss, alpha, beta);
 
     // For cutNodes, if depth is high enough, decrease depth by 2 if there is no ttMove,
     // or by 1 if there is a ttMove with an upper bound.
@@ -1561,6 +1561,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 : -(ss - 1)->staticEval;
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, *thisThread, pos, ss);
+            
+            bestValue += ((int(nodes) & 63) == 0) * (- 1 + Value(this->nodes & 0x2));
         }
 
         // Stand pat. Return immediately if static value is at least beta
