@@ -1190,7 +1190,7 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore * 1287 / 16384;
         
-        r -= (bestMove != Move::none() && move.from_sq() == bestMove.from_sq() && depth < 8)* 1200;
+        r -= (bestMove != Move::none() && move.from_sq() == bestMove.from_sq() && depth < 5) * 900;
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
