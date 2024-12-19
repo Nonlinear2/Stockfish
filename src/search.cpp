@@ -1019,7 +1019,7 @@ moves_loop:  // When in check, search starts here
                 int seeHist = std::clamp(captHist / 71, -181 * depth, 189 * depth);
                 int seeCheckHist = 0;
 
-                if (givesCheck && !capture)
+                if (pos.check_squares(type_of(movedPiece)) & move.to_sq() && !capture)
                     seeCheckHist = std::clamp(thisThread->checkHistory[us][move.from_to()][oppKingSq] / 59,
                                               -134 * depth, 361 * depth);
 
@@ -1823,7 +1823,7 @@ void update_all_stats(const Position&      pos,
     {
         update_quiet_histories(pos, ss, workerThread, bestMove, bonus);
 
-        if (pos.gives_check(bestMove))
+        if (pos.check_squares(type_of(moved_piece)) & bestMove.to_sq())
             checkHistory[us][bestMove.from_to()][oppKingSquare] << bonus;
 
         // Decrease stats for all non-best quiet moves
@@ -1831,7 +1831,7 @@ void update_all_stats(const Position&      pos,
         {
             update_quiet_histories(pos, ss, workerThread, move, -malus);
 
-            if (pos.gives_check(move))
+            if (pos.check_squares(type_of(moved_piece)) & bestMove.to_sq())
                 checkHistory[us][move.from_to()][oppKingSquare] << -malus;
 
         }
