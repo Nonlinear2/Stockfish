@@ -172,7 +172,7 @@ void MovePicker::score() {
             bool givesCheck = (pos.check_squares(pt) & to);
             m.value += givesCheck * 15384;
             if (givesCheck)
-                m.value += *checkHistory[pos.side_to_move()][m.from_to()][oppKingSquare];
+                m.value += (*checkHistory)[pos.side_to_move()][m.from_to()][oppKingSquare];
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 51700
