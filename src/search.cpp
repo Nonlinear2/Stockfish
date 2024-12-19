@@ -1808,7 +1808,7 @@ void update_all_stats(const Position&      pos,
     CheckHistory&          checkHistory   = workerThread.checkHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     Color                  us             = pos.side_to_move();
-    Square                 oppKingSquare     = pos.square<KING>(~us);
+    Square                 oppKingSquare  = pos.square<KING>(~us);
     PieceType              captured;
 
     int bonus = stat_bonus(depth);
