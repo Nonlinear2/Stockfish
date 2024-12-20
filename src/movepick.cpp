@@ -170,7 +170,7 @@ void MovePicker::score() {
 
             // bonus for checks
             bool givesCheck = (pos.check_squares(pt) & to);
-            m.value += givesCheck * 13384;
+            m.value += givesCheck * 10384;
             if (givesCheck)
                 m.value += (*checkHistory)[pos.side_to_move()][m.from_to()][oppKingSquare];
 
