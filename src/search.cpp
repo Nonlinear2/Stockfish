@@ -777,7 +777,7 @@ Value Search::Worker::search(
     // search suggests we cannot exceed alpha, return a speculative fail low.
     if (eval < alpha - 469 - 307 * depth * depth)
     {
-        value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
+        value = qsearch<NonPV>(pos, ss, alpha - 1, alpha, posKey, ttData, ttWriter);
         if (value < alpha && !is_decisive(value))
             return value;
     }
@@ -1466,7 +1466,7 @@ moves_loop:  // When in check, search starts here
 // See https://www.chessprogramming.org/Horizon_Effect
 // and https://www.chessprogramming.org/Quiescence_Search
 template<NodeType nodeType>
-Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta) {
+Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Key key, TTData data, TTWriter writer) {
 
     static_assert(nodeType != Root);
     constexpr bool PvNode = nodeType == PV;
@@ -1516,12 +1516,28 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     // Step 3. Transposition table lookup
-    posKey                         = pos.key();
-    auto [ttHit, ttData, ttWriter] = tt.probe(posKey);
+    bool ttHit;
+    TTData ttData;
+    TTWriter ttWriter;
+
+    if (is_valid(data.value))
+    {
+        posKey = key;
+        ss->ttHit = ttHit = true;
+        ttData = data;
+        ttWriter = writer;
+    }
+    else
+    {
+        posKey = pos.key();
+        auto probe = tt.probe(posKey);
+        ss->ttHit = ttHit = std::get<0>(probe);
+        ttData = std::get<1>(probe);
+        ttWriter = std::get<2>(probe);
+        ttData.move  = ttHit ? ttData.move : Move::none();
+        ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
+    }
     // Need further processing of the saved data
-    ss->ttHit    = ttHit;
-    ttData.move  = ttHit ? ttData.move : Move::none();
-    ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     pvHit        = ttHit && ttData.is_pv;
 
     // At non-PV nodes we check for an early TT cutoff

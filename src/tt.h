@@ -47,7 +47,8 @@ struct Cluster;
 // A copy of the data already in the entry (possibly collided). `probe` may be racy, resulting in inconsistent data.
 struct TTData {
     Move  move;
-    Value value, eval;
+    Value value = VALUE_NONE;
+    Value eval;
     Depth depth;
     Bound bound;
     bool  is_pv;
@@ -58,7 +59,7 @@ struct TTData {
 struct TTWriter {
    public:
     void write(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, uint8_t generation8);
-
+    TTWriter();
    private:
     friend class TranspositionTable;
     TTEntry* entry;

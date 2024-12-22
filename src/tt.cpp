@@ -124,6 +124,8 @@ uint8_t TTEntry::relative_age(const uint8_t generation8) const {
 
 
 // TTWriter is but a very thin wrapper around the pointer
+TTWriter::TTWriter() {}
+
 TTWriter::TTWriter(TTEntry* tte) :
     entry(tte) {}
 

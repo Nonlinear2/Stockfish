@@ -40,6 +40,7 @@
 #include "score.h"
 #include "syzygy/tbprobe.h"
 #include "timeman.h"
+#include "tt.h"
 #include "types.h"
 
 namespace Stockfish {
@@ -300,7 +301,7 @@ class Worker {
 
     // Quiescence search function, which is called by the main search
     template<NodeType nodeType>
-    Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta);
+    Value qsearch(Position& pos, Stack* ss, Value alpha, Value beta, Key key = 0, TTData data = TTData(), TTWriter writer = TTWriter());
 
     Depth reduction(bool i, Depth d, int mn, int delta) const;
 
