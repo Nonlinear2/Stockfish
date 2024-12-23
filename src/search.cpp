@@ -775,7 +775,8 @@ Value Search::Worker::search(
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
     // search suggests we cannot exceed alpha, return a speculative fail low.
-    if (eval < alpha - 469 - 307 * depth * depth)
+    if (eval < alpha - 469 - 307 * depth * depth
+        && !(ttData.depth >= DEPTH_QS && is_valid(ttData.value) && ttData.value > eval + 400 && (ttData.bound & BOUND_LOWER)))
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha && !is_decisive(value))
