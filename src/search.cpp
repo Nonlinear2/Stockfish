@@ -777,6 +777,10 @@ Value Search::Worker::search(
     // search suggests we cannot exceed alpha, return a speculative fail low.
     if (eval < alpha - 469 - 307 * depth * depth)
     {
+        if (ttData.depth >= DEPTH_QS && is_valid(ttData.value) && !is_decisive(ttData.value)
+            && ttData.value < alpha && (ttData.bound & BOUND_UPPER))
+            return ttData.value;
+
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha && !is_decisive(value))
             return value;
