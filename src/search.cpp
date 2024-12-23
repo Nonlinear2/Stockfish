@@ -580,6 +580,7 @@ Value Search::Worker::search(
     ss->moveCount      = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    bool triedRazoring = false;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -777,6 +778,7 @@ Value Search::Worker::search(
     // search suggests we cannot exceed alpha, return a speculative fail low.
     if (eval < alpha - 469 - 307 * depth * depth)
     {
+        triedRazoring = true;
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha && !is_decisive(value))
             return value;
@@ -924,6 +926,13 @@ moves_loop:  // When in check, search starts here
     if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - 4 && ttData.value >= probCutBeta
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value))
         return probCutBeta;
+
+    if (!triedRazoring && eval < alpha - 669 - 487 * depth * depth)
+    {
+        value = qsearch<PvNode ? PV : NonPV>(pos, ss, alpha - 1, alpha);
+        if (value < alpha && !is_decisive(value))
+            return value;
+    }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
                                         (ss - 2)->continuationHistory,
