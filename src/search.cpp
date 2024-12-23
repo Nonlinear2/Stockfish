@@ -1189,8 +1189,8 @@ moves_loop:  // When in check, search starts here
         // Increase reduction if next ply has a lot of fail high (~5 Elo)
         if ((ss + 1)->cutoffCnt > 3)
             r += 938 + allNode * 960;
-        else if ((ss - 1)->cutoffCnt > 4 && r < 5000 && allNode)
-            r += 900;
+        else if ((ss - 1)->cutoffCnt > 5)
+            r += 550 + allNode * 580;
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
