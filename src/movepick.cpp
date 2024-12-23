@@ -86,7 +86,8 @@ MovePicker::MovePicker(const Position&              p,
                        const CapturePieceToHistory* cph,
                        const PieceToHistory**       ch,
                        const PawnHistory*           ph,
-                       int                          pl) :
+                       int                          pl,
+                       Move                         pcm) :
     pos(p),
     mainHistory(mh),
     lowPlyHistory(lph),
@@ -94,6 +95,7 @@ MovePicker::MovePicker(const Position&              p,
     continuationHistory(ch),
     pawnHistory(ph),
     ttMove(ttm),
+    prevCurrMove(pcm),
     depth(d),
     ply(pl) {
 
@@ -181,6 +183,11 @@ void MovePicker::score() {
 
             if (ply < LOW_PLY_HISTORY_SIZE)
                 m.value += 8 * (*lowPlyHistory)[ply][m.from_to()] / (1 + 2 * ply);
+            
+            if (prevCurrMove.is_ok() && prevCurrMove.from_sq() == m.from_sq())
+                m.value += 2000;
+            if (prevCurrMove.is_ok() && prevCurrMove.to_sq() == m.to_sq())
+                m.value += 2000;
         }
 
         else  // Type == EVASIONS
