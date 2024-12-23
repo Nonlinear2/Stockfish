@@ -775,10 +775,12 @@ Value Search::Worker::search(
     // Step 7. Razoring (~1 Elo)
     // If eval is really low, check with qsearch if we can exceed alpha. If the
     // search suggests we cannot exceed alpha, return a speculative fail low.
-    if (eval < alpha - 469 - 307 * depth * depth)
+    if (eval < alpha - 454 - 307 * depth * depth)
     {
+        int nodesDifference = thisThread->nodes;
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
-        if (value < alpha && !is_decisive(value))
+        nodesDifference = thisThread->nodes - nodesDifference;
+        if (value < alpha && !is_decisive(value) && nodesDifference < 45)
             return value;
     }
 
