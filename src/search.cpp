@@ -1173,8 +1173,8 @@ moves_loop:  // When in check, search starts here
         if ((ss + 1)->cutoffCnt > 3)
             r += 938 + allNode * 960;
 
-        else if ((ss - 1)->cutoffCnt > 5)
-            r += 550 + allNode * 580;
+        else if ((ss - 1)->cutoffCnt > 5 && allNode)
+            r += 1000;
 
         // For first picked move (ttMove) reduce reduction (~3 Elo)
         else if (move == ttData.move)
