@@ -929,7 +929,7 @@ moves_loop:  // When in check, search starts here
 
     if (!triedRazoring && eval < alpha - 650 - 480 * depth * depth)
     {
-        int margin = 150
+        int margin = 150;
         value = qsearch<PvNode ? PV : NonPV>(pos, ss, alpha - margin - 1, alpha - margin);
         if (value < alpha - margin && !is_decisive(value))
             return value;
