@@ -27,34 +27,6 @@
 
 namespace Stockfish {
 
-int a1 = 200, a2 = 200, a3 = 100, a4 = 100, a5 = 100, a6 = 100, a7 = 100,
-    a8 = 16384,
-    a9 = 51700, a10 = 25600, a11 = 14450,
-    a12 = 49000, a13 = 24335,
-    a14 = 800,
-    b1 = 2000,
-    b2 = 2000;
-
-TUNE(SetRange(0, 1000), a1);
-TUNE(SetRange(0, 1000), a2);
-TUNE(SetRange(0, 1000), a3);
-TUNE(SetRange(0, 1000), a4);
-TUNE(SetRange(0, 1000), a5);
-TUNE(SetRange(0, 1000), a6);
-TUNE(SetRange(0, 1000), a7);
-
-TUNE(SetRange(0, 100000), a8);
-TUNE(SetRange(0, 100000), a9);
-TUNE(SetRange(0, 100000), a10);
-TUNE(SetRange(0, 100000), a11);
-TUNE(SetRange(0, 100000), a12);
-TUNE(SetRange(0, 100000), a13);
-
-TUNE(SetRange(0, 10000), a14);
-
-TUNE(SetRange(-8000, 80000), b1);
-TUNE(SetRange(-8000, 80000), b2);
-
 namespace {
 
 enum Stages {
@@ -186,36 +158,36 @@ void MovePicker::score() {
             Square    to   = m.to_sq();
 
             // histories
-            m.value =  a1 * (*mainHistory)[pos.side_to_move()][m.from_to()] / 100;
-            m.value += a2 * (*pawnHistory)[pawn_structure_index(pos)][pc][to] / 100;
-            m.value += a3 * (*continuationHistory[0])[pc][to] / 100;
-            m.value += a4 * (*continuationHistory[1])[pc][to] / 100;
-            m.value += a5 * (*continuationHistory[2])[pc][to] / 100;
-            m.value += a6 * (*continuationHistory[3])[pc][to] / 100;
-            m.value += a7 * (*continuationHistory[5])[pc][to] / 100;
+            m.value =  163 * (*mainHistory)[pos.side_to_move()][m.from_to()] / 100;
+            m.value += 173 * (*pawnHistory)[pawn_structure_index(pos)][pc][to] / 100;
+            m.value += 106 * (*continuationHistory[0])[pc][to] / 100;
+            m.value += 128 * (*continuationHistory[1])[pc][to] / 100;
+            m.value += 59 * (*continuationHistory[2])[pc][to] / 100;
+            m.value += 120 * (*continuationHistory[3])[pc][to] / 100;
+            m.value += 107 * (*continuationHistory[5])[pc][to] / 100;
 
             // bonus for checks
-            m.value += bool(pos.check_squares(pt) & to) * a8;
+            m.value += bool(pos.check_squares(pt) & to) * 14429;
 
             // bonus for escaping from capture
-            m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? a9
-                                                  : pt == ROOK && !(to & threatenedByMinor) ? a10
-                                                  : !(to & threatenedByPawn)                ? a11
+            m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 50607
+                                                  : pt == ROOK && !(to & threatenedByMinor) ? 26088
+                                                  : !(to & threatenedByPawn)                ? 10798
                                                                                             : 0)
                                                : 0;
 
             // malus for putting piece en prise
-            m.value -= (pt == QUEEN ? bool(to & threatenedByRook) * a12
-                        : pt == ROOK && bool(to & threatenedByMinor) ? a13
+            m.value -= (pt == QUEEN ? bool(to & threatenedByRook) * 47542
+                        : pt == ROOK && bool(to & threatenedByMinor) ? 24027
                                                                      : 0);
 
             if (ply < LOW_PLY_HISTORY_SIZE)
-                m.value += a14 * (*lowPlyHistory)[ply][m.from_to()] / (100 * (1 + 2 * ply));
+                m.value += 784 * (*lowPlyHistory)[ply][m.from_to()] / (100 * (1 + 2 * ply));
             
             if (prevCurrMove.is_ok() && prevCurrMove.from_sq() == m.from_sq())
-                m.value += b1;
+                m.value += 1890;
             if (prevCurrMove.is_ok() && prevCurrMove.to_sq() == m.to_sq())
-                m.value += b2;
+                m.value += 1056;
 
         }
 
