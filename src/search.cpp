@@ -564,7 +564,7 @@ Value Search::Worker::search(
     Key   posKey;
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
-    Value bestValue, value, eval, maxValue, probCutBeta;
+    Value bestValue, value, eval, maxValue, probCutBeta, probCutAlpha;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
     Piece movedPiece;
@@ -779,6 +779,15 @@ Value Search::Worker::search(
     {
         value = qsearch<NonPV>(pos, ss, alpha - 1, alpha);
         if (value < alpha && !is_decisive(value))
+            return value;
+    }
+
+    probCutAlpha = alpha - 400 - 307 * depth;
+    if ((ttData.bound & BOUND_UPPER) && ttData.depth >= depth - 4 && ttData.value <= probCutAlpha
+        && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value))
+    {
+        value = qsearch<NonPV>(pos, ss, probCutAlpha - 1, probCutAlpha);
+        if (value < probCutAlpha && !is_decisive(value))
             return value;
     }
 
