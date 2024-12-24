@@ -927,10 +927,11 @@ moves_loop:  // When in check, search starts here
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value))
         return probCutBeta;
 
-    if (!triedRazoring && eval < alpha - 669 - 487 * depth * depth)
+    if (!triedRazoring && eval < alpha - 650 - 480 * depth * depth)
     {
-        value = qsearch<PvNode ? PV : NonPV>(pos, ss, alpha - 1, alpha);
-        if (value < alpha && !is_decisive(value))
+        int margin = 150
+        value = qsearch<PvNode ? PV : NonPV>(pos, ss, alpha - margin - 1, alpha - margin);
+        if (value < alpha - margin && !is_decisive(value))
             return value;
     }
 
