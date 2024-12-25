@@ -783,7 +783,7 @@ Value Search::Worker::search(
     }
 
     probCutAlpha = alpha - 365 - 280 * depth;
-    if (!PvNode && (ttData.bound & BOUND_UPPER) && ttData.depth >= depth - 4 && ttData.value <= probCutAlpha
+    if (allNode && (ttData.bound & BOUND_UPPER) && ttData.depth >= depth - 4 && ttData.value <= probCutAlpha
         && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value))
     {
         value = qsearch<NonPV>(pos, ss, probCutAlpha - 1, probCutAlpha);
