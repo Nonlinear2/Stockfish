@@ -782,7 +782,7 @@ Value Search::Worker::search(
             return value;
     }
 
-    probCutAlpha = alpha - 365 - 280 * depth;
+    probCutAlpha = alpha - 400 - 307 * depth;
     if (allNode && (ttData.bound & BOUND_UPPER) && ttData.depth >= depth - 4 && ttData.value <= probCutAlpha
         && !is_decisive(alpha) && is_valid(ttData.value) && !is_decisive(ttData.value))
     {
