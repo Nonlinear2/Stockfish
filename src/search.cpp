@@ -924,6 +924,16 @@ moves_loop:  // When in check, search starts here
     if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - 4 && ttData.value >= probCutBeta
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value))
         return probCutBeta;
+    
+    if (allNode && ss->inCheck && depth == 1 && !ttHit && !is_decisive(alpha))
+    {
+        Value checkAlpha = alpha - 40;
+        value = qsearch<NonPV>(pos, ss, checkAlpha - 1, checkAlpha);
+        if (value < checkAlpha && !is_decisive(value))
+            return value;
+        
+    }
+
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
                                         (ss - 2)->continuationHistory,
