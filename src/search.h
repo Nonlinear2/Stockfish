@@ -66,11 +66,13 @@ struct Stack {
     CorrectionHistory<PieceTo>* continuationCorrectionHistory;
     int                         ply;
     Move                        currentMove;
+    bool                        currentMoveCapture;
     Move                        excludedMove;
     Value                       staticEval;
     int                         statScore;
     int                         moveCount;
     bool                        inCheck;
+    int                         checkCount;
     bool                        ttPv;
     bool                        ttHit;
     int                         cutoffCnt;
@@ -313,7 +315,7 @@ class Worker {
     TimePoint elapsed() const;
     TimePoint elapsed_time() const;
 
-    Value evaluate(const Position&);
+    Value evaluate(const Position&, int checkCount);
 
     LimitsType limits;
 
