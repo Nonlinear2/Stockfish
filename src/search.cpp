@@ -927,7 +927,7 @@ moves_loop:  // When in check, search starts here
     
     if (allNode && ss->inCheck && depth == 1 && !ttHit && !is_decisive(alpha))
     {
-        Value checkAlpha = alpha - 40;
+        Value checkAlpha = alpha - 140;
         value = qsearch<NonPV>(pos, ss, checkAlpha - 1, checkAlpha);
         if (value < checkAlpha && !is_decisive(value))
             return value;
