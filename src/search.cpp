@@ -1737,8 +1737,8 @@ TimePoint Search::Worker::elapsed() const {
 TimePoint Search::Worker::elapsed_time() const { return main_manager()->tm.elapsed_time(); }
 
 Value Search::Worker::evaluate(const Position& pos, int checkCount) {
-    return 2*Eval::evaluate(networks[numaAccessToken], pos, refreshTable,
-                          optimism[pos.side_to_move()]) / (2 + checkCount/6);
+    return Eval::evaluate(networks[numaAccessToken], pos, refreshTable,
+                          optimism[pos.side_to_move()], checkCount);
 }
 
 namespace {

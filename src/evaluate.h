@@ -48,7 +48,8 @@ bool  use_smallnet(const Position& pos);
 Value evaluate(const NNUE::Networks&          networks,
                const Position&                pos,
                Eval::NNUE::AccumulatorCaches& caches,
-               int                            optimism);
+               int                            optimism,
+               int                            checkCount);
 }  // namespace Eval
 
 }  // namespace Stockfish
