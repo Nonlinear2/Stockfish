@@ -52,6 +52,13 @@
 
 namespace Stockfish {
 
+int stat_bonus_values[] = {-100, 68, 236, 404, 572, 740, 908, 1076, 1244, 1412, 1580, 1718, 1718, 1718, 1718};
+int stat_malus_values[] = {-257, 511, 1279, 2047, 2351, 2351, 2351, 2351, 2351, 2351, 2351, 2351, 2351, 2351, 2351};
+int max_bonus = 1718;
+int max_malus = 2351;
+
+TUNE(SetRange(-10000, 10000), stat_bonus_values, stat_malus_values, max_bonus, max_malus);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -99,10 +106,10 @@ Value to_corrected_static_eval(Value v, const int cv) {
 }
 
 // History and stats update bonus, based on depth
-int stat_bonus(Depth d) { return std::min(168 * d - 100, 1718); }
+int stat_bonus(Depth d) { return d < 15 ? stat_bonus_values[d]: max_bonus; }
 
 // History and stats update malus, based on depth
-int stat_malus(Depth d) { return std::min(768 * d - 257, 2351); }
+int stat_malus(Depth d) { return d < 15 ? stat_malus_values[d]: max_malus; }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
 Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
