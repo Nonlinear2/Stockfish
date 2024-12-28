@@ -739,6 +739,11 @@ Value Search::Worker::search(
 
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
+        if (pos.rule50_count() >= 70)
+        {
+            ss->staticEval = eval -= eval*pos.rule50_count()/340;
+        }
+
         // ttValue can be used as a better position evaluation (~7 Elo)
         if (is_valid(ttData.value)
             && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
