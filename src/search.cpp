@@ -741,8 +741,7 @@ Value Search::Worker::search(
 
         if (pos.rule50_count() >= 70)
         {
-            eval -= eval*pos.rule50_count()/400;
-            ss->staticEval = eval;
+            ss->staticEval = eval -= eval*pos.rule50_count()/340;
         }
 
         // ttValue can be used as a better position evaluation (~7 Elo)
