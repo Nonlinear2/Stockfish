@@ -52,12 +52,10 @@
 
 namespace Stockfish {
 
-int stat_bonus_values[] = {-100, 68, 236, 404, 572, 740, 908, 1076, 1244, 1412, 1580, 1718, 1718, 1718, 1718};
-int stat_malus_values[] = {-257, 511, 1279, 2047, 2351, 2351, 2351, 2351, 2351, 2351, 2351, 2351, 2351, 2351, 2351};
-int max_bonus = 1718;
-int max_malus = 2351;
-
-TUNE(SetRange(-10000, 10000), stat_bonus_values, stat_malus_values, max_bonus, max_malus);
+inline const int stat_bonus_values[] = {-858, 665, 835, 1144, 976, 1931, 1791, 1635, 1685, 2251, 3668, 2522, 1488, 2760, 1633};
+inline const int stat_malus_values[] = {580, 1799, 1736, 3301, 3273, 2924, 2814, 2801, 2511, 2612, 1890, 1261, 2574, 2382, 2532};
+inline const int max_bonus = 2163;
+inline const int max_malus = 2266;
 
 namespace TB = Tablebases;
 
