@@ -1543,8 +1543,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             unadjustedStaticEval = ttData.eval;
             if (!is_valid(unadjustedStaticEval))
                 unadjustedStaticEval = evaluate(pos);
+            
+            ss->staticEval = unadjustedStaticEval*110 / 100; // undo 50mr dampening
             ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+              to_corrected_static_eval(ss->staticEval, correctionValue);
 
             // ttValue can be used as a better position evaluation (~13 Elo)
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
