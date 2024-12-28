@@ -740,7 +740,7 @@ Value Search::Worker::search(
         eval = unadjustedStaticEval;
         if (pos.rule50_count() >= 70)
         {
-            eval -= unadjustedStaticEval*pos.rule50_count()/340;
+            eval -= eval*pos.rule50_count()/440;
         }
 
         ss->staticEval = eval = to_corrected_static_eval(eval, correctionValue);
