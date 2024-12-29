@@ -655,7 +655,13 @@ Value Search::Worker::search(
         // Partial workaround for the graph history interaction problem
         // For high rule50 counts don't produce transposition table cutoffs.
         if (pos.rule50_count() < 90)
+        {
+            if (is_decisive(ttData.value) && (int(nodes) & 15) == 0)
+                ttWriter.write(posKey, ttData.value, ss->ttPv, ttData.bound,
+                               ttData.depth + 1, ttData.move, ttData.eval, tt.generation());
+
             return ttData.value;
+        }
     }
 
     // Step 5. Tablebases probe
