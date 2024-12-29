@@ -1190,7 +1190,7 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore * 1287 / 16384;
 
-        r -= (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
+        r += (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
              && is_valid(ttData.value)
              && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER))) * 500;
 
