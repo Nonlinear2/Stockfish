@@ -1157,7 +1157,7 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 345;
+        r += 330;
 
         r -= std::min(std::abs(correctionValue) / 32768, 2048);
 
@@ -1192,7 +1192,7 @@ moves_loop:  // When in check, search starts here
 
         r -= (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
              && is_valid(ttData.value)
-             && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER))) * 700;
+             && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER))) * 500;
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
