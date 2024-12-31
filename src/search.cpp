@@ -656,7 +656,7 @@ Value Search::Worker::search(
         // For high rule50 counts don't produce transposition table cutoffs.
         if (pos.rule50_count() < 90)
         {
-            if (is_decisive(ttData.value) && (int(nodes) & 7) == 0 && ttData.depth < 5)
+            if (is_decisive(ttData.value) && (int(nodes) & 15) == 0 && ttData.depth < 4)
                 ttWriter.write(posKey, ttData.value, ss->ttPv, ttData.bound,
                                ttData.depth + 1, ttData.move, ttData.eval, tt.generation());
 
@@ -1434,8 +1434,7 @@ moves_loop:  // When in check, search starts here
                        bestValue >= beta    ? BOUND_LOWER
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
-                       depth + (!moveCount && !excludedMove && depth < 3),
-                       bestMove, unadjustedStaticEval, tt.generation());
+                       depth, bestMove, unadjustedStaticEval, tt.generation());
 
     // Adjust correction history
     if (!ss->inCheck && !(bestMove && pos.capture(bestMove))
