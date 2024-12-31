@@ -1423,12 +1423,12 @@ moves_loop:  // When in check, search starts here
 
     // Write gathered information in transposition table. Note that the
     // static evaluation is saved as it was before correction history.
-    if (!excludedMove && !(rootNode && thisThread->pvIdx))
+    if ((!excludedMove || (bestValue >= beta && depth < 5)) && !(rootNode && thisThread->pvIdx))
         ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), ss->ttPv,
                        bestValue >= beta    ? BOUND_LOWER
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
-                       depth, bestMove, unadjustedStaticEval, tt.generation());
+                       depth, excludedMove ? excludedMove : bestMove, unadjustedStaticEval, tt.generation());
 
     // Adjust correction history
     if (!ss->inCheck && !(bestMove && pos.capture(bestMove))
