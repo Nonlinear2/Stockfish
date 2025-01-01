@@ -656,7 +656,7 @@ Value Search::Worker::search(
         // For high rule50 counts don't produce transposition table cutoffs.
         if (pos.rule50_count() < 90)
         {
-            if (is_decisive(ttData.value) && (int(nodes) & 15) == 0 && ttData.depth < 4)
+            if (is_decisive(ttData.value) && (int(nodes) & 7) == 0 && ttData.depth < 4)
                 ttWriter.write(posKey, ttData.value, ss->ttPv, ttData.bound,
                                ttData.depth + 1, ttData.move, ttData.eval, tt.generation());
 
