@@ -213,7 +213,7 @@ void ThreadPool::clear() {
         th->wait_for_search_finished();
 
     // These two affect the time taken on the first move of a game:
-    main_manager()->bestPreviousAverageScore = VALUE_INFINITE;
+    main_manager()->bestPreviousMss = VALUE_INFINITE;
     main_manager()->previousTimeReduction    = 0.85;
 
     main_manager()->callsCnt           = 0;

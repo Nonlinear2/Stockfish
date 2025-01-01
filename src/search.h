@@ -94,7 +94,6 @@ struct RootMove {
     uint64_t          effort           = 0;
     Value             score            = -VALUE_INFINITE;
     Value             previousScore    = -VALUE_INFINITE;
-    Value             averageScore     = -VALUE_INFINITE;
     Value             meanSquaredScore = -VALUE_INFINITE * VALUE_INFINITE;
     Value             uciScore         = -VALUE_INFINITE;
     bool              scoreLowerbound  = false;
@@ -244,7 +243,7 @@ class SearchManager: public ISearchManager {
     std::array<Value, 4> iterValue;
     double               previousTimeReduction;
     Value                bestPreviousScore;
-    Value                bestPreviousAverageScore;
+    Value                bestPreviousMss;
     bool                 stopOnPonderhit;
 
     size_t id;
