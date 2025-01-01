@@ -893,7 +893,7 @@ Value Search::Worker::search(
             thisThread->nodes.fetch_add(1, std::memory_order_relaxed);
             pos.do_move(move, st);
 
-            value = -search<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1, depth/2 - 6 - cutNode, !cutNode);
+            value = -search<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1, (depth > 12) ? 1 : 0, !cutNode);
             
             // If the qsearch held, perform the regular search
             if (value >= probCutBeta)
