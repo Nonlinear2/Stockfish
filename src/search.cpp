@@ -562,7 +562,8 @@ Value Search::Worker::search(
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     Key   posKey;
-    Move  move, excludedMove, bestMove;
+    ExtMove move;
+    Move  excludedMove, bestMove;
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
@@ -1003,9 +1004,6 @@ moves_loop:  // When in check, search starts here
                 // Futility pruning for captures (~2 Elo)
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
-                    if (moveCount > 1){
-                        assert(move.value != INT_MIN);
-                    }
                     Value futilityValue = ss->staticEval + 287 + 253 * lmrDepth
                                         + moveCount > 1 ? move.value / 7 : PieceValue[capturedPiece]
                                         + captHist / 7;
@@ -1491,8 +1489,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     Key   posKey;
-    ExtMove move;
-    Move  bestMove;
+    Move  move, bestMove;
     Value bestValue, value, futilityBase;
     bool  pvHit, givesCheck, capture;
     int   moveCount;
