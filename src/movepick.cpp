@@ -198,7 +198,7 @@ void MovePicker::score() {
 // Returns the next move satisfying a predicate function.
 // This never returns the TT move, as it was emitted before.
 template<typename Pred>
-Move MovePicker::select(Pred filter) {
+ExtMove MovePicker::select(Pred filter) {
 
     for (; cur < endMoves; ++cur)
         if (*cur != ttMove && filter())
@@ -210,7 +210,7 @@ Move MovePicker::select(Pred filter) {
 // This is the most important method of the MovePicker class. We emit one
 // new pseudo-legal move on every call until there are no more moves left,
 // picking the move with the highest score from a list of generated moves.
-Move MovePicker::next_move() {
+ExtMove MovePicker::next_move() {
 
     auto quiet_threshold = [](Depth d) { return -3560 * d; };
 

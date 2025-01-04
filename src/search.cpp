@@ -1487,7 +1487,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     ASSERT_ALIGNED(&st, Eval::NNUE::CacheLineSize);
 
     Key   posKey;
-    Move  move, bestMove;
+    ExtMove move;
+    Move  bestMove;
     Value bestValue, value, futilityBase;
     bool  pvHit, givesCheck, capture;
     int   moveCount;
@@ -1613,7 +1614,16 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 if (moveCount > 2)
                     continue;
 
-                Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
+                Value futilityValue = futilityBase;
+
+                assert(!ss->inCheck);
+
+                if (moveCount > 1){
+                    assert(move.value != INT_MIN);
+                    futilityValue += move.value/7;
+                } else {
+                    futilityValue += PieceValue[pos.piece_on(move.to_sq())];
+                }
 
                 // If static eval + value of piece we are going to capture is
                 // much lower than alpha, we can prune this move. (~2 Elo)
