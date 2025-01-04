@@ -1005,8 +1005,7 @@ moves_loop:  // When in check, search starts here
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
                     Value futilityValue = ss->staticEval + 287 + 253 * lmrDepth
-                                        + moveCount > 1 ? move.value / 7 : PieceValue[capturedPiece]
-                                        + captHist / 7;
+                                        + PieceValue[capturedPiece] + captHist / 7;
                     if (futilityValue <= alpha)
                         continue;
                 }
@@ -1191,6 +1190,10 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore * 1287 / 16384;
+
+        if (move != ttData.move && !capture){
+            r += 300*(move.value + 3577)/27333;
+        }
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
