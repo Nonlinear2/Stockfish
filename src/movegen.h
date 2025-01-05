@@ -37,8 +37,8 @@ enum GenType {
 };
 
 struct ExtMove: public Move {
-    ExtMove() { data = 0; value = INT_MIN; }
-    ExtMove(Move m) { data = m.raw(); value = INT_MIN; };
+    ExtMove() { data = 0; value = MOVE_VALUE_NONE; }
+    ExtMove(Move m) { data = m.raw(); value = MOVE_VALUE_NONE; };
     int value;
 
     void operator=(Move m) { data = m.raw(); }

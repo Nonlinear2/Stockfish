@@ -1192,7 +1192,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 1287 / 16384;
 
         if (move != ttData.move && !capture){
-            r += 200*(move.value + 3577)/27333;
+            r += 100*(move.value + 3577)/27333;
         }
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
