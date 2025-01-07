@@ -52,15 +52,33 @@
 
 namespace Stockfish {
 
-int stat_bonus_differences[] = {168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 168};
-int stat_malus_differences[] = {768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768};
+int stat_bonus_differences[] = {168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 138, 0, 0, 0, 0};
+int stat_malus_differences[] = {768, 768, 768, 304, 0, 0, 0, 0, 0, 0};
 int start_bonus = -100;
 int start_malus = -257;
 
 int stat_bonus_values[15];
-int stat_malus_values[15];
+int stat_malus_values[10];
 
-TUNE(stat_bonus_differences, stat_malus_differences, SetRange(-500, 50), start_bonus, start_malus);
+
+void stat_values_init(){
+    std::cout << "\nstat bonus vals\n";
+    int start_value = start_bonus;
+    for (int i = 0; i < 15; i++){
+        stat_bonus_values[i] = start_value;
+        start_value += stat_bonus_differences[i];
+        std::cout << stat_bonus_values[i] << " ";
+    }
+    std::cout << "\nstat malus vals\n";
+    start_value = start_malus;
+    for (int i = 0; i < 10; i++){
+        stat_malus_values[i] = start_value;
+        start_value += stat_malus_differences[i];
+        std::cout << stat_malus_values[i] << " ";
+    }
+}
+
+TUNE(stat_bonus_differences, stat_malus_differences, SetRange(-500, 50), start_bonus, start_malus, stat_values_init);
 
 namespace TB = Tablebases;
 
@@ -112,7 +130,7 @@ Value to_corrected_static_eval(Value v, const int cv) {
 int stat_bonus(Depth d) { return stat_bonus_values[std::min(d, 14)]; }
 
 // History and stats update malus, based on depth
-int stat_malus(Depth d) { return stat_malus_values[std::min(d, 14)]; }
+int stat_malus(Depth d) { return stat_malus_values[std::min(d, 9)]; }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
 Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
@@ -531,12 +549,6 @@ void Search::Worker::clear() {
     for (size_t i = 1; i < reductions.size(); ++i)
         reductions[i] = int(19.43 * std::log(i));
 
-    for (int i = 0; i < 15; i++)
-    {
-        stat_bonus_values[i] += stat_bonus_differences[i];
-        stat_malus_values[i] += stat_malus_differences[i];
-
-    }
 
     refreshTable.clear(networks[numaAccessToken]);
 }
