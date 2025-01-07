@@ -74,7 +74,7 @@ void stat_values_init(){
     }
 }
 
-TUNE(stat_bonus_differences, stat_malus_differences, SetRange(-500, 50), start_bonus, start_malus, stat_values_init);
+TUNE(SetRange(0, 336), stat_bonus_differences, SetRange(0, 1500), stat_malus_differences, SetRange(-500, 50), start_bonus, start_malus, stat_values_init);
 
 namespace TB = Tablebases;
 
