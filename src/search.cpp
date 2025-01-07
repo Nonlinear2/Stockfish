@@ -52,10 +52,15 @@
 
 namespace Stockfish {
 
-inline const int stat_bonus_values[] = {-858, 665, 835, 1144, 976, 1931, 1791, 1635, 1685, 2251, 3668, 2522, 1488, 2760, 1633};
-inline const int stat_malus_values[] = {580, 1799, 1736, 3301, 3273, 2924, 2814, 2801, 2511, 2612, 1890, 1261, 2574, 2382, 2532};
-inline const int max_bonus = 2163;
-inline const int max_malus = 2266;
+int stat_bonus_differences[] = {168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 168};
+int stat_malus_differences[] = {768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768, 768};
+int start_bonus = -100;
+int start_malus = -257;
+
+int stat_bonus_values[15];
+int stat_malus_values[15];
+
+TUNE(stat_bonus_differences, stat_malus_differences, SetRange(-500, 50), start_bonus, start_malus);
 
 namespace TB = Tablebases;
 
@@ -104,10 +109,10 @@ Value to_corrected_static_eval(Value v, const int cv) {
 }
 
 // History and stats update bonus, based on depth
-int stat_bonus(Depth d) { return d < 15 ? stat_bonus_values[d]: max_bonus; }
+int stat_bonus(Depth d) { return stat_bonus_values[std::min(d, 14)]; }
 
 // History and stats update malus, based on depth
-int stat_malus(Depth d) { return d < 15 ? stat_malus_values[d]: max_malus; }
+int stat_malus(Depth d) { return stat_malus_values[std::min(d, 14)]; }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
 Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
@@ -525,6 +530,13 @@ void Search::Worker::clear() {
 
     for (size_t i = 1; i < reductions.size(); ++i)
         reductions[i] = int(19.43 * std::log(i));
+
+    for (int i = 0; i < 15; i++)
+    {
+        stat_bonus_values[i] += stat_bonus_differences[i];
+        stat_malus_values[i] += stat_malus_differences[i];
+
+    }
 
     refreshTable.clear(networks[numaAccessToken]);
 }
