@@ -1,6 +1,6 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
-  Copyright (C) 2004-2024 The Stockfish developers (see AUTHORS file)
+  Copyright (C) 2004-2025 The Stockfish developers (see AUTHORS file)
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -787,6 +787,7 @@ Value Search::Worker::search(
     if (!ss->ttPv && depth < 14
         && eval - futility_margin(depth, cutNode && !ss->ttHit, improving, opponentWorsening)
                - (ss - 1)->statScore / 290
+               + (ss->staticEval == eval) * (40 - std::abs(correctionValue) / 131072)
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && !is_loss(beta) && !is_win(eval))
         return beta + (eval - beta) / 3;
@@ -1159,7 +1160,7 @@ moves_loop:  // When in check, search starts here
 
         r += 330;
 
-        r -= std::min(std::abs(correctionValue) / 32768, 2048);
+        r -= std::abs(correctionValue) / 32768;
 
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
@@ -1198,7 +1199,8 @@ moves_loop:  // When in check, search starts here
             // beyond the first move depth.
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
-            Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + !allNode));
+            Depth d = std::max(
+              1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
 
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
 
@@ -1216,8 +1218,8 @@ moves_loop:  // When in check, search starts here
                     value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, newDepth, !cutNode);
 
                 // Post LMR continuation history updates (~1 Elo)
-                int bonus = (value >= beta) * stat_bonus(newDepth);
-                update_continuation_histories(ss, movedPiece, move.to_sq(), bonus * 1427 / 1024);
+                int bonus = (value >= beta) * 2048;
+                update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
         }
 
