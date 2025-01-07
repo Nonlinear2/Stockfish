@@ -66,12 +66,12 @@ namespace {
 
 // Futility margin
 Value futility_margin(Depth d, bool noTtCutNode, bool improving, bool twiceImproving, bool oppWorsening) {
-    Value futilityMult       = 116 - 27 * noTtCutNode;
+    Value futilityMult       = 100 - 27 * noTtCutNode;
     Value improvingDeduction = improving * futilityMult * 2;
-    Value twiceImprovingDeduction = twiceImproving * futilityMult / 4;
+    Value twiceImprovingDeduction = twiceImproving * futilityMult / 3;
     Value worseningDeduction = oppWorsening * futilityMult / 3;
 
-    return futilityMult * d - improvingDeduction - twiceImprovingDeduction - worseningDeduction;
+    return 15 + futilityMult * d - improvingDeduction - twiceImprovingDeduction - worseningDeduction;
 }
 
 constexpr int futility_move_count(bool improving, Depth depth) {
