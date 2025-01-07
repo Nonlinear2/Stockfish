@@ -62,19 +62,15 @@ int stat_malus_values[10];
 
 
 void stat_values_init(){
-    std::cout << "\nstat bonus vals\n";
     int start_value = start_bonus;
     for (int i = 0; i < 15; i++){
         stat_bonus_values[i] = start_value;
         start_value += stat_bonus_differences[i];
-        std::cout << stat_bonus_values[i] << " ";
     }
-    std::cout << "\nstat malus vals\n";
     start_value = start_malus;
     for (int i = 0; i < 10; i++){
         stat_malus_values[i] = start_value;
         start_value += stat_malus_differences[i];
-        std::cout << stat_malus_values[i] << " ";
     }
 }
 
