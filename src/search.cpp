@@ -1193,6 +1193,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 1287 / 16384;
 
         if (move != ttData.move && !capture){
+            assert(move.value != MOVE_VALUE_NONE);
             r -= 200*(move.value + 3577)/27333;
         }
 
