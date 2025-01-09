@@ -44,8 +44,6 @@
 
 namespace Stockfish {
 
-void stat_values_init();
-
 // Different node types, used as a template parameter
 enum NodeType {
     NonPV,
