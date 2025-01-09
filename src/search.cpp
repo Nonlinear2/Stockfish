@@ -52,29 +52,8 @@
 
 namespace Stockfish {
 
-int stat_bonus_differences[] = {168, 168, 168, 168, 168, 168, 168, 168, 168, 168, 138, 0, 0, 0, 0};
-int stat_malus_differences[] = {768, 768, 768, 304, 0, 0, 0, 0, 0, 0};
-int start_bonus = -100;
-int start_malus = -257;
-
-int stat_bonus_values[15];
-int stat_malus_values[10];
-
-
-void stat_values_init(){
-    int start_value = start_bonus;
-    for (int i = 0; i < 15; i++){
-        stat_bonus_values[i] = start_value;
-        start_value += stat_bonus_differences[i];
-    }
-    start_value = start_malus;
-    for (int i = 0; i < 10; i++){
-        stat_malus_values[i] = start_value;
-        start_value += stat_malus_differences[i];
-    }
-}
-
-TUNE(SetRange(0, 336), stat_bonus_differences, SetRange(0, 1500), stat_malus_differences, SetRange(-500, 50), start_bonus, start_malus, stat_values_init);
+constexpr int stat_bonus_values[15] = {-100, 76, 245, 409, 579, 742, 900, 1074, 1259, 1430, 1601, 1741, 1757, 1761, 1778};
+constexpr int stat_malus_values[10] = {-266, 493, 1239, 1997, 2280, 2283, 2315, 2334, 2338, 2351};
 
 namespace TB = Tablebases;
 
