@@ -717,7 +717,9 @@ Value Search::Worker::search(
     if (ss->inCheck)
     {
         // Skip early pruning when in check
-        ss->staticEval = eval = (ss - 2)->staticEval;
+        ss->staticEval = eval = 
+            std::clamp((ss - 2)->staticEval - 15 + 30*((ss - 1)->staticEval + (ss - 2)->staticEval > 2),
+                       VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
         improving             = false;
         goto moves_loop;
     }
