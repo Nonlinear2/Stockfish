@@ -1154,7 +1154,7 @@ moves_loop:  // When in check, search starts here
 
         // Decrease reduction for PvNodes (~0 Elo on STC, ~2 Elo on LTC)
         if (PvNode)
-            r -= 985 + 400*(rootNode + rootNode && depth > 8);
+            r -= 985 + 40*(rootNode * std::min(depth, 15));
 
         // These reduction adjustments have no proven non-linear scaling
 
