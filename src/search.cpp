@@ -52,6 +52,20 @@
 
 namespace Stockfish {
 
+int a1 = 6384,
+    a2 = 3583, 
+    a3 = 6492,
+    a4 = 6725,
+    a5 = 5880,
+
+    b1 = 6384,
+    b2 = 3583,
+    b3 = 6492,
+    b4 = 6725,
+    b5 = 5880;
+
+TUNE(a1, a2, a3, a4, a5, b1, b2, b3, b4, b5);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -90,6 +104,22 @@ int correction_value(const Worker& w, const Position& pos, const Stack* ss) {
                  : 0;
 
     return (6922 * pcv + 3837 * macv + 6238 * micv + 7490 * (wnpcv + bnpcv) + 6270 * cntcv);
+}
+
+void two_correction_value(const Worker& w, const Position& pos, Stack* ss, int& staticEvalCorr, int& evalCorr) {
+    const Color us    = pos.side_to_move();
+    const auto  m     = (ss - 1)->currentMove;
+    const auto  pcv   = w.pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)];
+    const auto  macv  = w.majorPieceCorrectionHistory[us][major_piece_index(pos)];
+    const auto  micv  = w.minorPieceCorrectionHistory[us][minor_piece_index(pos)];
+    const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][us][non_pawn_index<WHITE>(pos)];
+    const auto  bnpcv = w.nonPawnCorrectionHistory[BLACK][us][non_pawn_index<BLACK>(pos)];
+    const auto  cntcv =
+      m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+                 : 0;
+
+    staticEvalCorr = (a1 * pcv + a2 * macv + a3 * micv + a4 * (wnpcv + bnpcv) + a5 * cntcv);
+    evalCorr       = (b1 * pcv + b2 * macv + b3 * micv + b4 * (wnpcv + bnpcv) + b5 * cntcv);
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -713,7 +743,8 @@ Value Search::Worker::search(
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    int staticEvalCorrectionValue, evalCorrectionValue;
+    two_correction_value(*thisThread, pos, ss, staticEvalCorrectionValue, evalCorrectionValue);
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -737,7 +768,8 @@ Value Search::Worker::search(
         else if (PvNode)
             Eval::NNUE::hint_common_parent_position(pos, networks[numaAccessToken], refreshTable);
 
-        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        ss->staticEval = to_corrected_static_eval(unadjustedStaticEval, staticEvalCorrectionValue);
+        eval = to_corrected_static_eval(unadjustedStaticEval, evalCorrectionValue);
 
         // ttValue can be used as a better position evaluation (~7 Elo)
         if (is_valid(ttData.value)
@@ -747,7 +779,9 @@ Value Search::Worker::search(
     else
     {
         unadjustedStaticEval = evaluate(pos);
-        ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+
+        ss->staticEval = to_corrected_static_eval(unadjustedStaticEval, staticEvalCorrectionValue);
+        eval = to_corrected_static_eval(unadjustedStaticEval, evalCorrectionValue);
 
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
@@ -783,8 +817,8 @@ Value Search::Worker::search(
     // The depth condition is important for mate finding.
     if (!ss->ttPv && depth < 14
         && eval - futility_margin(depth, cutNode && !ss->ttHit, improving, opponentWorsening)
-               - (ss - 1)->statScore / 310
-               + (ss->staticEval == eval) * (40 - std::abs(correctionValue) / 131072)
+               - (ss - 1)->statScore / 290
+               + (ss->staticEval == eval) * (40 - std::abs(staticEvalCorrectionValue) / 131072)
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && !is_loss(beta) && !is_win(eval))
         return beta + (eval - beta) / 3;
@@ -1153,7 +1187,7 @@ moves_loop:  // When in check, search starts here
 
         r += 307;
 
-        r -= std::abs(correctionValue) / 34112;
+        r -= std::abs(staticEvalCorrectionValue) / 32768;
 
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
