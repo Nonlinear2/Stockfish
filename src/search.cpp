@@ -817,7 +817,7 @@ Value Search::Worker::search(
     // The depth condition is important for mate finding.
     if (!ss->ttPv && depth < 14
         && eval - futility_margin(depth, cutNode && !ss->ttHit, improving, opponentWorsening)
-               - (ss - 1)->statScore / 290
+               - (ss - 1)->statScore / 310
                + (ss->staticEval == eval) * (40 - std::abs(staticEvalCorrectionValue) / 131072)
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && !is_loss(beta) && !is_win(eval))
@@ -1187,7 +1187,7 @@ moves_loop:  // When in check, search starts here
 
         r += 307;
 
-        r -= std::abs(staticEvalCorrectionValue) / 32768;
+        r -= std::abs(staticEvalCorrectionValue) / 34112;
 
         // Increase reduction for cut nodes (~4 Elo)
         if (cutNode)
