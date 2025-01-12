@@ -372,7 +372,7 @@ void Search::Worker::iterative_deepening() {
                 else
                     break;
 
-                delta += delta / 3;
+                delta += delta / (3 - (nodes > 20819 && rootDepth < 12));
 
                 assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
             }
