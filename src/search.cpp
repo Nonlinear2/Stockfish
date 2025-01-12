@@ -812,7 +812,7 @@ Value Search::Worker::search(
 
         Value nullValue = VALUE_NONE;
 
-        if (depth < 20)
+        if (depth < 12)
         {
             nullValue = -qsearch<NonPV>(pos, ss + 1, -beta, -beta + 1);
 
