@@ -1697,7 +1697,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     }
 
     if (!is_decisive(bestValue) && bestValue >= beta)
-        bestValue = (3 * bestValue + beta) / 4;
+        bestValue = (3 * bestValue + (1 + PvNode) * beta) / (4 + PvNode);
 
     // Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
