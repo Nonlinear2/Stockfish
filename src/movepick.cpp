@@ -129,16 +129,19 @@ void MovePicker::score() {
     
     [[maybe_unused]] Color us;
 
+    [[maybe_unused]] Piece pc;
+    [[maybe_unused]] PieceType pt;
+    [[maybe_unused]] Square from;
+
+
     if constexpr (Type == QUIETS || Type == CAPTURES)
     {
         us = pos.side_to_move();
         threatenedByPawn = pos.attacks_by<PAWN>(~us);
-    }
 
-    if constexpr (Type == QUIETS)
-    {
         threatenedByMinor =
-          pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us) | threatenedByPawn;
+            pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us) | threatenedByPawn;
+
         threatenedByRook = pos.attacks_by<ROOK>(~us) | threatenedByMinor;
 
         // Pieces threatened by pieces of lesser material value
@@ -149,16 +152,20 @@ void MovePicker::score() {
 
     for (auto& m : *this)
         if constexpr (Type == CAPTURES)
+        {
+            pc   = pos.moved_piece(m);
+            pt   = type_of(pc);
+            from = m.from_sq();
             m.value =
               7 * int(PieceValue[pos.piece_on(m.to_sq())])
               + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))]
-              + 50*((type_of(pos.moved_piece(m)) != PAWN) && (threatenedByPawn & m.from_sq()));
-
+              + (threatenedPieces & from) * (pt == QUEEN ? 225 : (pt == ROOK ? 100 : 75));
+        }
         else if constexpr (Type == QUIETS)
         {
-            Piece     pc   = pos.moved_piece(m);
-            PieceType pt   = type_of(pc);
-            Square    from = m.from_sq();
+            pc   = pos.moved_piece(m);
+            pt   = type_of(pc);
+            from = m.from_sq();
             Square    to   = m.to_sq();
 
             // histories
