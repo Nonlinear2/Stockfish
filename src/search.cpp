@@ -1589,7 +1589,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.
-    while ((move = mp.next_move()) != Move::none() && (move != ttData.move))
+    while ((move = mp.next_move()) != Move::none())
     {
         assert(move.is_ok());
 
@@ -1602,7 +1602,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         moveCount++;
 
         // Step 6. Pruning
-        if (!is_loss(bestValue) && pos.non_pawn_material(us))
+        if (!is_loss(bestValue) && pos.non_pawn_material(us) && (move != ttData.move))
         {
             // Futility pruning and moveCount pruning (~10 Elo)
             if (!givesCheck && move.to_sq() != prevSq && !is_loss(futilityBase)
