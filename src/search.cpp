@@ -714,6 +714,7 @@ Value Search::Worker::search(
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
     const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    bool eval_tt_adjusted = false;
     if (ss->inCheck)
     {
         // Skip early pruning when in check
@@ -740,9 +741,11 @@ Value Search::Worker::search(
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
         // ttValue can be used as a better position evaluation (~7 Elo)
-        if (is_valid(ttData.value)
-            && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
-            eval = ttData.value;
+        eval_tt_adjusted = (is_valid(ttData.value)
+            && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)));
+
+        if (eval_tt_adjusted)
+             eval = ttData.value;
     }
     else
     {
@@ -776,7 +779,7 @@ Value Search::Worker::search(
     // If eval is really low, check with qsearch if we can exceed alpha. If the
     // search suggests we cannot exceed alpha, return a speculative fail low.
     // For PvNodes, we must have a guard against mates being returned.
-    if (!PvNode && eval < alpha - 462 - 297 * depth * depth)
+    if (!PvNode && eval < alpha - 462 - 297 * depth * depth + 100*eval_tt_adjusted)
         return qsearch<NonPV>(pos, ss, alpha - 1, alpha);
 
     // Step 8. Futility pruning: child node (~40 Elo)
