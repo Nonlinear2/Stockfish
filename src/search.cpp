@@ -744,7 +744,6 @@ Value Search::Worker::search(
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
     int staticEvalCorrectionValue, evalCorrectionValue;
-    bool eval_tt_adjusted = false;
     two_correction_value(*thisThread, pos, ss, staticEvalCorrectionValue, evalCorrectionValue);
     if (ss->inCheck)
     {
@@ -773,10 +772,8 @@ Value Search::Worker::search(
         eval = to_corrected_static_eval(unadjustedStaticEval, evalCorrectionValue);
 
         // ttValue can be used as a better position evaluation (~7 Elo)
-        eval_tt_adjusted = (is_valid(ttData.value)
-            && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)));
-        
-        if (eval_tt_adjusted)
+        if (is_valid(ttData.value)
+            && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
             eval = ttData.value;
     }
     else
@@ -821,7 +818,7 @@ Value Search::Worker::search(
     if (!ss->ttPv && depth < 14
         && eval - futility_margin(depth, cutNode && !ss->ttHit, improving, opponentWorsening)
                - (ss - 1)->statScore / 310
-               + (!eval_tt_adjusted) * (40 - std::abs(evalCorrectionValue) / 131072)
+               + (ss->staticEval == eval) * (40 - std::abs(staticEvalCorrectionValue) / 131072)
              >= beta
         && eval >= beta && (!ttData.move || ttCapture) && !is_loss(beta) && !is_win(eval))
         return beta + (eval - beta) / 3;
