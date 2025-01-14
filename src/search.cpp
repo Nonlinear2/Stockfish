@@ -64,8 +64,6 @@ int a1 = 6820,
     b4 = 7486,
     b5 = 6066;
 
-TUNE(a1, a2, a3, a4, a5, b1, b2, b3, b4, b5);
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
