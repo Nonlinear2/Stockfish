@@ -1173,27 +1173,38 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 1960;
 
-        auto& captRedHist = 
-            thisThread->captureReductionHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())];
-        auto& redHist = thisThread->reductionHistory[us][move.from_to()];
-
         if (capture)
+        {
             ss->statScore =
               7 * int(PieceValue[pos.captured_piece()])
               + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
-              + captRedHist - 4666;
+              - 4666;
+
+            // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
+            r -= ss->statScore * 1451 / 16384;
+
+            auto& captRedHist = 
+                thisThread->captureReductionHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())];
+
+            captRedHist << (r/10 - captRedHist);
+
+            r += captRedHist;
+        }
         else
+        {
             ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
                           + (*contHist[0])[movedPiece][move.to_sq()]
-                          + (*contHist[1])[movedPiece][move.to_sq()] + redHist - 3874;
+                          + (*contHist[1])[movedPiece][move.to_sq()] - 3874;
+            
+            // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
+            r -= ss->statScore * 1451 / 16384;
 
-        // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
-        r -= ss->statScore * 1451 / 16384;
+            auto& redHist = thisThread->reductionHistory[us][move.from_to()];
 
-        if (capture)
-            captRedHist << (r/10 - captRedHist);
-        else
             redHist << (r/10 - redHist);
+
+            r += redHist;
+        }
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)
