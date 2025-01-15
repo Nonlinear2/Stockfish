@@ -1186,9 +1186,9 @@ moves_loop:  // When in check, search starts here
             auto& captRedHist = 
                 thisThread->captureReductionHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())];
 
-            captRedHist << (r/10 - captRedHist);
+            captRedHist << (r - captRedHist);
 
-            r += captRedHist;
+            r += captRedHist/10;
         }
         else
         {
@@ -1201,9 +1201,9 @@ moves_loop:  // When in check, search starts here
 
             auto& redHist = thisThread->reductionHistory[us][move.from_to()];
 
-            redHist << (r/10 - redHist);
+            redHist << (r - redHist);
 
-            r += redHist;
+            r += redHist/10;
         }
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
