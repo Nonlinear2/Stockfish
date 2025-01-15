@@ -1188,7 +1188,7 @@ moves_loop:  // When in check, search starts here
 
             captRedHist << (r - captRedHist);
 
-            r += captRedHist/20;
+            r += captRedHist/10;
         }
         else
         {
@@ -1203,7 +1203,7 @@ moves_loop:  // When in check, search starts here
 
             redHist << (r - redHist);
 
-            r += redHist/20;
+            r += redHist/10;
         }
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
