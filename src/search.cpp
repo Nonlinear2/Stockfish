@@ -499,8 +499,10 @@ void Search::Worker::iterative_deepening() {
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(63);
+    reductionHistory.fill(63);
     lowPlyHistory.fill(108);
     captureHistory.fill(-631);
+    captureReductionHistory.fill(63);
     pawnHistory.fill(-1210);
     pawnCorrectionHistory.fill(0);
     majorPieceCorrectionHistory.fill(0);
@@ -1171,18 +1173,27 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 1960;
 
+        auto& captRedHist = 
+            thisThread->captureReductionHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())];
+        auto& redHist = thisThread->reductionHistory[us][move.from_to()];
+
         if (capture)
             ss->statScore =
               7 * int(PieceValue[pos.captured_piece()])
               + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
-              - 4666;
+              + captRedHist - 4666;
         else
             ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
                           + (*contHist[0])[movedPiece][move.to_sq()]
-                          + (*contHist[1])[movedPiece][move.to_sq()] - 3874;
+                          + (*contHist[1])[movedPiece][move.to_sq()] + redHist - 3874;
 
         // Decrease/increase reduction for moves with a good/bad history (~8 Elo)
         r -= ss->statScore * 1451 / 16384;
+
+        if (capture)
+            captRedHist << (r/10 - captRedHist);
+        else
+            redHist << (r/10 - redHist);
 
         // Step 17. Late moves reduction / extension (LMR, ~117 Elo)
         if (depth >= 2 && moveCount > 1)

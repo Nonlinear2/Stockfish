@@ -279,9 +279,11 @@ class Worker {
 
     // Public because they need to be updatable by the stats
     ButterflyHistory mainHistory;
+    ButterflyHistory reductionHistory;
     LowPlyHistory    lowPlyHistory;
 
     CapturePieceToHistory captureHistory;
+    CapturePieceToHistory captureReductionHistory;
     ContinuationHistory   continuationHistory[2][2];
     PawnHistory           pawnHistory;
 
