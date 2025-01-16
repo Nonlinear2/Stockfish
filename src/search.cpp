@@ -1556,7 +1556,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         {
             if (!is_decisive(bestValue))
             {
-                bool lowCv = (correctionValue/131072 < -PawnValue)
+                bool lowCv = (correctionValue/131072 < -PawnValue);
                 bestValue = (bestValue + (1 + lowCv)*beta) / (2 + lowCv);
             }
             if (!ss->ttHit)
