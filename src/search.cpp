@@ -52,6 +52,20 @@
 
 namespace Stockfish {
 
+int a1 = 6922,
+    a2 = 3837, 
+    a3 = 6238,
+    a4 = 7490,
+    a5 = 6270,
+
+    b1 = 6922,
+    b2 = 3837,
+    b3 = 6238,
+    b4 = 7490,
+    b5 = 6270;
+
+TUNE(a1, a2, a3, a4, a5, b1, b2, b3, b4, b5);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -89,7 +103,22 @@ int correction_value(const Worker& w, const Position& pos, const Stack* ss) {
       m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
                  : 0;
 
-    return (6922 * pcv + 3837 * macv + 6238 * micv + 7490 * (wnpcv + bnpcv) + 6270 * cntcv);
+    return (a1 * pcv + a2 * macv + a3 * micv + a4 * (wnpcv + bnpcv) + a5 * cntcv);
+}
+
+int qs_correction_value(const Worker& w, const Position& pos, const Stack* ss) {
+    const Color us    = pos.side_to_move();
+    const auto  m     = (ss - 1)->currentMove;
+    const auto  pcv   = w.pawnCorrectionHistory[us][pawn_structure_index<Correction>(pos)];
+    const auto  macv  = w.majorPieceCorrectionHistory[us][major_piece_index(pos)];
+    const auto  micv  = w.minorPieceCorrectionHistory[us][minor_piece_index(pos)];
+    const auto  wnpcv = w.nonPawnCorrectionHistory[WHITE][us][non_pawn_index<WHITE>(pos)];
+    const auto  bnpcv = w.nonPawnCorrectionHistory[BLACK][us][non_pawn_index<BLACK>(pos)];
+    const auto  cntcv =
+      m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+                 : 0;
+
+    return (b1 * pcv + b2 * macv + b3 * micv + b4 * (wnpcv + bnpcv) + b5 * cntcv);
 }
 
 // Add correctionHistory value to raw staticEval and guarantee evaluation
@@ -1523,7 +1552,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // Step 4. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = correction_value(*thisThread, pos, ss);
+    const auto correctionValue      = qs_correction_value(*thisThread, pos, ss);
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
