@@ -52,19 +52,17 @@
 
 namespace Stockfish {
 
-int a1 = 6922,
-    a2 = 3837, 
-    a3 = 6238,
-    a4 = 7490,
-    a5 = 6270,
+constexpr int a1 = 7030,
+    a2 = 3967,
+    a3 = 6443,
+    a4 = 7388,
+    a5 = 6097,
 
-    b1 = 6922,
-    b2 = 3837,
-    b3 = 6238,
-    b4 = 7490,
-    b5 = 6270;
-
-TUNE(a1, a2, a3, a4, a5, b1, b2, b3, b4, b5);
+    b1 = 6800,
+    b2 = 4025,
+    b3 = 6133,
+    b4 = 7119,
+    b5 = 6065;
 
 namespace TB = Tablebases;
 
