@@ -1798,11 +1798,12 @@ void update_all_stats(const Position&      pos,
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
 
-    int bonus = stat_bonus(depth) + 300*isTTMove;
+    int bonus = stat_bonus(depth);
     int malus = stat_malus(depth);
 
     if (!pos.capture_stage(bestMove))
     {
+        bonus += 300*isTTMove;
         update_quiet_histories(pos, ss, workerThread, bestMove, bonus * 1216 / 1024);
 
         // Decrease stats for all non-best quiet moves
@@ -1811,6 +1812,7 @@ void update_all_stats(const Position&      pos,
     }
     else
     {
+        bonus += 200*isTTMove;
         // Increase stats for the best move in case it was a capture move
         captured = type_of(pos.piece_on(bestMove.to_sq()));
         captureHistory[moved_piece][bestMove.to_sq()][captured] << bonus * 1272 / 1024;
