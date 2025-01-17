@@ -1556,8 +1556,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         {
             if (!is_decisive(bestValue))
             {
-                bool highCv = (correctionValue/131072 > PawnValue);
-                bestValue = ((1 + highCv) * bestValue + beta) / (2 + highCv);
+                bool lowCv = (correctionValue/131072 < -PawnValue);
+                bestValue = (bestValue + (1 + lowCv)*beta) / (2 + lowCv);
             }
             if (!ss->ttHit)
                 ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
