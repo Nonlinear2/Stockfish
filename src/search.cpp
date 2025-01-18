@@ -1556,8 +1556,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         {
             if (!is_decisive(bestValue))
             {
-                const bool lowCv = (correctionValue/131072 < -150);
-                const bool highCv = (correctionValue/131072 > 150);
+                const bool lowCv = (correctionValue/131072 < -350);
+                const bool highCv = (correctionValue/131072 > 350);
                 bestValue = ((1 + highCv)*bestValue + (1 + lowCv)*beta) / (2 + lowCv + highCv);
             }
             if (!ss->ttHit)
