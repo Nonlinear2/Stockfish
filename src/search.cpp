@@ -1412,7 +1412,7 @@ moves_loop:  // When in check, search starts here
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
         thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)]
-          << stat_bonus(depth) * 2 + 200*((ss - 1)->currentMove == ttData.move);
+          << stat_bonus(depth) * 2 + 200*((ss - 1)->currentMove == ttData.move && depth < 7);
     }
 
     if (PvNode)
