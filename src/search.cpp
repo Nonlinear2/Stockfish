@@ -793,7 +793,7 @@ Value Search::Worker::search(
     if (cutNode)
         constantReduction += (2355 - (ttData.depth >= depth && ss->ttPv) * 1141);
 
-    if (priorReduction >= 3 && (!opponentWorsening || constantReduction < -2350))
+    if (priorReduction >= 3 && (!opponentWorsening || constantReduction < -2500))
         depth++;
 
     // Step 7. Razoring (~1 Elo)
