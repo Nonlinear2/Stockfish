@@ -575,6 +575,7 @@ Value Search::Worker::search(
     bool  givesCheck, improving, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
     int   priorReduction = ss->reduction;
+    bool  iirCondition;
     ss->reduction        = 0;
     Piece movedPiece;
 
@@ -781,7 +782,9 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
-    if (priorReduction >= 3 && !opponentWorsening)
+    iirCondition = (PvNode || (cutNode && depth >= 7)) && !ttData.move;
+
+    if (priorReduction >= 3 && !opponentWorsening && !iirCondition)
         depth++;
 
     // Step 7. Razoring (~1 Elo)
@@ -847,7 +850,7 @@ Value Search::Worker::search(
     // This heuristic is known to scale non-linearly, current version was tested at VVLTC.
     // Further improvements need to be tested at similar time control if they make IIR
     // more aggressive.
-    if ((PvNode || (cutNode && depth >= 7)) && !ttData.move)
+    if (iirCondition)
         depth -= 2;
 
     // Use qsearch if depth <= 0
