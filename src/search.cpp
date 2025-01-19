@@ -781,7 +781,7 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
-    if (priorReduction >= 3 && !opponentWorsening)
+    if (priorReduction >= 3072 && !opponentWorsening)
         depth++;
 
     // Step 7. Razoring (~1 Elo)
@@ -1201,7 +1201,7 @@ moves_loop:  // When in check, search starts here
             Depth d = std::max(
               1, std::min(newDepth - r / 1024, newDepth + !allNode + (PvNode && !bestMove)));
 
-            (ss + 1)->reduction = newDepth - d;
+            (ss + 1)->reduction = r;
 
             value               = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             (ss + 1)->reduction = 0;
