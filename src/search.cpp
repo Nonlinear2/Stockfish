@@ -577,6 +577,7 @@ Value Search::Worker::search(
     int   priorReduction = ss->reduction;
     ss->reduction        = 0;
     Piece movedPiece;
+    Depth constantReduction;
 
     ValueList<Move, 32> capturesSearched;
     ValueList<Move, 32> quietsSearched;
@@ -781,7 +782,18 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
-    if (priorReduction >= 3 && !opponentWorsening)
+    constantReduction = 307;
+    if (ss->ttPv)
+        constantReduction -= 1037 + (ttData.value > alpha) * 965 + (ttData.depth >= depth) * 960;
+    if (PvNode)
+        constantReduction -= 1018;
+
+    constantReduction -= std::abs(correctionValue) / 34112;
+
+    if (cutNode)
+        constantReduction += (2355 - (ttData.depth >= depth && ss->ttPv) * 1141);
+
+    if (priorReduction >= 3 && (!opponentWorsening || constantReduction < -2072))
         depth++;
 
     // Step 7. Razoring (~1 Elo)
