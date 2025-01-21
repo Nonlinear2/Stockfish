@@ -1214,7 +1214,7 @@ moves_loop:  // When in check, search starts here
                 // good enough search deeper, if it was bad enough search shallower.
                 const bool doDeeperSearch         = value > (bestValue + 40 + 2 * newDepth);  // (~1 Elo)
                 const bool doDeeperSearchTwice    = (!allNode && (PvNode && !bestMove))
-                                                    && value > (bestValue + 180 - r / 512);
+                                                    && value > (bestValue + 180 + 2 * newDepth - r / 512);
                 const bool doShallowerSearch      = value < bestValue + 10;                   // (~2 Elo)
                 
                 newDepth += doDeeperSearch + doDeeperSearchTwice - doShallowerSearch;
