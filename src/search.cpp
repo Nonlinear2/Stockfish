@@ -782,7 +782,7 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
-    iirCondition = (PvNode || (cutNode && depth >= 7 + (priorReduction >= 3 && !opponentWorsening))) && !ttData.move;
+    iirCondition = (PvNode || (cutNode && depth >= 7 + 2*(priorReduction >= 3 && !opponentWorsening))) && !ttData.move;
 
     if (priorReduction >= 3 && !opponentWorsening && !iirCondition)
         depth++;
