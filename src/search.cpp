@@ -1627,7 +1627,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
                 // If static exchange evaluation is low enough
                 // we can prune this move. (~2 Elo)
-                if (!pos.see_ge(move, alpha - futilityBase))
+                if (!pos.see_ge(move, alpha - futilityBase) && (move != ttData.move))
                 {
                     bestValue = std::min(alpha, futilityBase);
                     continue;
@@ -1644,7 +1644,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 continue;
 
             // Do not search moves with bad enough SEE values (~5 Elo)
-            if (!pos.see_ge(move, -80) && (move != ttData.move))
+            if (!pos.see_ge(move, -80))
                 continue;
         }
 
