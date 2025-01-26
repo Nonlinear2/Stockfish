@@ -579,6 +579,7 @@ Value Search::Worker::search(
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
+    bool  iirCondition;
     int   priorReduction = ss->reduction;
     ss->reduction        = 0;
     Piece movedPiece;
@@ -783,8 +784,9 @@ Value Search::Worker::search(
     improving = ss->staticEval > (ss - 2)->staticEval;
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
+    iirCondition = ((PvNode || (cutNode && depth >= 7 + 3*(priorReduction >= 3 && !opponentWorsening))) && !ttData.move);
 
-    if (priorReduction >= 3 && !opponentWorsening)
+    if (priorReduction >= 3 && !opponentWorsening && !iirCondition)
         depth++;
 
     // Step 7. Razoring
@@ -848,7 +850,7 @@ Value Search::Worker::search(
     // Step 10. Internal iterative reductions
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
     // (* Scaler) Especially if they make IIR more aggressive.
-    if ((PvNode || (cutNode && depth >= 7)) && !ttData.move)
+    if (iirCondition)
         depth -= 2;
 
     // Use qsearch if depth <= 0
