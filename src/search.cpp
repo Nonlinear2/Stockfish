@@ -1267,12 +1267,6 @@ moves_loop:  // When in check, search starts here
             rm.averageScore =
               rm.averageScore != -VALUE_INFINITE ? (value + rm.averageScore) / 2 : value;
 
-            if (moveCount == 1){
-                Value new_optimism = 141 * rm.averageScore / (std::abs(rm.averageScore) + 83);
-                optimism[us] = (optimism[us]*2 + new_optimism)/3;
-                optimism[~us] = -optimism[us];
-            }
-         
             rm.meanSquaredScore = rm.meanSquaredScore != -VALUE_INFINITE * VALUE_INFINITE
                                   ? (value * std::abs(value) + rm.meanSquaredScore) / 2
                                   : value * std::abs(value);
@@ -1302,6 +1296,10 @@ moves_loop:  // When in check, search starts here
                 for (Move* m = (ss + 1)->pv; *m != Move::none(); ++m)
                     rm.pv.push_back(*m);
 
+                Value new_optimism = 141 * rm.averageScore / (std::abs(rm.averageScore) + 83);
+                optimism[us] = (optimism[us]*2 + new_optimism)/3;
+                optimism[~us] = -optimism[us];
+         
                 // We record how often the best move has been changed in each iteration.
                 // This information is used for time management. In MultiPV mode,
                 // we must take care to only do this for the first PV line.
