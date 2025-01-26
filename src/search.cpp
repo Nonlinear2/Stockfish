@@ -811,8 +811,8 @@ Value Search::Worker::search(
     if (cutNode && (ss - 1)->currentMove != Move::null() && eval >= beta
         && ss->staticEval >= beta 
                              - 20 * depth + 470 - 50 * improving 
+                             - 10*(improvingMagnitude > PawnValue/2)
                              - 10*(improvingMagnitude > PawnValue)
-                             - 10*(improvingMagnitude > 2*PawnValue)
 
         && !excludedMove
         && pos.non_pawn_material(us) && ss->ply >= thisThread->nmpMinPly && !is_loss(beta))
