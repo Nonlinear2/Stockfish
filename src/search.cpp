@@ -579,6 +579,7 @@ Value Search::Worker::search(
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
+    int   improvingMagnitude;
     bool  capture, ttCapture;
     int   priorReduction = ss->reduction;
     ss->reduction        = 0;
@@ -733,6 +734,7 @@ Value Search::Worker::search(
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
         improving             = false;
+        improvingMagnitude    = 0;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -783,6 +785,8 @@ Value Search::Worker::search(
     // false otherwise. The improving flag is used in various pruning heuristics.
     improving = ss->staticEval > (ss - 2)->staticEval;
 
+    improvingMagnitude = (ss - 2)->staticEval - ss->staticEval;
+
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
     if (priorReduction >= 3 && !opponentWorsening)
@@ -805,7 +809,12 @@ Value Search::Worker::search(
 
     // Step 9. Null move search with verification search
     if (cutNode && (ss - 1)->currentMove != Move::null() && eval >= beta
-        && ss->staticEval >= beta - 20 * depth + 470 - 60 * improving && !excludedMove
+        && ss->staticEval >= beta 
+                             - 20 * depth + 470 - 45 * improving 
+                             - 10*(improvingMagnitude > PawnValue)
+                             - 10*(improvingMagnitude > 2*PawnValue)
+
+        && !excludedMove
         && pos.non_pawn_material(us) && ss->ply >= thisThread->nmpMinPly && !is_loss(beta))
     {
         assert(eval - beta >= 0);
