@@ -1269,7 +1269,7 @@ moves_loop:  // When in check, search starts here
 
             if (moveCount == 1){
                 Value new_optimism = 141 * rm.averageScore / (std::abs(rm.averageScore) + 83);
-                optimism[us] = (optimism[us]*4 + new_optimism)/5;
+                optimism[us] = (optimism[us]*2 + new_optimism)/3;
                 optimism[~us] = -optimism[us];
             }
          
