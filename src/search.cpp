@@ -1622,7 +1622,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
                 // If static exchange evaluation is low enough
                 // we can prune this move.
-                if (!pos.see_ge(move, alpha - futilityBase))
+                if (!pos.see_ge(move, alpha - futilityBase) && (move != ttData.move))
                 {
                     bestValue = std::min(alpha, futilityBase);
                     continue;
@@ -1630,7 +1630,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             }
 
             // Continuation history based pruning
-            if (!capture
+            if (!capture && (move != ttData.move)
                 && (*contHist[0])[pos.moved_piece(move)][move.to_sq()]
                        + (*contHist[1])[pos.moved_piece(move)][move.to_sq()]
                        + thisThread->pawnHistory[pawn_structure_index(pos)][pos.moved_piece(move)]
