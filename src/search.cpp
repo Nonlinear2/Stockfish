@@ -1297,7 +1297,7 @@ moves_loop:  // When in check, search starts here
                     rm.pv.push_back(*m);
 
                 Value new_optimism = 141 * rm.averageScore / (std::abs(rm.averageScore) + 83);
-                optimism[us] = (optimism[us]*2 + new_optimism)/3;
+                optimism[us] = (optimism[us]*4 + new_optimism)/5;
                 optimism[~us] = -optimism[us];
          
                 // We record how often the best move has been changed in each iteration.
