@@ -579,6 +579,7 @@ Value Search::Worker::search(
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
+    int   improvingMagnitude;
     bool  capture, ttCapture;
     int   priorReduction = ss->reduction;
     ss->reduction        = 0;
@@ -733,6 +734,7 @@ Value Search::Worker::search(
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
         improving             = false;
+        improvingMagnitude    = 0;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -782,6 +784,8 @@ Value Search::Worker::search(
     // check at our previous move we go back until we weren't in check) and is
     // false otherwise. The improving flag is used in various pruning heuristics.
     improving = ss->staticEval > (ss - 2)->staticEval;
+
+    improvingMagnitude = ss->staticEval - (ss - 2)->staticEval;
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
@@ -859,7 +863,8 @@ Value Search::Worker::search(
     // Step 11. ProbCut
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 174 - 56 * improving;
+    probCutBeta = beta + 174 - 53 * improving - 10*(improvingMagnitude > PawnValue)
+                                              - 5*(improvingMagnitude > 2*PawnValue);
     if (depth >= 3
         && !is_decisive(beta)
         // If value from transposition table is lower than probCutBeta, don't attempt
