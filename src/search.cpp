@@ -1267,6 +1267,12 @@ moves_loop:  // When in check, search starts here
             rm.averageScore =
               rm.averageScore != -VALUE_INFINITE ? (value + rm.averageScore) / 2 : value;
 
+            if (moveCount == 1){
+                Value new_optimism = 141 * rm.averageScore / (std::abs(rm.averageScore) + 83);
+                optimism[us] = (optimism[us]*4 + new_optimism)/5;
+                optimism[~us] = -optimism[us];
+            }
+         
             rm.meanSquaredScore = rm.meanSquaredScore != -VALUE_INFINITE * VALUE_INFINITE
                                   ? (value * std::abs(value) + rm.meanSquaredScore) / 2
                                   : value * std::abs(value);
