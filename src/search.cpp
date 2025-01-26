@@ -1693,6 +1693,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     if (!is_decisive(bestValue) && bestValue >= beta)
         bestValue = (3 * bestValue + beta) / 4;
 
+    if (bestValue <= alpha)
+        pvHit = pvHit || (ss - 1)->ttPv;
+
     // Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
     ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), pvHit,
