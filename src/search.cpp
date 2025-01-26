@@ -80,7 +80,7 @@ Value futility_margin(Depth d, bool noTtCutNode, bool improving, bool oppWorseni
 }
 
 constexpr int futility_move_count(int improvingMagnitude, Depth depth) {
-    return 10*(3 + depth * depth) / (20 - 9*(improvingMagnitude > 0) - 2*(improvingMagnitude > PawnValue));
+    return 10*(3 + depth * depth) / (20 - 9*(improvingMagnitude > 0) - 2*(improvingMagnitude > PawnValue/2));
 }
 
 int correction_value(const Worker& w, const Position& pos, const Stack* ss) {
@@ -850,7 +850,7 @@ Value Search::Worker::search(
 
     improving |= ss->staticEval >= beta + 97;
     if (improving)
-        improvingMagnitude = std::max(1, improvingMagnitude);
+        improvingMagnitude = std::max(PawnValue, improvingMagnitude);
 
     // Step 10. Internal iterative reductions
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
