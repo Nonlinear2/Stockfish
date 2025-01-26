@@ -79,8 +79,8 @@ Value futility_margin(Depth d, bool noTtCutNode, bool improving, bool oppWorseni
     return futilityMult * d - improvingDeduction - worseningDeduction;
 }
 
-constexpr int futility_move_count(bool improving, Depth depth) {
-    return (3 + depth * depth) / (2 - improving);
+constexpr int futility_move_count(int improvingMagnitude, Depth depth) {
+    return (3 + depth * depth) / (2 - (improvingMagnitude > 0));
 }
 
 int correction_value(const Worker& w, const Position& pos, const Stack* ss) {
@@ -863,7 +863,7 @@ Value Search::Worker::search(
     // Step 11. ProbCut
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 174 - 53 * improving - 10*(improvingMagnitude > 2*PawnValue);
+    probCutBeta = beta + 174 - 56 * improving;
     if (depth >= 3
         && !is_decisive(beta)
         // If value from transposition table is lower than probCutBeta, don't attempt
@@ -991,7 +991,7 @@ moves_loop:  // When in check, search starts here
         if (!rootNode && pos.non_pawn_material(us) && !is_loss(bestValue))
         {
             // Skip quiet moves if movecount exceeds our FutilityMoveCount threshold
-            if (moveCount >= futility_move_count(improving, depth))
+            if (moveCount >= futility_move_count(improvingMagnitude, depth))
                 mp.skip_quiet_moves();
 
             // Reduced depth of the next LMR search
