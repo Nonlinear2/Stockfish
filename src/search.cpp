@@ -1622,7 +1622,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
                 // If static exchange evaluation is low enough
                 // we can prune this move.
-                if (!pos.see_ge(move, alpha - futilityBase))
+                if (!pos.see_ge(move, alpha - futilityBase - PawnValue*(move == ttData.move)))
                 {
                     bestValue = std::min(alpha, futilityBase);
                     continue;
@@ -1635,7 +1635,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                        + (*contHist[1])[pos.moved_piece(move)][move.to_sq()]
                        + thisThread->pawnHistory[pawn_structure_index(pos)][pos.moved_piece(move)]
                                                 [move.to_sq()]
-                     <= 5228 - 2500*(move == ttData.move))
+                     <= 5228)
                 continue;
 
             // Do not search moves with bad enough SEE values
