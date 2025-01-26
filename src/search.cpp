@@ -1622,7 +1622,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
                 // If static exchange evaluation is low enough
                 // we can prune this move.
-                if (!pos.see_ge(move, alpha - futilityBase - PawnValue*(move == ttData.move)))
+                if (!pos.see_ge(move, alpha - futilityBase - 100*(move == ttData.move)))
                 {
                     bestValue = std::min(alpha, futilityBase);
                     continue;
