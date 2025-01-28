@@ -327,10 +327,8 @@ void Search::Worker::iterative_deepening() {
             beta      = std::min(avg + delta, VALUE_INFINITE);
 
             // Adjust optimism based on root move's averageScore
-            if (rootDepth == 1){
-                optimism[us]  = -140;
-                optimism[~us] = 140;
-            }
+            optimism[us]  = 141 * avg / (std::abs(avg) + 83);
+            optimism[~us] = -optimism[us];
 
             // Start with a small aspiration window and, in the case of a fail
             // high/low, re-search with a bigger window until we don't fail
@@ -1298,8 +1296,11 @@ moves_loop:  // When in check, search starts here
                 for (Move* m = (ss + 1)->pv; *m != Move::none(); ++m)
                     rm.pv.push_back(*m);
 
-                optimism[us] = 141 * rm.averageScore / (std::abs(rm.averageScore) + 83);
-                optimism[~us] = -optimism[us];
+                if (moveCount == 1){
+                    Value new_optimism = 141 * rm.averageScore / (std::abs(rm.averageScore) + 83);
+                    optimism[us] = (optimism[us]*2 + new_optimism)/3;
+                    optimism[~us] = -optimism[us];
+                }
          
                 // We record how often the best move has been changed in each iteration.
                 // This information is used for time management. In MultiPV mode,
