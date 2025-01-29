@@ -786,7 +786,7 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
-    if (((ss - 1)->extension <= -3 || priorReduction >= 3) && !opponentWorsening)
+    if (priorReduction >= 3 && !opponentWorsening)
         depth++;
 
     // Step 7. Razoring
@@ -1148,6 +1148,9 @@ moves_loop:  // When in check, search starts here
 
         if (PvNode)
             r -= 1018;
+
+        if ((ss - 1)->extension <= -3 && !opponentWorsening)
+            r -= 1024;
 
         // These reduction adjustments have no proven non-linear scaling
 
