@@ -255,12 +255,14 @@ void Search::Worker::iterative_deepening() {
         (ss - i)->continuationCorrectionHistory = &this->continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
         (ss - i)->reduction                     = 0;
+        (ss - i)->extension                     = 0;
     }
 
     for (int i = 0; i <= MAX_PLY + 2; ++i)
     {
         (ss + i)->ply       = i;
         (ss + i)->reduction = 0;
+        (ss + i)->extension = 0;
     }
 
     ss->pv = pv;
@@ -784,7 +786,7 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
-    if (priorReduction >= 3 && !opponentWorsening)
+    if (((ss - 1)->extension <= -3 || priorReduction >= 3) && !opponentWorsening)
         depth++;
 
     // Step 7. Razoring
@@ -1129,6 +1131,7 @@ moves_loop:  // When in check, search starts here
 
         // Add extension to new depth
         newDepth += extension;
+        ss->extension = extension;
 
         // Update the current move (this must be done after singular extension search)
         ss->currentMove = move;
