@@ -1296,7 +1296,7 @@ moves_loop:  // When in check, search starts here
                 for (Move* m = (ss + 1)->pv; *m != Move::none(); ++m)
                     rm.pv.push_back(*m);
 
-                if (depth > 12){
+                if (depth > 5 && depth < 15){
                     Value new_optimism = 141 * rm.averageScore / (std::abs(rm.averageScore) + 83);
                     optimism[us] = (optimism[us]*2 + new_optimism)/3;
                     optimism[~us] = -optimism[us];
