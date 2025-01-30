@@ -786,7 +786,7 @@ Value Search::Worker::search(
 
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 2;
 
-    if (((ss - 1)->extension <= -4 || priorReduction >= 3) && !opponentWorsening)
+    if ((((ss - 1)->extension <= -3 && depth < 8) || priorReduction >= 3) && !opponentWorsening)
         depth++;
 
     // Step 7. Razoring
