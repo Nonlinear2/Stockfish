@@ -331,7 +331,7 @@ void Search::Worker::iterative_deepening() {
                     other_avg += rootMoves[i].averageScore;
                 }
                 other_avg /= (int)rootMoves.size();
-                avg = (5*avg + other_avg)/6;
+                avg = (6*avg + other_avg)/7;
             }
 
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
