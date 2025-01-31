@@ -324,6 +324,9 @@ void Search::Worker::iterative_deepening() {
             delta     = 5 + std::abs(rootMoves[pvIdx].meanSquaredScore) / 12991;
             Value avg = rootMoves[pvIdx].averageScore;
 
+            alpha     = std::max(avg - delta, -VALUE_INFINITE);
+            beta      = std::min(avg + delta, VALUE_INFINITE);
+
             if (rootDepth > 7)
             {
                 Value other_avg = 0;
@@ -331,11 +334,8 @@ void Search::Worker::iterative_deepening() {
                     other_avg += rootMoves[i].averageScore;
                 }
                 other_avg /= (int)rootMoves.size();
-                avg = (4*avg + other_avg)/5;
+                avg = (6*avg + other_avg)/7;
             }
-
-            alpha     = std::max(avg - delta, -VALUE_INFINITE);
-            beta      = std::min(avg + delta, VALUE_INFINITE);
 
             // Adjust optimism based on root move's averageScore
             optimism[us]  = 141 * avg / (std::abs(avg) + 83);
