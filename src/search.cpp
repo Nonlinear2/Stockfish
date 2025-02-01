@@ -667,9 +667,14 @@ Value Search::Worker::search(
 
         if (ttData.move && ttData.value < alpha && !priorCapture && prevSq != SQ_NONE)
         {
+            const int scaledBonus = stat_bonus(depth) *
+                (118 * (depth > 5) + 37 * !allNode
+                + 169 * ((ss - 1)->moveCount > 8) + 80 * (ss - 1)->isTTMove);
+
             update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                            stat_bonus(depth + 1)/5);
+                                            scaledBonus * 50 / 32768);
         }
+
 
         // Partial workaround for the graph history interaction problem
         // For high rule50 counts don't produce transposition table cutoffs.
