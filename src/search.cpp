@@ -672,7 +672,7 @@ Value Search::Worker::search(
                 + 169 * ((ss - 1)->moveCount > 8) + 80 * (ss - 1)->isTTMove);
 
             update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                            scaledBonus * 50 / 32768);
+                                            scaledBonus * 250 / 32768);
         }
 
 
