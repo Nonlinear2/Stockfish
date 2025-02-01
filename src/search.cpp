@@ -1335,7 +1335,7 @@ moves_loop:  // When in check, search starts here
                 {
                     // Reduce other moves if we have found at least one score improvement
                     if (depth > 2 && depth < 14 && !is_decisive(value))
-                        depth -= 2;
+                        depth -= 2 - (thisThread->completedDepth > 26);
 
                     assert(depth > 0);
                     alpha = value;  // Update alpha! Always alpha < beta
