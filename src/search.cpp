@@ -687,8 +687,8 @@ Value Search::Worker::search(
                                               -stat_malus(depth + 1) * 1042 / 1024);
         }
 
-        if (ttData.move && ttData.value < alpha && !priorCapture && prevSq != SQ_NONE)
-            update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, stat_bonus(depth)/3);
+        if (ttData.move && ttData.value < alpha && (ss - 1)->moveCount <= 2 && !priorCapture && prevSq != SQ_NONE)
+            update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, stat_bonus(depth)/4);
 
         // Partial workaround for the graph history interaction problem
         // For high rule50 counts don't produce transposition table cutoffs.
