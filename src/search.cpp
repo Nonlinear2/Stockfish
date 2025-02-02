@@ -863,12 +863,13 @@ Value Search::Worker::search(
 
             if (v >= beta)
                 return nullValue;
-            else
+            
+            if (v < alpha)
                 isZugzwang = true;
         }
     }
 
-    improving |= (ss->staticEval >= beta + 97 && !isZugzwang);
+    improving |= ss->staticEval >= beta + 97;
 
     // Step 10. Internal iterative reductions
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
@@ -882,6 +883,7 @@ Value Search::Worker::search(
     probCutBeta = beta + 174 - 56 * improving;
     if (depth >= 3
         && !is_decisive(beta)
+        && !isZugzwang
         // If value from transposition table is lower than probCutBeta, don't attempt
         // probCut there and in further interactions with transposition table cutoff
         // depth is set to depth - 3 because probCut search has depth set to depth - 4
