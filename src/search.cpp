@@ -879,7 +879,7 @@ Value Search::Worker::search(
     // Step 11. ProbCut
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 174 - 56 * improving + 25*isZugzwang;
+    probCutBeta = beta + 174 - 56 * improving;
     if (depth >= 3
         && !is_decisive(beta)
         // If value from transposition table is lower than probCutBeta, don't attempt
@@ -1169,6 +1169,9 @@ moves_loop:  // When in check, search starts here
 
         if (PvNode)
             r -= 1018;
+
+        if (isZugzwang)
+            r -= 500;
 
         // These reduction adjustments have no proven non-linear scaling
 
