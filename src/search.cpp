@@ -687,7 +687,7 @@ Value Search::Worker::search(
                                               -stat_malus(depth + 1) * 1042 / 1024);
         }
 
-        if (ttData.value < alpha - 50 && !priorCapture && prevSq != SQ_NONE)
+        if (ttData.value < alpha && !priorCapture && prevSq != SQ_NONE)
             update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, stat_bonus(depth)/3);
 
         // Partial workaround for the graph history interaction problem
