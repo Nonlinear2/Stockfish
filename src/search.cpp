@@ -863,8 +863,7 @@ Value Search::Worker::search(
 
             if (v >= beta)
                 return nullValue;
-
-            if (v < alpha)
+            else
                 isZugzwang = true;
         }
     }
