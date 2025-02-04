@@ -1616,7 +1616,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             if (!givesCheck && move.to_sq() != prevSq && !is_loss(futilityBase)
                 && move.type_of() != PROMOTION)
             {
-                if (moveCount > 2 - ((ss - 2)->negativeQsDepth <= -2 || (ss - 3)->negativeQsDepth <= -3 || (ss - 4)->negativeQsDepth <= -4))
+                if (moveCount > 2)
                     continue;
 
                 Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
@@ -1644,7 +1644,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                        + (*contHist[1])[pos.moved_piece(move)][move.to_sq()]
                        + thisThread->pawnHistory[pawn_structure_index(pos)][pos.moved_piece(move)]
                                                 [move.to_sq()]
-                     <= 5389)
+                     <= 5389 + 1000*((ss - 1)->negativeQsDepth <= -3))
                 continue;
 
             // Do not search moves with bad enough SEE values
