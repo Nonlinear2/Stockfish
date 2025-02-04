@@ -603,6 +603,7 @@ Value Search::Worker::search(
     bool  capture, ttCapture;
     int   priorReduction = (ss - 1)->reduction;
     (ss - 1)->reduction  = 0;
+    bool  isZugzwang = false;
     Piece movedPiece;
 
     ValueList<Move, 32> capturesSearched;
@@ -862,10 +863,13 @@ Value Search::Worker::search(
 
             if (v >= beta)
                 return nullValue;
+            else
+                isZugzwang = true;
         }
     }
 
     improving |= ss->staticEval >= beta + 97;
+    improving &= !isZugzwang;
 
     // Step 10. Internal iterative reductions
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
