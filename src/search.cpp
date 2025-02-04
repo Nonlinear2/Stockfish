@@ -573,7 +573,9 @@ Value Search::Worker::search(
     {
         ss->negativeQsDepth = depth;
         constexpr auto nt = PvNode ? PV : NonPV;
-        return qsearch<nt>(pos, ss, alpha, beta);
+        Value v = qsearch<nt>(pos, ss, alpha, beta);
+        ss->negativeQsDepth = 0;
+        return v;
     }
 
     // Limit the depth if extensions made it too large
@@ -1579,7 +1581,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         if (bestValue > alpha)
             alpha = bestValue;
 
-        futilityBase = ss->staticEval + 325 - 80*((ss - 1)->negativeQsDepth <= -3);
+        futilityBase = ss->staticEval + 325;
     }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
@@ -1614,7 +1616,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             if (!givesCheck && move.to_sq() != prevSq && !is_loss(futilityBase)
                 && move.type_of() != PROMOTION)
             {
-                if (moveCount > 2)
+                if (moveCount > 2 - ((ss - 2)->negativeQsDepth <= -3 || (ss - 3)->negativeQsDepth <= -4))
                     continue;
 
                 Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
