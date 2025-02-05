@@ -1533,7 +1533,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         if (pvHit && ttData.depth > 6 && ttData.value < beta)
         {
             prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
-            update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, 15);
+            if (prevSq != SQ_NONE)
+                update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, 15);
         }
         return ttData.value;
     }
