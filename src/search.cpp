@@ -1530,11 +1530,14 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
     {
-        if (pvHit && ttData.depth > 6 && ttData.value < beta)
+        if (pvHit && ttData.depth > 6)
         {
             prevSq = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
             if (prevSq != SQ_NONE)
-                update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, 15);
+            {
+                int val = (ttData.value < beta) ? 15 : -12;
+                update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, val);
+            }
         }
         return ttData.value;
     }
