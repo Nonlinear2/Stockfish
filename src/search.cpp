@@ -747,7 +747,7 @@ Value Search::Worker::search(
     }
 
     // Step 12. A small Probcut idea
-    probCutBeta = beta + 363;
+    probCutBeta = beta + 463;
     if ((ttData.bound & BOUND_LOWER) && ttData.depth >= depth - 4 && ttData.value >= probCutBeta
         && !is_decisive(beta) && is_valid(ttData.value) && !is_decisive(ttData.value))
         return probCutBeta;
