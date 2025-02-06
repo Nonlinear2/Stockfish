@@ -1618,7 +1618,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 // much lower than alpha, we can prune this move.
                 if (futilityValue <= alpha)
                 {
-                    bestValue = std::max(bestValue, (4*futilityValue + alpha)/5);
+                    bestValue = std::max(bestValue, (3*futilityValue + alpha)/4);
                     continue;
                 }
 
