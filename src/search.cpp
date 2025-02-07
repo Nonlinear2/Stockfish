@@ -1626,7 +1626,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 // we can prune this move.
                 if (!pos.see_ge(move, alpha - futilityBase))
                 {
-                    bestValue = std::min(alpha, (futilityBase*4 + alpha)/5);
+                    bestValue = std::min(alpha, (futilityBase*3 + alpha)/4);
                     continue;
                 }
             }
