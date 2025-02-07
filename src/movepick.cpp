@@ -150,6 +150,7 @@ void MovePicker::score() {
             m.value =
               7 * int(PieceValue[pos.piece_on(m.to_sq())])
               + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
+            m.value += 400*(m.to_sq() == lastMove.to_sq());
 
         else if constexpr (Type == QUIETS)
         {
@@ -190,7 +191,7 @@ void MovePicker::score() {
         else  // Type == EVASIONS
         {
             if (pos.capture_stage(m))
-                m.value = PieceValue[pos.piece_on(m.to_sq())] + 5000*(m.to_sq() == lastMove.to_sq()) + (1 << 28);
+                m.value = PieceValue[pos.piece_on(m.to_sq())] + (1 << 28);
             else
                 m.value = (*mainHistory)[pos.side_to_move()][m.from_to()]
                         + (*continuationHistory[0])[pos.moved_piece(m)][m.to_sq()]
