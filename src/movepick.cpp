@@ -147,11 +147,13 @@ void MovePicker::score() {
 
     for (auto& m : *this)
         if constexpr (Type == CAPTURES)
+        {
             m.value =
               7 * int(PieceValue[pos.piece_on(m.to_sq())])
               + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
-            m.value += 400*(m.to_sq() == lastMove.to_sq());
-
+            if (lastMove.is_ok())
+                m.value += 800*(m.to_sq() == lastMove.to_sq());
+        }
         else if constexpr (Type == QUIETS)
         {
             Piece     pc   = pos.moved_piece(m);
