@@ -146,8 +146,7 @@ void MovePicker::score() {
         if constexpr (Type == CAPTURES)
             m.value =
               7 * int(PieceValue[pos.piece_on(m.to_sq())])
-              + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))]
-              - 100*(stage == (int)Stages::QCAPTURE_INIT && type_of(pos.moved_piece(m)) == PieceType::KING);
+              + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
 
         else if constexpr (Type == QUIETS)
         {
@@ -168,6 +167,8 @@ void MovePicker::score() {
 
             // bonus for checks
             m.value += bool(pos.check_squares(pt) & to) * 16384;
+
+            m.value -= 3000*(type_of(pos.moved_piece(m)) == PieceType::KING);
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 51700
