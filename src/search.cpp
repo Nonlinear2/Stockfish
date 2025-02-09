@@ -805,10 +805,6 @@ Value Search::Worker::search(
 
     improving = ss->staticEval > (ss - 2)->staticEval;
 
-    improving |= !excludedMove && ttData.depth > std::max(depth - 2, 0)
-        && is_valid(ttData.value) && ttData.value > alpha
-        && (ttData.bound & BOUND_LOWER);
-
     opponentWorsening = ss->staticEval + (ss - 1)->staticEval > 5;
 
     if (priorReduction >= 3 && !opponentWorsening)
@@ -871,6 +867,9 @@ Value Search::Worker::search(
     }
 
     improving |= ss->staticEval >= beta + 97;
+    improving |= !excludedMove && ttData.depth > depth - 1
+        && is_valid(ttData.value) && ttData.value > alpha
+        && (ttData.bound & BOUND_LOWER);
 
     // Step 10. Internal iterative reductions
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
