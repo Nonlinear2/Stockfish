@@ -805,7 +805,7 @@ Value Search::Worker::search(
 
     improving = ss->staticEval > (ss - 2)->staticEval;
 
-    improving |= !excludedMove && ttData.depth > depth - 4
+    improving |= !excludedMove && ttData.depth > depth - 2
         && is_valid(ttData.value) && ttData.value > alpha + 50
         && (ttData.bound & BOUND_LOWER);
 
