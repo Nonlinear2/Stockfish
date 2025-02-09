@@ -52,6 +52,34 @@
 
 namespace Stockfish {
 
+int a1 = 158,
+    a2 = 98, 
+    a3 = 1622,
+
+    b1 = 158,
+    b2 = 98,
+    b3 = 1622,
+
+    c1 = 158,
+    c2 = 98, 
+    c3 = 1622,
+
+    d1 = 158,
+    d2 = 98, 
+    d3 = 1622,
+
+
+    e1 = 802,
+    e2 = 243,
+    e3 = 2850,
+      
+    f1 = 802,
+    f2 = 243,
+    f3 = 2850;
+
+
+TUNE(a1, a2, a3, b1, b2, b3, c1, c2, c3, d1, d2, d3, e1, e2, e3, f1, f2, f3);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -126,10 +154,14 @@ void update_correction_history(const Position& pos,
 }
 
 // History and stats update bonus, based on depth
-int stat_bonus(Depth d) { return std::min(158 * d - 98, 1622); }
+int stat_bonus_1(Depth d) { return std::min(a1 * d - a2, a3); }
+int stat_bonus_2(Depth d) { return std::min(b1 * d - b2, b3); }
+int stat_bonus_3(Depth d) { return std::min(c1 * d - c2, c3); }
+int stat_bonus_4(Depth d) { return std::min(d1 * d - d2, d3); }
 
 // History and stats update malus, based on depth
-int stat_malus(Depth d) { return std::min(802 * d - 243, 2850); }
+int stat_malus_1(Depth d) { return std::min(e1 * d - e2, e3); }
+int stat_malus_2(Depth d) { return std::min(f1 * d - f2, f3); }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
 Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
@@ -679,12 +711,12 @@ Value Search::Worker::search(
         {
             // Bonus for a quiet ttMove that fails high
             if (!ttCapture)
-                update_quiet_histories(pos, ss, *this, ttData.move, stat_bonus(depth) * 784 / 1024);
+                update_quiet_histories(pos, ss, *this, ttData.move, stat_bonus_1(depth) * 784 / 1024);
 
             // Extra penalty for early quiet moves of the previous ply
             if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 3 && !priorCapture)
                 update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                              -stat_malus(depth + 1) * 1018 / 1024);
+                                              -stat_malus_1(depth + 1) * 1018 / 1024);
         }
 
         // Partial workaround for the graph history interaction problem
@@ -1404,7 +1436,7 @@ moves_loop:  // When in check, search starts here
 
         bonusScale = std::max(bonusScale, 0);
 
-        const int scaledBonus = stat_bonus(depth) * bonusScale;
+        const int scaledBonus = stat_bonus_2(depth) * bonusScale;
 
         update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
                                       scaledBonus * 416 / 32768);
@@ -1423,7 +1455,7 @@ moves_loop:  // When in check, search starts here
         Piece capturedPiece = pos.captured_piece();
         assert(capturedPiece != NO_PIECE);
         thisThread->captureHistory[pos.piece_on(prevSq)][prevSq][type_of(capturedPiece)]
-          << stat_bonus(depth) * 2;
+          << stat_bonus_3(depth) * 2;
     }
 
     if (PvNode)
@@ -1804,8 +1836,8 @@ void update_all_stats(const Position&      pos,
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
 
-    int bonus = stat_bonus(depth) + 298 * isTTMove;
-    int malus = stat_malus(depth) - 32 * (moveCount - 1);
+    int bonus = stat_bonus_4(depth) + 298 * isTTMove;
+    int malus = stat_malus_2(depth) - 32 * (moveCount - 1);
 
     if (!pos.capture_stage(bestMove))
     {
