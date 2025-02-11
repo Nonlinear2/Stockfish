@@ -958,6 +958,8 @@ moves_loop:  // When in check, search starts here
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
+    int avg_reduction = 0;
+    int reduction_count = 0;
     while ((move = mp.next_move()) != Move::none())
     {
         assert(move.is_ok());
@@ -1198,6 +1200,9 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1407 / 16384;
 
+        avg_reduction += r;
+        reduction_count++;
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1400,6 +1405,7 @@ moves_loop:  // When in check, search starts here
                           + 133 * (!ss->inCheck && bestValue <= ss->staticEval - 107)
                           + 120 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 84)
                           + 81 * ((ss - 1)->isTTMove) + 100 * (ss->cutoffCnt <= 3)
+                          + 80 * (avg_reduction < 1024)
                           + std::min(-(ss - 1)->statScore / 108, 320));
 
         bonusScale = std::max(bonusScale, 0);
