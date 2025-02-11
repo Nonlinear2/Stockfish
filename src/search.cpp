@@ -1661,6 +1661,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         value = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha);
         pos.undo_move(move);
 
+        if (pos.non_pawn_material() <= BishopValue && !pos.pieces(pos.side_to_move(), PAWN))
+            value = std::min(value, 0);
+
         assert(value > -VALUE_INFINITE && value < VALUE_INFINITE);
 
         // Step 8. Check for a new best move
