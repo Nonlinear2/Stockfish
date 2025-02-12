@@ -148,7 +148,8 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
                       bool                 isTTMove,
-                      int                  moveCount);
+                      int                  moveCount,
+                      int                  tt_reduction);
 
 }  // namespace
 
@@ -955,6 +956,7 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    int tt_reduction = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1246,6 +1248,8 @@ moves_loop:  // When in check, search starts here
             // Note that if expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
                                    newDepth - (r > 3554) - (r > 5373 && newDepth > 2), !cutNode);
+            if (move == ttData.move)
+                tt_reduction = r;
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
@@ -1391,7 +1395,7 @@ moves_loop:  // When in check, search starts here
     // we update the stats of searched moves.
     else if (bestMove)
         update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth,
-                         bestMove == ttData.move, moveCount);
+                         bestMove == ttData.move, moveCount, tt_reduction);
 
     // Bonus for prior countermove that caused the fail low
     else if (!priorCapture && prevSq != SQ_NONE)
@@ -1798,13 +1802,14 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
                       bool                 isTTMove,
-                      int                  moveCount) {
+                      int                  moveCount,
+                      int                  tt_reduction) {
 
     CapturePieceToHistory& captureHistory = workerThread.captureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
 
-    int bonus = stat_bonus(depth) + 298 * isTTMove;
+    int bonus = stat_bonus(depth) + (298 - 58 * (tt_reduction > 5373)) * isTTMove;
     int malus = stat_malus(depth) - 32 * (moveCount - 1);
 
     if (!pos.capture_stage(bestMove))
