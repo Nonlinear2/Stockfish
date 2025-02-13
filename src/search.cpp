@@ -1812,7 +1812,7 @@ void update_all_stats(const Position&      pos,
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
 
-    int bonus = stat_bonus(depth) + (298 - 90 * (tt_reduction > 5373)) * isTTMove;
+    int bonus = stat_bonus(depth) + (298 - 90 * (tt_reduction > 4000)) * isTTMove;
     int malus = stat_malus(depth) - 32 * (moveCount - 1);
 
     if (!pos.capture_stage(bestMove))
