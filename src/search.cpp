@@ -52,34 +52,6 @@
 
 namespace Stockfish {
 
-int a1 = 159,
-    a2 = 93, 
-    a3 = 1625,
-
-    b1 = 160,
-    b2 = 105,
-    b3 = 1533,
-
-    c1 = 161,
-    c2 = 99, 
-    c3 = 1762,
-
-    d1 = 160,
-    d2 = 94, 
-    d3 = 1550,
-
-
-    e1 = 780,
-    e2 = 251,
-    e3 = 2983,
-
-    f1 = 731,
-    f2 = 231,
-    f3 = 2575;
-
-
-TUNE(a1, a2, a3, b1, b2, b3, c1, c2, c3, d1, d2, d3, e1, e2, e3, f1, f2, f3);
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -154,14 +126,14 @@ void update_correction_history(const Position& pos,
 }
 
 // History and stats update bonus, based on depth
-int stat_bonus_1(Depth d) { return std::min(a1 * d - a2, a3); }
-int stat_bonus_2(Depth d) { return std::min(b1 * d - b2, b3); }
-int stat_bonus_3(Depth d) { return std::min(c1 * d - c2, c3); }
-int stat_bonus_4(Depth d) { return std::min(d1 * d - d2, d3); }
+int stat_bonus_1(Depth d) { return std::min(150 * d - 91, 1588); }
+int stat_bonus_2(Depth d) { return std::min(160 * d - 106, 1523); }
+int stat_bonus_3(Depth d) { return std::min(165 * d - 99, 1660); }
+int stat_bonus_4(Depth d) { return std::min(162 * d - 92, 1587); }
 
 // History and stats update malus, based on depth
-int stat_malus_1(Depth d) { return std::min(e1 * d - e2, e3); }
-int stat_malus_2(Depth d) { return std::min(f1 * d - f2, f3); }
+int stat_malus_1(Depth d) { return std::min(766 * d - 267, 2906); }
+int stat_malus_2(Depth d) { return std::min(694 * d - 230, 2503); }
 
 // Add a small random component to draw evaluations to avoid 3-fold blindness
 Value value_draw(size_t nodes) { return VALUE_DRAW - 1 + Value(nodes & 0x2); }
