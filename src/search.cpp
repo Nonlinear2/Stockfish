@@ -865,6 +865,9 @@ Value Search::Worker::search(
             if (v >= beta)
                 return nullValue;
         }
+
+        if (is_win(nullValue) && depth < 4)
+            return qsearch<NonPV>(pos, ss, alpha, beta);
     }
 
     improving |= ss->staticEval >= beta + 97;
