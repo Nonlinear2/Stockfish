@@ -847,10 +847,10 @@ Value Search::Worker::search(
         pos.undo_null_move();
 
         // Do not return unproven mate or TB scores
-        if (nullValue >= beta && !is_win(nullValue))
+        if (nullValue >= beta)
         {
             if (thisThread->nmpMinPly || depth < 16)
-                return nullValue;
+                return is_win(nullValue) ? beta : nullValue;
 
             assert(!thisThread->nmpMinPly);  // Recursive verification is not allowed
 
@@ -865,9 +865,6 @@ Value Search::Worker::search(
             if (v >= beta)
                 return nullValue;
         }
-
-        if (is_win(nullValue) && depth < 4)
-            return qsearch<NonPV>(pos, ss, alpha, beta);
     }
 
     improving |= ss->staticEval >= beta + 97;
