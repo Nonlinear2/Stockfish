@@ -817,6 +817,9 @@ Value Search::Worker::search(
     if (!PvNode && eval < alpha - 446 - 303 * depth * depth)
         return qsearch<NonPV>(pos, ss, alpha, beta);
 
+    if (!PvNode && eval > beta + 446 + 303 * depth * depth)
+        return qsearch<NonPV>(pos, ss, alpha, beta);
+
     // Step 8. Futility pruning: child node
     // The depth condition is important for mate finding.
     if (!ss->ttPv && depth < 14
