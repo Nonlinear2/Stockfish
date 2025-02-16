@@ -347,7 +347,7 @@ void Search::Worker::iterative_deepening() {
             Value avg = rootMoves[pvIdx].averageScore;
 
             if (avg  < -mainThread->bestPreviousAverageScore)
-                avg -= std::abs(avg) / 10;
+                delta = delta * 10 / 8;
 
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
