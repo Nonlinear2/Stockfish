@@ -817,7 +817,7 @@ Value Search::Worker::search(
     if (!PvNode && eval < alpha - 446 - 303 * depth * depth)
         return qsearch<NonPV>(pos, ss, alpha, beta);
 
-    if (!PvNode && eval > beta + 546 + 373 * depth * depth)
+    if (!PvNode && eval > beta + 590 + 423 * depth * depth)
         return qsearch<NonPV>(pos, ss, alpha, beta);
 
     // Step 8. Futility pruning: child node
