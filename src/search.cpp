@@ -1001,7 +1001,7 @@ moves_loop:  // When in check, search starts here
 
         Depth r = reduction(improving, depth, moveCount, delta);
 
-        r -= 32 * moveCount + 100*((bool)excludedMove);
+        r -= (32 - 10*((bool)excludedMove)) * moveCount;
 
         // Increase reduction for ttPv nodes (*Scaler)
         // Smaller or even negative value is better for short time controls
