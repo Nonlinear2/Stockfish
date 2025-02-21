@@ -105,7 +105,7 @@ void TTEntry::save(
         assert(d < 256 + DEPTH_ENTRY_OFFSET);
 
         if (depth8 > d + 3 && (genBound8 & 0x4) && Bound(genBound8 & 0x3) == BOUND_EXACT && b == BOUND_EXACT)
-            v = (v + value16)/2;
+            v = (3*v + value16)/4;
 
         key16     = uint16_t(k); 
         depth8    = uint8_t(d - DEPTH_ENTRY_OFFSET);
