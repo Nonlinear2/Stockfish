@@ -107,9 +107,8 @@ void TTEntry::save(
         if (uint16_t(k) == key16 && depth8 > d + 2 && (genBound8 & 0x4)
             && Bound(genBound8 & 0x3) == BOUND_EXACT && b == BOUND_EXACT)
             v = (2*v + value16)/3;
-        else
-            key16     = uint16_t(k);
-
+        
+        key16     = uint16_t(k);
         depth8    = uint8_t(d - DEPTH_ENTRY_OFFSET);
         genBound8 = uint8_t(generation8 | uint8_t(pv) << 2 | b);
         value16   = int16_t(v);
