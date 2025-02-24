@@ -51,6 +51,7 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+int tunedHist[7183 * 4 * 4096] = {};
 
 namespace TB = Tablebases;
 
@@ -307,7 +308,7 @@ void Search::Worker::iterative_deepening() {
 
     int searchAgainCounter = 0;
 
-    lowPlyHistory.fill(95);
+    lowPlyHistory.set(tunedHist);
 
     // Iterative deepening loop until requested to stop or the target depth is reached
     while (++rootDepth < MAX_PLY && !threads.stop

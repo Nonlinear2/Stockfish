@@ -223,6 +223,17 @@ class MultiArray {
     }
 
     constexpr void swap(MultiArray<T, Size, Sizes...>& other) noexcept { data_.swap(other.data_); }
+    
+    constexpr void set(int *dataPtr) noexcept 
+    {
+        for (auto& ele : data_)
+        {
+            if constexpr (sizeof...(Sizes) == 0)
+                ele = *dataPtr++;
+            else
+                ele.set(dataPtr);
+        }
+    }
 };
 
 
