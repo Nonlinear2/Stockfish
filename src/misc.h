@@ -239,6 +239,17 @@ class MultiArray {
                 ele.set(dataPtr);
         }
     }
+
+    constexpr void get_data(int *dataPtr) noexcept 
+    {
+        for (auto& ele : data_)
+        {
+            if constexpr (sizeof...(Sizes) == 0)
+                *dataPtr++ = ele;
+            else
+                ele.get_data(dataPtr);
+        }
+    }
 };
 
 

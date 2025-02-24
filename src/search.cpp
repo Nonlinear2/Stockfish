@@ -32,6 +32,7 @@
 #include <ratio>
 #include <string>
 #include <utility>
+#include <fstream>
 
 #include "evaluate.h"
 #include "history.h"
@@ -50,7 +51,6 @@
 #include "ucioption.h"
 
 namespace Stockfish {
-int tunedHist[7183 * 4 * 4096] = {};
 
 namespace TB = Tablebases;
 
@@ -327,7 +327,7 @@ void Search::Worker::iterative_deepening() {
 
     int searchAgainCounter = 0;
 
-    lowPlyHistory.set(tunedHist);
+    lowPlyHistory.fill(95);
 
     // Iterative deepening loop until requested to stop or the target depth is reached
     while (++rootDepth < MAX_PLY && !threads.stop
@@ -543,6 +543,10 @@ void Search::Worker::iterative_deepening() {
         return;
 
     mainThread->previousTimeReduction = timeReduction;
+
+    std::ofstream out("low_ply_history.data", std::ios_base::binary);
+    int low_ply_data[7183 * 4 * 4096];
+    out.write((char*)low_ply_data, sizeof(int)*(7183 * 4 * 4096));
 
     // If the skill level is enabled, swap the best PV line with the sub-optimal one
     if (skill.enabled())
