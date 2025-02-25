@@ -541,6 +541,15 @@ void Search::Worker::iterative_deepening() {
     if (!mainThread)
         return;
 
+    // int16_t arr[16*64*8] = {};
+    // int16_t* arr_ptr = arr;
+
+    // captureHistory.save(arr_ptr);
+
+    // for (int i = 0; i < 16*64*8; i++){
+    //     std::cout << (int)arr[i] << ", ";
+    // }
+
     mainThread->previousTimeReduction = timeReduction;
 
     // If the skill level is enabled, swap the best PV line with the sub-optimal one
@@ -554,7 +563,10 @@ void Search::Worker::iterative_deepening() {
 void Search::Worker::clear() {
     mainHistory.fill(65);
     lowPlyHistory.fill(107);
-    captureHistory.fill(-655);
+
+    int16_t* savedCaptureHistoryPtr = savedCaptureHistory;
+    captureHistory.load(savedCaptureHistoryPtr);
+
     pawnHistory.fill(-1215);
     pawnCorrectionHistory.fill(4);
     minorPieceCorrectionHistory.fill(0);

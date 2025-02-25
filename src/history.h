@@ -90,6 +90,10 @@ class StatsEntry {
 
         assert(std::abs(entry) <= D);
     }
+
+    void save(int16_t*& dataPtr) {
+        *dataPtr++ = entry;
+    }
 };
 
 enum StatsType {
