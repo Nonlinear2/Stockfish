@@ -1603,7 +1603,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             && ss->staticEval > (ss - 2)->staticEval + 200)
         {
             if (!ss->ttHit)
-                ttWriter.write(posKey, value_to_tt(beta, ss->ply), false, BOUND_LOWER,
+                ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
                                DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval,
                                tt.generation());
             return beta;
