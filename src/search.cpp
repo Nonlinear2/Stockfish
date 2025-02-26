@@ -1599,13 +1599,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             return bestValue;
         }
 
-        if (!PvNode && bestValue >= beta - 10 && ss->staticEval + (ss - 1)->staticEval > 200 
-            && ss->staticEval > (ss - 2)->staticEval + 200)
+        if (!PvNode && bestValue >= beta - 7 && ss->staticEval + (ss - 1)->staticEval > 250 
+            && ss->staticEval > (ss - 2)->staticEval + 250)
         {
-            if (!ss->ttHit)
-                ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
-                               DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval,
-                               tt.generation());
             return beta;
         }
 
