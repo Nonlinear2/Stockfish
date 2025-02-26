@@ -1599,7 +1599,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             return bestValue;
         }
 
-        if (bestValue >= beta - 10 && ss->staticEval + (ss - 1)->staticEval > 200 
+        if (!PvNode && bestValue >= beta - 10 && ss->staticEval + (ss - 1)->staticEval > 200 
             && ss->staticEval > (ss - 2)->staticEval + 200)
             return beta;
 
