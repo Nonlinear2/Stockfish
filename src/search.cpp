@@ -590,6 +590,7 @@ Value Search::Worker::search(
     // Dive into quiescence search when the depth reaches zero
     if (depth <= 0)
     {
+        callQs = true;
         constexpr auto nt = PvNode ? PV : NonPV;
         return qsearch<nt>(pos, ss, alpha, beta);
     }
@@ -833,7 +834,10 @@ Value Search::Worker::search(
     // If eval is really low, skip search entirely and return the qsearch value.
     // For PvNodes, we must have a guard against mates being returned.
     if (!PvNode && eval < alpha - 446 - 303 * depth * depth)
+    {
+        callQs = true;
         return qsearch<NonPV>(pos, ss, alpha, beta);
+    }
 
     // Step 8. Futility pruning: child node
     // The depth condition is important for mate finding.
@@ -934,6 +938,7 @@ Value Search::Worker::search(
             ss->continuationCorrectionHistory =
               &this->continuationCorrectionHistory[movedPiece][move.to_sq()];
 
+            callQs = true;
             // Perform a preliminary qsearch to verify that the move holds
             value = -qsearch<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1);
 
@@ -1502,6 +1507,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     assert(alpha >= -VALUE_INFINITE && alpha < beta && beta <= VALUE_INFINITE);
     assert(PvNode || (alpha == beta - 1));
 
+    bool rootQs = callQs;
+    callQs = false;
+
     // Check if we have an upcoming move that draws by repetition
     if (alpha < VALUE_DRAW && pos.upcoming_repetition(ss->ply))
     {
@@ -1637,7 +1645,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             if (!givesCheck && move.to_sq() != prevSq && !is_loss(futilityBase)
                 && move.type_of() != PROMOTION)
             {
-                if (moveCount > 2)
+                if (moveCount > 2 + (rootQs && PvNode && ttData.move))
                     continue;
 
                 Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
