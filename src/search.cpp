@@ -1570,11 +1570,13 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             unadjustedStaticEval = ttData.eval;
             if (!is_valid(unadjustedStaticEval))
                 unadjustedStaticEval = evaluate(pos);
-            ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
-            if (bestValue >= beta && !is_decisive(bestValue))
-                bestValue = (bestValue + beta) / 2;
+            Value dampenedUnadjustedStaticEval = unadjustedStaticEval;
+            if (dampenedUnadjustedStaticEval >= beta && !is_decisive(dampenedUnadjustedStaticEval))
+                dampenedUnadjustedStaticEval = (dampenedUnadjustedStaticEval + beta) / 2;
+
+            ss->staticEval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+            bestValue = to_corrected_static_eval(dampenedUnadjustedStaticEval, correctionValue);
 
             // ttValue can be used as a better position evaluation
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
@@ -1586,12 +1588,13 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             // In case of null move search, use previous static eval with opposite sign
             unadjustedStaticEval =
               (ss - 1)->currentMove != Move::null() ? evaluate(pos) : -(ss - 1)->staticEval;
-            ss->staticEval = bestValue =
-              to_corrected_static_eval(unadjustedStaticEval, correctionValue);
             
-            if (bestValue >= beta && !is_decisive(bestValue))
-                bestValue = (bestValue + beta) / 2;
-
+            Value dampenedUnadjustedStaticEval = unadjustedStaticEval;
+            if (dampenedUnadjustedStaticEval >= beta && !is_decisive(dampenedUnadjustedStaticEval))
+                dampenedUnadjustedStaticEval = (dampenedUnadjustedStaticEval + beta) / 2;
+  
+            ss->staticEval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+            bestValue = to_corrected_static_eval(dampenedUnadjustedStaticEval, correctionValue);
         }
 
         // Stand pat. Return immediately if static value is at least beta
