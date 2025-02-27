@@ -864,6 +864,9 @@ Value Search::Worker::search(
 
         pos.undo_null_move();
 
+        if (nullValue >= beta - 5 && depth < 4 && !is_win(nullValue))
+            return beta;
+
         // Do not return unproven mate or TB scores
         if (nullValue >= beta && !is_win(nullValue))
         {
