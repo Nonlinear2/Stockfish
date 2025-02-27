@@ -864,6 +864,9 @@ Value Search::Worker::search(
 
         pos.undo_null_move();
 
+        if (depth < 3)
+            alpha = std::max(alpha, nullValue);
+
         // Do not return unproven mate or TB scores
         if (nullValue >= beta && !is_win(nullValue))
         {
