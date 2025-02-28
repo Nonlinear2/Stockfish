@@ -1400,7 +1400,7 @@ moves_loop:  // When in check, search starts here
             else
                 quietsSearched.push_back(move);
         }
-        else if (prevBestMove != Move::none())
+        else if (prevBestMove != Move::none() && prevBestMove != ttData.move)
         {
             if (pos.capture_stage(prevBestMove))
                 capturesSearched.push_back(prevBestMove);
