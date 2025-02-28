@@ -1354,6 +1354,7 @@ moves_loop:  // When in check, search starts here
                 rm.score = -VALUE_INFINITE;
         }
 
+        Move prevBestMove = Move::none();
         // In case we have an alternative move equal in eval to the current bestmove,
         // promote it to bestmove by pretending it just exceeds alpha (but not beta).
         int inc = (value == bestValue && ss->ply + 2 >= thisThread->rootDepth
@@ -1365,6 +1366,7 @@ moves_loop:  // When in check, search starts here
 
             if (value + inc > alpha)
             {
+                prevBestMove = bestMove;
                 bestMove = move;
 
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
@@ -1397,6 +1399,13 @@ moves_loop:  // When in check, search starts here
                 capturesSearched.push_back(move);
             else
                 quietsSearched.push_back(move);
+        }
+        else if (prevBestMove != Move::none())
+        {
+            if (pos.capture_stage(prevBestMove))
+                capturesSearched.push_back(prevBestMove);
+            else
+                quietsSearched.push_back(prevBestMove);
         }
     }
 
