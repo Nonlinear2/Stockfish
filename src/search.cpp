@@ -1366,7 +1366,8 @@ moves_loop:  // When in check, search starts here
 
             if (value + inc > alpha)
             {
-                prevBestMove = bestMove;
+                if (value > alpha)
+                    prevBestMove = bestMove;
                 bestMove = move;
 
                 if (PvNode && !rootNode)  // Update pv even in fail-high case
@@ -1400,7 +1401,7 @@ moves_loop:  // When in check, search starts here
             else
                 quietsSearched.push_back(move);
         }
-        else if (prevBestMove != Move::none() && prevBestMove != ttData.move)
+        else if (prevBestMove != Move::none() && prevBestMove != ttData.move && moveCount <= 32)
         {
             if (pos.capture_stage(prevBestMove))
                 capturesSearched.push_back(prevBestMove);
