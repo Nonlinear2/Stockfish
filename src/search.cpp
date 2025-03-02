@@ -865,7 +865,7 @@ Value Search::Worker::search(
         pos.undo_null_move();
 
         // Do not return unproven mate or TB scores
-        if (nullValue >= beta - 5 && !is_win(nullValue))
+        if (nullValue >= beta - 2*(depth < 5) && !is_win(nullValue))
         {
             if (thisThread->nmpMinPly || depth < 16)
                 return std::max(nullValue, beta);
