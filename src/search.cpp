@@ -1720,9 +1720,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         return mated_in(ss->ply);  // Plies to mate from the root
     }
 
-    if (pos.non_pawn_material(pos.side_to_move()) < QueenValue + 2*RookValue
-        && (ss->inCheck) && (ss - 2)->inCheck && (ss - 4)->inCheck && (ss - 6)->inCheck)
-        bestValue = 6*bestValue/7;
+    if (ss->inCheck && (ss - 2)->inCheck && (ss - 4)->inCheck && (ss - 6)->inCheck)
+        bestValue = 8*bestValue/9;
 
     if (!is_decisive(bestValue) && bestValue > beta)
         bestValue = (bestValue + beta) / 2;
