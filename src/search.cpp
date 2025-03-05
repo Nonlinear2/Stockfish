@@ -1573,8 +1573,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
-            if ((ss->inCheck) && (ss - 2)->inCheck && (ss - 4)->inCheck && (ss - 6)->inCheck)
-                ss->staticEval = bestValue = 6*bestValue/7;
+            if (pos.non_pawn_material(pos.side_to_move()) < QueenValue + 2*RookValue 
+                && (ss->inCheck) && (ss - 2)->inCheck && (ss - 4)->inCheck && (ss - 6)->inCheck)
+                ss->staticEval = bestValue = 5*bestValue/6;
 
             // ttValue can be used as a better position evaluation
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
@@ -1589,8 +1590,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
-            if ((ss->inCheck) && (ss - 2)->inCheck && (ss - 4)->inCheck && (ss - 6)->inCheck)
-                ss->staticEval = bestValue = 6*bestValue/7;
+            if (pos.non_pawn_material(pos.side_to_move()) < QueenValue + 2*RookValue 
+                && (ss->inCheck) && (ss - 2)->inCheck && (ss - 4)->inCheck && (ss - 6)->inCheck)
+                ss->staticEval = bestValue = 5*bestValue/6;
         }
 
         // Stand pat. Return immediately if static value is at least beta
