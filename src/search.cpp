@@ -1721,7 +1721,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     }
 
     if ((ss->inCheck) && (ss - 2)->inCheck && (ss - 4)->inCheck && (ss - 6)->inCheck)
-        bestValue = 6*bestValue/7;
+        bestValue = 5*bestValue/6;
 
     if (!is_decisive(bestValue) && bestValue > beta)
         bestValue = (bestValue + beta) / 2;
