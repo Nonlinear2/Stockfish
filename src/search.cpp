@@ -51,6 +51,55 @@
 
 namespace Stockfish {
 
+int a1  = 160,
+    a2  = 99, 
+    a3  = 1492,
+    a4  = 112,
+    a5  = 34,
+    a6  = 164,
+    a7  = 141,
+    a8  = 121,
+    a9  = 86,
+    a10 = 86,
+    a11 = 112,
+    a12 = 303,
+    a13 = 388;
+
+
+int b1  = 160,
+    b2  = 99, 
+    b3  = 1492,
+    b4  = 112,
+    b5  = 34,
+    b6  = 164,
+    b7  = 141,
+    b8  = 121,
+    b9  = 86,
+    b10 = 86,
+    b11 = 112,
+    b12 = 303,
+    b13 = 212;
+
+int c1  = 160,
+    c2  = 99, 
+    c3  = 1492,
+    c4  = 112,
+    c5  = 34,
+    c6  = 164,
+    c7  = 141,
+    c8  = 121,
+    c9  = 86,
+    c10 = 86,
+    c11 = 112,
+    c12 = 303,
+    c13 = 1055;
+
+TUNE(
+    a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13,
+    b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13,
+    c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13
+);
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1424,25 +1473,43 @@ moves_loop:  // When in check, search starts here
     // Bonus for prior countermove that caused the fail low
     else if (!priorCapture && prevSq != SQ_NONE)
     {
-        int bonusScale = (112 * (depth > 5) + 34 * !allNode + 164 * ((ss - 1)->moveCount > 8)
-                          + 141 * (!ss->inCheck && bestValue <= ss->staticEval - 100)
-                          + 121 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 75)
-                          + 86 * ((ss - 1)->isTTMove) + 86 * (ss->cutoffCnt <= 3)
-                          + std::min(-(ss - 1)->statScore / 112, 303));
+        int bonusScale_1 = std::min(a1 * depth - a2, a3) * std::max(
+              a4 * (depth > 5) 
+            + a5 * !allNode
+            + a6 * ((ss - 1)->moveCount > 8)
+            + a7 * (!ss->inCheck && bestValue <= ss->staticEval - 100)
+            + a8 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 75)
+            + a9 * ((ss - 1)->isTTMove)
+            + a10 * (ss->cutoffCnt <= 3)
+            + std::min(-(ss - 1)->statScore / a11, a12), 0) * a13 / 32768;
 
-        bonusScale = std::max(bonusScale, 0);
+        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, bonusScale_1);
 
-        const int scaledBonus = std::min(160 * depth - 99, 1492) * bonusScale;
+        int bonusScale_2 = std::min(b1 * depth - b2, b3) * std::max(
+            b4 * (depth > 5) 
+          + b5 * !allNode
+          + b6 * ((ss - 1)->moveCount > 8)
+          + b7 * (!ss->inCheck && bestValue <= ss->staticEval - 100)
+          + b8 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 75)
+          + b9 * ((ss - 1)->isTTMove)
+          + b10 * (ss->cutoffCnt <= 3)
+          + std::min(-(ss - 1)->statScore / b11, b12), 0) * b13 / 32768;
 
-        update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq,
-                                      scaledBonus * 388 / 32768);
-
-        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()]
-          << scaledBonus * 212 / 32768;
+        thisThread->mainHistory[~us][((ss - 1)->currentMove).from_to()] << bonusScale_2;
+        
+        int bonusScale_3 = std::min(c1 * depth - c2, c3) * std::max(
+            c4 * (depth > 5) 
+          + c5 * !allNode
+          + c6 * ((ss - 1)->moveCount > 8)
+          + c7 * (!ss->inCheck && bestValue <= ss->staticEval - 100)
+          + c8 * (!(ss - 1)->inCheck && bestValue <= -(ss - 1)->staticEval - 75)
+          + c9 * ((ss - 1)->isTTMove)
+          + c10 * (ss->cutoffCnt <= 3)
+          + std::min(-(ss - 1)->statScore / c11, c12), 0) * c13 / 32768;
 
         if (type_of(pos.piece_on(prevSq)) != PAWN && ((ss - 1)->currentMove).type_of() != PROMOTION)
             thisThread->pawnHistory[pawn_structure_index(pos)][pos.piece_on(prevSq)][prevSq]
-              << scaledBonus * 1055 / 32768;
+              << bonusScale_3;
     }
 
     else if (priorCapture && prevSq != SQ_NONE)
