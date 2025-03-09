@@ -860,15 +860,15 @@ Value Search::Worker::search(
 
         pos.do_null_move(st, tt);
 
-        Value nullValue = -search<NonPV>(pos, ss + 1, -beta, -beta + 1, depth - R, false);
+        Value nullValue = -search<NonPV>(pos, ss + 1, -beta + 5, -beta + 6, depth - R, false);
 
         pos.undo_null_move();
 
         // Do not return unproven mate or TB scores
-        if (nullValue >= beta && !is_win(nullValue))
+        if (nullValue >= beta - 5 && !is_win(nullValue))
         {
             if (thisThread->nmpMinPly || depth < 16)
-                return nullValue;
+                return std::max(nullValue, beta);
 
             assert(!thisThread->nmpMinPly);  // Recursive verification is not allowed
 
