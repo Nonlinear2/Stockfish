@@ -554,8 +554,10 @@ void Search::Worker::iterative_deepening() {
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(66);
+    reductionHistory.fill(63);
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
+    captureReductionHistory.fill(63);
     pawnHistory.fill(-1262);
     pawnCorrectionHistory.fill(6);
     minorPieceCorrectionHistory.fill(0);
@@ -1211,18 +1213,40 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 1937;
 
+        int packedSearchState = 
+            (ss->ttPv << 4) & (PvNode << 3) & (cutNode << 2) & (ttCapture << 1) & (ss->isTTMove);
+
         if (capture)
+        {
             ss->statScore =
               846 * int(PieceValue[pos.captured_piece()]) / 128
               + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
               - 4822;
+
+            r -= ss->statScore * 1582 / 16384;
+            
+            auto& captRedHist = 
+                thisThread->captureReductionHistory[depth][packedSearchState]
+                    [std::min(moveCount, 31)][std::min((ss + 1)->cutoffCnt, 31)][type_of(pos.captured_piece())];
+
+            captRedHist << (r - captRedHist) / 10;
+            r += captRedHist / 10;
+        }
         else
+        {
             ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
                           + (*contHist[0])[movedPiece][move.to_sq()]
                           + (*contHist[1])[movedPiece][move.to_sq()] - 3271;
+            
+            r -= ss->statScore * 1582 / 16384;
+        
+            auto& redHist = 
+                thisThread->reductionHistory[depth][packedSearchState]
+                    [std::min(moveCount, 31)][std::min((ss + 1)->cutoffCnt, 31)];
 
-        // Decrease/increase reduction for moves with a good/bad history
-        r -= ss->statScore * 1582 / 16384;
+            redHist << (r - redHist) / 10;
+            r += redHist / 10;
+        }
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
