@@ -50,14 +50,6 @@
 #include "ucioption.h"
 
 namespace Stockfish {
-int a1  = 150,
-    a2  = 150,
-    a3  = 10,
-    a4  = 10,
-    a5  = 10,
-    a6  = 10;
-
-TUNE(a1, a2, a3, a4, a5, a6);
 
 namespace TB = Tablebases;
 
@@ -562,10 +554,10 @@ void Search::Worker::iterative_deepening() {
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(66);
-    reductionHistory.fill(a1);
+    reductionHistory.fill(144);
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
-    captureReductionHistory.fill(a2);
+    captureReductionHistory.fill(165);
     pawnHistory.fill(-1262);
     pawnCorrectionHistory.fill(6);
     minorPieceCorrectionHistory.fill(0);
@@ -1237,8 +1229,8 @@ moves_loop:  // When in check, search starts here
                 thisThread->captureReductionHistory[depth][packedSearchState]
                     [std::min(moveCount, 31)][std::min((ss + 1)->cutoffCnt, 31)][type_of(pos.captured_piece())];
 
-            captRedHist << (r - captRedHist) / a3;
-            r += captRedHist / a4;
+            captRedHist << (r - captRedHist) / 11;
+            r += captRedHist / 9;
         }
         else
         {
@@ -1252,8 +1244,8 @@ moves_loop:  // When in check, search starts here
                 thisThread->reductionHistory[depth][packedSearchState]
                     [std::min(moveCount, 31)][std::min((ss + 1)->cutoffCnt, 31)];
 
-            redHist << (r - redHist) / a5;
-            r += redHist / a6;
+            redHist << (r - redHist) / 9;
+            r += redHist / 10;
         }
 
         // Step 17. Late moves reduction / extension (LMR)
