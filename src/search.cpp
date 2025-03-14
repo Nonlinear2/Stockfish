@@ -1214,7 +1214,7 @@ moves_loop:  // When in check, search starts here
             r -= 1937;
 
         int packedSearchState = 
-            (ss->ttPv << 4) | (PvNode << 3) | (cutNode << 2) | (ttCapture << 1) | (ss->isTTMove);
+            (ss->ttPv << 4) & (PvNode << 3) & (cutNode << 2) & (ttCapture << 1) & (ss->isTTMove);
 
         if (capture)
         {
