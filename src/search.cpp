@@ -1253,9 +1253,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 1582 / 16384;
 
         packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-
-        r += redHist / 10;
+        r += thisThread->reductionHistory[depth][packedSearchState] / 10;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
