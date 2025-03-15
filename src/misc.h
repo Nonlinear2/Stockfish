@@ -227,6 +227,10 @@ class MultiArray {
         }
     }
 
+    void save(int16_t*& dataPtr) {
+        for (auto& ele : data_)
+            ele.save(dataPtr);
+    }
     constexpr void swap(MultiArray<T, Size, Sizes...>& other) noexcept { data_.swap(other.data_); }
 };
 

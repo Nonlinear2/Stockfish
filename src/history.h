@@ -90,6 +90,10 @@ class StatsEntry {
 
         assert(std::abs(entry) <= D);
     }
+
+    void save(int16_t*& dataPtr) {
+        *dataPtr++ = entry;
+    }
 };
 
 enum StatsType {
@@ -106,8 +110,8 @@ using Stats = MultiArray<StatsEntry<T, D>, Sizes...>;
 // see https://www.chessprogramming.org/Butterfly_Boards (~11 elo)
 using ButterflyHistory = Stats<std::int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
 
-// accessed by [ss->ttPv PvNode cutNode ttCapture ttMove][moveCount][(ss + 1)->cutoffCnt]
-using ReductionHistory = Stats<std::int16_t, 7183, MAX_PLY, 32, 32, 32>;
+// accessed by [depth][ss->ttPv PvNode cutNode ttCapture]
+using ReductionHistory = Stats<std::int16_t, 7183, MAX_PLY, 16>;
 
 // LowPlyHistory is adressed by play and move's from and to squares, used
 // to improve move ordering near the root
@@ -116,9 +120,6 @@ using LowPlyHistory =
 
 // CapturePieceToHistory is addressed by a move's [piece][to][captured piece type]
 using CapturePieceToHistory = Stats<std::int16_t, 10692, PIECE_NB, SQUARE_NB, PIECE_TYPE_NB>;
-
-// accessed by [ss->ttPv PvNode cutNode ttCapture ttMove][moveCount][(ss + 1)->cutoffCnt][capturedPiece]
-using CaptureReductionHistory = Stats<std::int16_t, 10692, MAX_PLY, 32, 32, 32, PIECE_TYPE_NB>;
 
 // PieceToHistory is like ButterflyHistory but is addressed by a move's [piece][to]
 using PieceToHistory = Stats<std::int16_t, 30000, PIECE_NB, SQUARE_NB>;

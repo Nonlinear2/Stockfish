@@ -549,6 +549,15 @@ void Search::Worker::iterative_deepening() {
         std::swap(rootMoves[0],
                   *std::find(rootMoves.begin(), rootMoves.end(),
                              skill.best ? skill.best : skill.pick_best(rootMoves, multiPV)));
+    
+    // int16_t arr[246*16] = {};
+    // int16_t* arr_ptr = arr;
+
+    // reductionHistory.save(arr_ptr);
+
+    // for (int i = 0; i < 246*16; i++){
+    //     std::cout << (int)arr[i] << ", ";
+    // }
 }
 
 // Reset histories, usually before a new game
@@ -557,7 +566,6 @@ void Search::Worker::clear() {
     reductionHistory.fill(144);
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
-    captureReductionHistory.fill(165);
     pawnHistory.fill(-1262);
     pawnCorrectionHistory.fill(6);
     minorPieceCorrectionHistory.fill(0);
@@ -626,6 +634,7 @@ Value Search::Worker::search(
     int   priorReduction = (ss - 1)->reduction;
     (ss - 1)->reduction  = 0;
     Piece movedPiece;
+    int packedSearchState;
 
     ValueList<Move, 32> capturesSearched;
     ValueList<Move, 32> quietsSearched;
@@ -827,9 +836,19 @@ Value Search::Worker::search(
     opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
 
     if (priorReduction >= 3 && !opponentWorsening)
+    {
         depth++;
+        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
+        redHist << -300;
+    }
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
+    {
         depth--;
+        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
+        redHist << 300;
+    }
 
     // Step 7. Razoring
     // If eval is really low, skip search entirely and return the qsearch value.
@@ -893,7 +912,12 @@ Value Search::Worker::search(
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
     // (* Scaler) Especially if they make IIR more aggressive.
     if (((PvNode || cutNode) && depth >= 7 - 3 * PvNode) && !ttData.move)
+    {
         depth--;
+        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
+        redHist << 200;
+    }
 
     // Step 11. ProbCut
     // If we have a good enough capture (or queen promotion) and a reduced search
@@ -1138,6 +1162,9 @@ moves_loop:  // When in check, search starts here
                               + (value < singularBeta - tripleMargin);
 
                     depth++;
+                    packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+                    auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
+                    redHist << -200;
                 }
 
                 // Multi-cut pruning
@@ -1213,40 +1240,22 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 1937;
 
-        int packedSearchState = 
-            (ss->ttPv << 4) | (PvNode << 3) | (cutNode << 2) | (ttCapture << 1) | (ss->isTTMove);
-
         if (capture)
-        {
             ss->statScore =
-              846 * int(PieceValue[pos.captured_piece()]) / 128
-              + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
-              - 4822;
-
-            r -= ss->statScore * 1582 / 16384;
-            
-            auto& captRedHist = 
-                thisThread->captureReductionHistory[depth][packedSearchState]
-                    [std::min(moveCount, 31)][std::min((ss + 1)->cutoffCnt, 31)][type_of(pos.captured_piece())];
-
-            captRedHist << (r - captRedHist) / 11;
-            r += captRedHist / 9;
-        }
+            846 * int(PieceValue[pos.captured_piece()]) / 128
+            + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
+            - 4822;
         else
-        {
             ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
-                          + (*contHist[0])[movedPiece][move.to_sq()]
-                          + (*contHist[1])[movedPiece][move.to_sq()] - 3271;
+            + (*contHist[0])[movedPiece][move.to_sq()]
+            + (*contHist[1])[movedPiece][move.to_sq()] - 3271;
             
-            r -= ss->statScore * 1582 / 16384;
-        
-            auto& redHist = 
-                thisThread->reductionHistory[depth][packedSearchState]
-                    [std::min(moveCount, 31)][std::min((ss + 1)->cutoffCnt, 31)];
+        r -= ss->statScore * 1582 / 16384;
 
-            redHist << (r - redHist) / 9;
-            r += redHist / 10;
-        }
+        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
+
+        r += redHist / 10;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1285,7 +1294,12 @@ moves_loop:  // When in check, search starts here
                 update_continuation_histories(ss, movedPiece, move.to_sq(), bonus);
             }
             else if (value > alpha && value < bestValue + 9)
+            {
                 newDepth--;
+                packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+                auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
+                redHist << 200;
+            }
         }
 
         // Step 18. Full-depth search when LMR is skipped
