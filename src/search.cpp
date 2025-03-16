@@ -50,6 +50,30 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+int a1  = 144,
+
+    a2  = 802,
+    a3  = 243,
+    a4  = 2850,
+
+    a5  = 158,
+    a6  = 98,
+    a7  = 1622,
+
+    a8  = 158,
+    a9  = 98,
+    a10 = 1622,
+
+    a11 = 802,
+    a12 = 243,
+    a13 = 2850,
+
+    a14 = 158,
+    a15 = 98,
+    a16 = 1622;
+
+
+TUNE(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16);
 
 namespace TB = Tablebases;
 
@@ -563,7 +587,7 @@ void Search::Worker::iterative_deepening() {
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(66);
-    reductionHistory.fill(144);
+    reductionHistory.fill(a1);
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
     pawnHistory.fill(-1262);
@@ -840,14 +864,14 @@ Value Search::Worker::search(
         depth++;
         packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
         auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-        redHist << -300;
+        redHist << -std::min(a2 * depth - a3, a4);
     }
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
     {
         depth--;
         packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
         auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-        redHist << 300;
+        redHist << std::min(a5 * depth - a6, a7);
     }
 
     // Step 7. Razoring
@@ -916,7 +940,7 @@ Value Search::Worker::search(
         depth--;
         packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
         auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-        redHist << 200;
+        redHist << std::min(a8 * depth - a9, a10);
     }
 
     // Step 11. ProbCut
@@ -1164,7 +1188,7 @@ moves_loop:  // When in check, search starts here
                     depth++;
                     packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
                     auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-                    redHist << -200;
+                    redHist << -std::min(a11 * depth - a12, a13);
                 }
 
                 // Multi-cut pruning
@@ -1296,7 +1320,7 @@ moves_loop:  // When in check, search starts here
                 newDepth--;
                 packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
                 auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-                redHist << 200;
+                redHist << std::min(a14 * d - a15, a16);
             }
         }
 
