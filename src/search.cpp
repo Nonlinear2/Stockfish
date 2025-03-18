@@ -50,6 +50,16 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+int a1  = 147,
+
+    a2  = 250,
+    a3  = 250,
+    a4  = 150,
+
+    a5  = 150,
+    a6  = 10;
+
+TUNE(a1, a2, a3, a4, a5, a6);
 
 namespace TB = Tablebases;
 
@@ -563,7 +573,7 @@ void Search::Worker::iterative_deepening() {
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(66);
-    reductionHistory.fill(147);
+    reductionHistory.fill(a1);
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
     pawnHistory.fill(-1262);
@@ -841,16 +851,14 @@ Value Search::Worker::search(
         depth++;
         packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
             | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-        redHist << -250;
+        thisThread->reductionHistory[depth][packedSearchState] << -a2;
     }
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
     {
         depth--;
         packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
             | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-        redHist << 250;
+        thisThread->reductionHistory[depth][packedSearchState] << a3;
     }
 
     // Step 7. Razoring
@@ -919,8 +927,7 @@ Value Search::Worker::search(
         depth--;
         packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
             | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-        redHist << 150;
+        thisThread->reductionHistory[depth][packedSearchState] << a4;
     }
 
     // Step 11. ProbCut
@@ -1168,7 +1175,7 @@ moves_loop:  // When in check, search starts here
                     depth++;
                     packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
                         | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-                    thisThread->reductionHistory[depth][packedSearchState] << -150;
+                    thisThread->reductionHistory[depth][packedSearchState] << -a5;
                 }
 
                 // Multi-cut pruning
@@ -1246,19 +1253,19 @@ moves_loop:  // When in check, search starts here
 
         if (capture)
             ss->statScore =
-            846 * int(PieceValue[pos.captured_piece()]) / 128
-            + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
-            - 4822;
+                846 * int(PieceValue[pos.captured_piece()]) / 128
+                + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
+                - 4822;
         else
             ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
-            + (*contHist[0])[movedPiece][move.to_sq()]
-            + (*contHist[1])[movedPiece][move.to_sq()] - 3271;
+                          + (*contHist[0])[movedPiece][move.to_sq()]
+                          + (*contHist[1])[movedPiece][move.to_sq()] - 3271;
             
         r -= ss->statScore * 1582 / 16384;
 
         packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
             | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        r += thisThread->reductionHistory[depth][packedSearchState] / 10;
+        r += thisThread->reductionHistory[depth][packedSearchState] / a6;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
