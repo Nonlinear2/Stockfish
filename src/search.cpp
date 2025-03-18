@@ -810,6 +810,7 @@ Value Search::Worker::search(
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
         improving             = false;
+        opponentWorsening     = false;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -862,15 +863,17 @@ Value Search::Worker::search(
     if (priorReduction >= 3 && !opponentWorsening)
     {
         depth++;
-        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
+        packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
+            | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        auto& redHist = thisThread->reductionHistory[packedSearchState];
         redHist << -std::min(a2 * depth - a3, a4);
     }
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
     {
         depth--;
-        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
+        packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
+            | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        auto& redHist = thisThread->reductionHistory[packedSearchState];
         redHist << std::min(a5 * depth - a6, a7);
     }
 
@@ -938,8 +941,9 @@ Value Search::Worker::search(
     if (((PvNode || cutNode) && depth >= 7 - 3 * PvNode) && !ttData.move)
     {
         depth--;
-        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
+        packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
+            | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        auto& redHist = thisThread->reductionHistory[packedSearchState];
         redHist << std::min(a8 * depth - a9, a10);
     }
 
@@ -1186,9 +1190,9 @@ moves_loop:  // When in check, search starts here
                               + (value < singularBeta - tripleMargin);
 
                     depth++;
-                    packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-                    auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-                    redHist << -std::min(a11 * depth - a12, a13);
+                    packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
+                        | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+                    thisThread->reductionHistory[packedSearchState] << -std::min(a11 * depth - a12, a13);
                 }
 
                 // Multi-cut pruning
@@ -1276,8 +1280,9 @@ moves_loop:  // When in check, search starts here
             
         r -= ss->statScore * 1582 / 16384;
 
-        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        r += thisThread->reductionHistory[depth][packedSearchState] / 8;
+        packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
+            | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        r += thisThread->reductionHistory[packedSearchState] / 8;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1318,9 +1323,12 @@ moves_loop:  // When in check, search starts here
             else if (value > alpha && value < bestValue + 9)
             {
                 newDepth--;
-                packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-                auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-                redHist << std::min(a14 * d - a15, a16);
+                // assert(
+                //     (((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
+                //     | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture))
+                //     == packedSearchState
+                // );
+                thisThread->reductionHistory[packedSearchState] << std::min(a14 * d - a15, a16);
             }
         }
 
