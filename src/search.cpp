@@ -1299,7 +1299,7 @@ moves_loop:  // When in check, search starts here
             else if (value > alpha && value < bestValue + 9)
             {
                 newDepth--;
-                thisThread->reductionHistory[depth][packedSearchState] << 150;
+                thisThread->reductionHistory[depth][packedSearchState] << 200;
             }
         }
 
