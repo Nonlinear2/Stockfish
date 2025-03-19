@@ -50,16 +50,17 @@
 #include "ucioption.h"
 
 namespace Stockfish {
-int a1  = 147,
+int a1  = 145,
 
-    a2  = 250,
-    a3  = 250,
-    a4  = 150,
+    a2  = 259,
+    a3  = 256,
+    a4  = 148,
 
-    a5  = 150,
-    a6  = 10;
+    a5  = 151,
+    a6  = 11,
+    a7  = 150;
 
-TUNE(a1, a2, a3, a4, a5, a6);
+TUNE(a1, a2, a3, a4, a5, a6, a7);
 
 namespace TB = Tablebases;
 
@@ -1253,14 +1254,15 @@ moves_loop:  // When in check, search starts here
 
         if (capture)
             ss->statScore =
-                846 * int(PieceValue[pos.captured_piece()]) / 128
-                + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
-                - 4822;
+              846 * int(PieceValue[pos.captured_piece()]) / 128
+              + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
+              - 4822;
         else
             ss->statScore = 2 * thisThread->mainHistory[us][move.from_to()]
                           + (*contHist[0])[movedPiece][move.to_sq()]
                           + (*contHist[1])[movedPiece][move.to_sq()] - 3271;
-            
+
+        // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1582 / 16384;
 
         packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
@@ -1306,7 +1308,7 @@ moves_loop:  // When in check, search starts here
             else if (value > alpha && value < bestValue + 9)
             {
                 newDepth--;
-                thisThread->reductionHistory[depth][packedSearchState] << 150;
+                thisThread->reductionHistory[depth][packedSearchState] << a7;
             }
         }
 
