@@ -1400,7 +1400,7 @@ moves_loop:  // When in check, search starts here
             else
                 quietsSearched.push_back(move);
         }
-        else if (depth < 3 && prevBestMove != Move::none() && prevBestMove != ttData.move && moveCount <= 32)
+        else if (depth < 8 && prevBestMove != Move::none() && prevBestMove != ttData.move && moveCount <= 32)
         {
             if (pos.capture_stage(prevBestMove))
                 capturesSearched.push_back(prevBestMove);
