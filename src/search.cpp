@@ -1738,14 +1738,21 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         return mated_in(ss->ply);  // Plies to mate from the root
     }
 
+    Value savedValue = 0;
     if (!is_decisive(bestValue) && bestValue > beta)
+    {
         bestValue = (bestValue + beta) / 2;
+        savedValue = (3*bestValue + 2*beta) / 5;
+    }
 
     // Save gathered info in transposition table. The static evaluation
     // is saved as it was before adjustment by correction history.
     ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), pvHit,
                    bestValue >= beta ? BOUND_LOWER : BOUND_UPPER, DEPTH_QS, bestMove,
                    unadjustedStaticEval, tt.generation());
+
+    if (!is_decisive(bestValue) && bestValue > beta)
+        bestValue = savedValue;
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
