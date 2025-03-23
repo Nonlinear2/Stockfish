@@ -1742,7 +1742,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     if (!is_decisive(bestValue) && bestValue > beta)
     {
         bestValue = (bestValue + beta) / 2;
-        savedValue = (3*bestValue + 2*beta) / 5;
+        savedValue = (2*bestValue + beta) / 3;
     }
 
     // Save gathered info in transposition table. The static evaluation
