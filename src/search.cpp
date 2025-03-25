@@ -1420,7 +1420,7 @@ moves_loop:  // When in check, search starts here
                 quietsSearched.push_back(move);
         }
 
-        if (!PvNode && ss->isTTMove && ttData.depth >= depth && value < alpha - 130)
+        if (!PvNode && ss->isTTMove && ttData.depth >= depth && ttData.bound == BOUND_UPPER && value < alpha - 130)
             break;
     }
 
