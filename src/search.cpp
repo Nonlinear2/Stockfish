@@ -1419,6 +1419,9 @@ moves_loop:  // When in check, search starts here
             else
                 quietsSearched.push_back(move);
         }
+
+        if (!PvNode && ss->isTTMove && ttData.depth >= depth && value < alpha - 130)
+            break;
     }
 
     // Step 21. Check for mate and stalemate
