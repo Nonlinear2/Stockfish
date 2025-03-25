@@ -50,17 +50,6 @@
 #include "ucioption.h"
 
 namespace Stockfish {
-int a1  = 145,
-
-    a2  = 259,
-    a3  = 256,
-    a4  = 148,
-
-    a5  = 151,
-    a6  = 11,
-    a7  = 150;
-
-TUNE(a1, a2, a3, a4, a5, a6, a7);
 
 namespace TB = Tablebases;
 
@@ -596,7 +585,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(66);
-    reductionHistory.fill(a1);
+    reductionHistory.fill(146);
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
     pawnHistory.fill(-1262);
@@ -872,14 +861,14 @@ Value Search::Worker::search(
         depth++;
         packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
             | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        thisThread->reductionHistory[depth][packedSearchState] << -a2;
+        thisThread->reductionHistory[depth][packedSearchState] << -267;
     }
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
     {
         depth--;
         packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
             | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        thisThread->reductionHistory[depth][packedSearchState] << a3;
+        thisThread->reductionHistory[depth][packedSearchState] << 255;
     }
 
     // Step 7. Razoring
@@ -948,7 +937,7 @@ Value Search::Worker::search(
         depth--;
         packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
             | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        thisThread->reductionHistory[depth][packedSearchState] << a4;
+        thisThread->reductionHistory[depth][packedSearchState] << 155;
     }
 
     // Step 11. ProbCut
@@ -1194,7 +1183,7 @@ moves_loop:  // When in check, search starts here
                     depth++;
                     packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
                         | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-                    thisThread->reductionHistory[depth][packedSearchState] << -a5;
+                    thisThread->reductionHistory[depth][packedSearchState] << -148;
                 }
 
                 // Multi-cut pruning
@@ -1288,7 +1277,7 @@ moves_loop:  // When in check, search starts here
 
         packedSearchState = ((bool)ttData.move << 8) | ((ttData.value > alpha) << 7) | ((ttData.depth >= depth) << 6)
             | (opponentWorsening << 5) | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        r += thisThread->reductionHistory[depth][packedSearchState] / a6;
+        r += thisThread->reductionHistory[depth][packedSearchState] / 11;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1329,7 +1318,7 @@ moves_loop:  // When in check, search starts here
             else if (value > alpha && value < bestValue + 9)
             {
                 newDepth--;
-                thisThread->reductionHistory[depth][packedSearchState] << a7;
+                thisThread->reductionHistory[depth][packedSearchState] << 160;
             }
         }
 
