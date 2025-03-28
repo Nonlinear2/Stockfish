@@ -1419,6 +1419,8 @@ moves_loop:  // When in check, search starts here
             else
                 quietsSearched.push_back(move);
         }
+        if (!PvNode && ss->isTTMove && depth < 3 && ttData.depth > 3 && ttData.bound == BOUND_UPPER && value < alpha - RookValue - 15*depth)
+            break;
     }
 
     // Step 21. Check for mate and stalemate
@@ -1727,8 +1729,6 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     break;  // Fail high
             }
         }
-        if (!PvNode && ss->isTTMove && ttData.bound == BOUND_UPPER && value < alpha - RookValue)
-            break;
     }
 
     // Step 9. Check for mate
