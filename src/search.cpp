@@ -1730,7 +1730,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     break;  // Fail high
             }
         }
-        if (!PvNode && ss->isTTMove && ttData.bound == BOUND_UPPER && value < alpha - 1655)
+        if (!PvNode && ss->isTTMove && ttData.bound == BOUND_UPPER && value < alpha - 1900)
             break;
     }
 
