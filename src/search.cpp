@@ -1598,7 +1598,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             // ttValue can be used as a better position evaluation
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
                 && (ttData.bound & (ttData.value > bestValue ? BOUND_LOWER : BOUND_UPPER))
-                && (thisThread->rootDepth <= 8 || !PvNode || ttData.value < beta))
+                && (thisThread->rootDepth <= 5 || !PvNode || ttData.value < beta))
                 bestValue = ttData.value;
         }
         else
