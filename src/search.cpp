@@ -1613,7 +1613,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         if (bestValue >= beta)
         {
             if (!is_decisive(bestValue))
-                bestValue = (2*bestValue + (2 + PvNode)*beta) / (4+PvNode);
+                bestValue = (bestValue + (1 + PvNode)*beta) / (2+PvNode);
             if (!ss->ttHit)
                 ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
                                DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval,
