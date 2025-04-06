@@ -1585,7 +1585,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     else
     {
         const auto correctionValue = correction_value(*thisThread, pos, ss);
-
+        bool usedTtValue = false;
         if (ss->ttHit)
         {
             // Never assume anything about values stored in TT
@@ -1598,7 +1598,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             // ttValue can be used as a better position evaluation
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
                 && (ttData.bound & (ttData.value > bestValue ? BOUND_LOWER : BOUND_UPPER)))
+            {
+                usedTtValue = true;
                 bestValue = ttData.value;
+            }
         }
         else
         {
@@ -1613,7 +1616,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         if (bestValue >= beta)
         {
             if (!is_decisive(bestValue))
-                bestValue = (bestValue + (1 + PvNode)*beta) / (2+PvNode);
+                bestValue = (bestValue + (1 + (usedTtValue && PvNode))*beta) / (2+(usedTtValue && PvNode));
             if (!ss->ttHit)
                 ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
                                DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval,
