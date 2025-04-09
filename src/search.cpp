@@ -1616,7 +1616,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         if (bestValue >= beta)
         {
             if (!is_decisive(bestValue))
-                bestValue = (bestValue + (1 + (usedTtValue && PvNode))*beta) / (2+(usedTtValue && PvNode));
+                bestValue = ((1 + (usedTtValue && PvNode)) * bestValue + beta) / (2 + (usedTtValue && PvNode));
             if (!ss->ttHit)
                 ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
                                DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval,
