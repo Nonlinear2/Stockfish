@@ -1329,7 +1329,7 @@ moves_loop:  // When in check, search starts here
               rm.averageScore != -VALUE_INFINITE ? (value + rm.averageScore) / 2 : value;
 
             rm.meanSquaredScore = rm.meanSquaredScore != -VALUE_INFINITE * VALUE_INFINITE
-                                  ? (value * std::abs(value) + rm.meanSquaredScore) / 2
+                                  ? (2*value * std::abs(value) + rm.meanSquaredScore) / 3
                                   : value * std::abs(value);
 
             // PV move or new best move?
