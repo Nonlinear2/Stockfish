@@ -1298,7 +1298,7 @@ moves_loop:  // When in check, search starts here
             if (!ttData.move)
                 r += 1156;
             
-            else if (move != ttData.move && ttData.depth > 8)
+            else if (move != ttData.move && cutNode && ttData.bound == BOUND_LOWER && ttData.depth > 8)
                 r -= 750;
 
             // Note that if expected reduction is high, we reduce search depth here
