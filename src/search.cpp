@@ -1297,6 +1297,9 @@ moves_loop:  // When in check, search starts here
             // Increase reduction if ttMove is not present
             if (!ttData.move)
                 r += 1156;
+            
+            else if (move != ttData.move && ttData.depth > 8)
+                r -= 750;
 
             // Note that if expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
