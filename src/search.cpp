@@ -166,7 +166,8 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& quietsSearched,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
-                      bool                 isTTMove,
+                      Move                 TTMove,
+                      bool                 PvNode,
                       int                  moveCount);
 
 }  // namespace
@@ -1446,12 +1447,7 @@ moves_loop:  // When in check, search starts here
     else if (bestMove)
     {
         update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth,
-                         bestMove == ttData.move, moveCount);
-        if (!PvNode)
-        {
-            int bonus = (ttData.move == move) ? 800 : -870;
-            ttMoveHistory << bonus;
-        }
+                         ttData.move, PvNode, moveCount);
     }
 
     // Bonus for prior quiet countermove that caused the fail low
@@ -1873,15 +1869,19 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& quietsSearched,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
-                      bool                 isTTMove,
+                      Move                 TTMove,
+                      bool                 PvNode,
                       int                  moveCount) {
 
     CapturePieceToHistory& captureHistory = workerThread.captureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
-
-    int bonus = std::min(141 * depth - 89, 1613) + 311 * isTTMove;
+    
+    int bonus = std::min(141 * depth - 89, 1613) + 311 * (bestMove == TTMove);
     int malus = std::min(695 * depth - 215, 2808) - 31 * (moveCount - 1);
+
+    if (!PvNode)
+        workerThread.ttMoveHistory << (ss->isTTMove ? bonus/2 : malus/2);
 
     if (!pos.capture_stage(bestMove))
     {
