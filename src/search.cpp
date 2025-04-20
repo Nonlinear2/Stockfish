@@ -167,6 +167,7 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
                       bool                 isTTMove,
+                      bool                 PvNode,
                       int                  moveCount);
 
 }  // namespace
@@ -1446,7 +1447,7 @@ moves_loop:  // When in check, search starts here
     else if (bestMove)
     {
         update_all_stats(pos, ss, *this, bestMove, prevSq, quietsSearched, capturesSearched, depth,
-                         bestMove == ttData.move, moveCount);
+                         bestMove == ttData.move, PvNode, moveCount);
         if (!PvNode)
         {
             int bonus = (ttData.move == move) ? 800 : -870;
@@ -1874,13 +1875,14 @@ void update_all_stats(const Position&      pos,
                       ValueList<Move, 32>& capturesSearched,
                       Depth                depth,
                       bool                 isTTMove,
+                      bool                 PvNode,
                       int                  moveCount) {
 
     CapturePieceToHistory& captureHistory = workerThread.captureHistory;
     Piece                  moved_piece    = pos.moved_piece(bestMove);
     PieceType              captured;
 
-    int bonus = std::min(141 * depth - 89, 1613) + 311 * isTTMove;
+    int bonus = std::min(141 * depth - 89, 1613) + 311 * isTTMove + 80 * PvNode;
     int malus = std::min(695 * depth - 215, 2808) - 31 * (moveCount - 1);
 
     if (!pos.capture_stage(bestMove))
