@@ -1299,7 +1299,7 @@ moves_loop:  // When in check, search starts here
                 r += 1156;
 
             else if (newDepth == 1)
-                r -= 760;
+                r -= 950;
 
             // Note that if expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
