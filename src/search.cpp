@@ -1585,12 +1585,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     pvHit        = ttHit && ttData.is_pv;
 
     // At non-PV nodes we check for an early TT cutoff
-    if ((!PvNode || (ttData.depth > DEPTH_QS && !ss->inCheck && ttData.value < alpha
-                     && is_valid(ttData.value) && !is_decisive(ttData.value)))
-        && ttData.depth >= DEPTH_QS
-        && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
+    if (is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
+        && (!PvNode || (!ss->inCheck && ttData.value > beta && !is_decisive(ttData.value)))
+        && ttData.depth >= DEPTH_QS + PvNode
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
-        return ttData.value;
+        return PvNode ? (ttData.value + beta) / 2 : ttData.value;
 
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
