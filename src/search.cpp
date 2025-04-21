@@ -573,6 +573,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(66);
+    reductionHistory.fill(144);
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
     pawnHistory.fill(-1262);
@@ -643,6 +644,7 @@ Value Search::Worker::search(
     int   priorReduction = (ss - 1)->reduction;
     (ss - 1)->reduction  = 0;
     Piece movedPiece;
+    int packedSearchState;
 
     ValueList<Move, 32> capturesSearched;
     ValueList<Move, 32> quietsSearched;
@@ -843,9 +845,19 @@ Value Search::Worker::search(
     opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
 
     if (priorReduction >= 3 && !opponentWorsening)
+    {
         depth++;
+        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        auto& redHist = thisThread->reductionHistory[packedSearchState];
+        redHist << -300;
+    }
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
+    {
         depth--;
+        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        auto& redHist = thisThread->reductionHistory[packedSearchState];
+        redHist << 300;
+    }
 
     // Step 7. Razoring
     // If eval is really low, skip search entirely and return the qsearch value.
@@ -910,7 +922,12 @@ Value Search::Worker::search(
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
     // (* Scaler) Especially if they make IIR more aggressive.
     if (((PvNode || cutNode) && depth >= 7 - 3 * PvNode) && !ttData.move)
+    {
         depth--;
+        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        auto& redHist = thisThread->reductionHistory[packedSearchState];
+        redHist << 200;
+    }
 
     // Step 11. ProbCut
     // If we have a good enough capture (or queen promotion) and a reduced search
@@ -1162,6 +1179,9 @@ moves_loop:  // When in check, search starts here
                               + (value < singularBeta - tripleMargin);
 
                     depth++;
+                    packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+                    auto& redHist = thisThread->reductionHistory[packedSearchState];
+                    redHist << -200;
                 }
 
                 // Multi-cut pruning
@@ -1252,6 +1272,9 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1582 / 16384;
 
+        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        r += thisThread->reductionHistory[packedSearchState] / 10;
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1288,7 +1311,12 @@ moves_loop:  // When in check, search starts here
                 update_continuation_histories(ss, movedPiece, move.to_sq(), 1600);
             }
             else if (value > alpha && value < bestValue + 9)
+            {
                 newDepth--;
+                packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+                auto& redHist = thisThread->reductionHistory[packedSearchState];
+                redHist << 200;
+            }
         }
 
         // Step 18. Full-depth search when LMR is skipped
