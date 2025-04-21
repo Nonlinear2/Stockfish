@@ -848,7 +848,7 @@ Value Search::Worker::search(
     {
         depth++;
         packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth+1][packedSearchState];
+        auto& redHist = thisThread->reductionHistory[depth + 1][packedSearchState];
         redHist << -300;
     }
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
