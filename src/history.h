@@ -106,8 +106,8 @@ using Stats = MultiArray<StatsEntry<T, D>, Sizes...>;
 // see https://www.chessprogramming.org/Butterfly_Boards (~11 elo)
 using ButterflyHistory = Stats<std::int16_t, 7183, COLOR_NB, int(SQUARE_NB) * int(SQUARE_NB)>;
 
-// accessed by [ttData.move | opponentWorsening | improving | ss->ttPv | PvNode | cutNode | ttCapture]
-using ReductionHistory = Stats<std::int16_t, 7183, 128>;
+// accessed by [depth][ttData.move | opponentWorsening | improving | ss->ttPv | PvNode | cutNode | ttCapture]
+using ReductionHistory = Stats<std::int16_t, 7183, MAX_PLY + 1, 128>;
 
 // LowPlyHistory is adressed by play and move's from and to squares, used
 // to improve move ordering near the root
