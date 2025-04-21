@@ -1586,8 +1586,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
     // At non-PV nodes we check for an early TT cutoff
     if (is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
-        && (!PvNode || (ttData.value > beta && !is_decisive(ttData.value)))
-        && ttData.depth >= DEPTH_QS
+        && (!PvNode || (ttData.value > beta + 450 && !is_decisive(ttData.value)))
+        && ttData.depth >= DEPTH_QS + PvNode
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
         return PvNode ? (ttData.value + beta) / 2 : ttData.value;
 
