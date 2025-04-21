@@ -848,14 +848,14 @@ Value Search::Worker::search(
     {
         depth++;
         packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[packedSearchState];
+        auto& redHist = thisThread->reductionHistory[depth+1][packedSearchState];
         redHist << -300;
     }
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
     {
         depth--;
         packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[packedSearchState];
+        auto& redHist = thisThread->reductionHistory[depth + 1][packedSearchState];
         redHist << 300;
     }
 
@@ -925,7 +925,7 @@ Value Search::Worker::search(
     {
         depth--;
         packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[packedSearchState];
+        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
         redHist << 200;
     }
 
@@ -1180,7 +1180,7 @@ moves_loop:  // When in check, search starts here
 
                     depth++;
                     packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-                    auto& redHist = thisThread->reductionHistory[packedSearchState];
+                    auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
                     redHist << -200;
                 }
 
@@ -1273,7 +1273,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 1582 / 16384;
 
         packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        r += thisThread->reductionHistory[packedSearchState] / 10;
+        r += thisThread->reductionHistory[depth][packedSearchState] / 10;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
@@ -1314,7 +1314,7 @@ moves_loop:  // When in check, search starts here
             {
                 newDepth--;
                 packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-                auto& redHist = thisThread->reductionHistory[packedSearchState];
+                auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
                 redHist << 200;
             }
         }
