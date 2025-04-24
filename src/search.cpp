@@ -1881,7 +1881,8 @@ void update_all_stats(const Position&      pos,
     int malus = std::min(695 * depth - 215, 2808) - 31 * (moveCount - 1);
 
     if (!PvNode)
-        workerThread.ttMoveHistory << (ss->isTTMove ? bonus/2 : -malus/2);
+        workerThread.ttMoveHistory << 
+            (ss->isTTMove ? std::min(73 * depth - 48, 870) : -std::min(220 * depth - 71, 930));
 
     if (!pos.capture_stage(bestMove))
     {
