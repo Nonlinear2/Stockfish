@@ -1154,6 +1154,7 @@ moves_loop:  // When in check, search starts here
                 {
                     int corrValAdj1 = std::abs(correctionValue) / 248873;
                     int corrValAdj2 = std::abs(correctionValue) / 255331;
+                    dbg_mean_of(ttMoveHistory); // 318
                     int doubleMargin =
                       262 * PvNode - 188 * !ttCapture - corrValAdj1 - ttMoveHistory / 128;
                     int tripleMargin =
@@ -1882,7 +1883,7 @@ void update_all_stats(const Position&      pos,
 
     if (!PvNode)
         workerThread.ttMoveHistory << 
-            (ss->isTTMove ? std::min(73 * depth - 48, 870) : -std::min(220 * depth - 71, 930));
+            (ss->isTTMove ? std::min(141 * depth - 89, 1613) : -std::min(284 * depth - 88, 1151));
 
     if (!pos.capture_stage(bestMove))
     {
