@@ -1273,7 +1273,6 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 1582 / 16384;
 
         packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        dbg_mean_of(thisThread->reductionHistory[depth][packedSearchState]); // 1445.42
         r += thisThread->reductionHistory[depth][packedSearchState] / 10;
 
         // Step 17. Late moves reduction / extension (LMR)
