@@ -847,7 +847,7 @@ Value Search::Worker::search(
     if (priorReduction >= 3 && !opponentWorsening)
     {
         depth++;
-        if (depth < 8)
+        if (depth < 16)
         {
             packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
             auto& redHist = thisThread->reductionHistory[depth + 1][packedSearchState];
@@ -857,7 +857,7 @@ Value Search::Worker::search(
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
     {
         depth--;
-        if (depth < 8)
+        if (depth < 16)
         {
             packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
             auto& redHist = thisThread->reductionHistory[depth + 1][packedSearchState];
@@ -930,7 +930,7 @@ Value Search::Worker::search(
     if (((PvNode || cutNode) && depth >= 7 - 3 * PvNode) && !ttData.move)
     {
         depth--;
-        if (depth < 8)
+        if (depth < 16)
         {
             packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
             auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
@@ -1188,7 +1188,7 @@ moves_loop:  // When in check, search starts here
                               + (value < singularBeta - tripleMargin);
 
                     depth++;
-                    if (depth < 8)
+                    if (depth < 16)
                     {
                         packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
                         auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
@@ -1284,7 +1284,7 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1582 / 16384;
 
-        if (depth < 8)
+        if (depth < 16)
         {
             packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
             r += thisThread->reductionHistory[depth][packedSearchState] / 10;
@@ -1328,7 +1328,7 @@ moves_loop:  // When in check, search starts here
             else if (value > alpha && value < bestValue + 9)
             {
                 newDepth--;
-                if (depth < 8)
+                if (depth < 16)
                 {
                     packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
                     auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
