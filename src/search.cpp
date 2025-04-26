@@ -850,16 +850,14 @@ Value Search::Worker::search(
         depth++;
         packedSearchState = ((bool)ttData.move << 6) | (opponentWorsening << 5) 
             | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth + 1][packedSearchState];
-        redHist << -160;
+        thisThread->reductionHistory[depth + 1][packedSearchState] << -160;
     }
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
     {
         depth--;
         packedSearchState = ((bool)ttData.move << 6) | (opponentWorsening << 5) 
             | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth + 1][packedSearchState];
-        redHist << 160;
+        thisThread->reductionHistory[depth + 1][packedSearchState] << 160;
     }
 
     // Step 7. Razoring
@@ -1179,8 +1177,7 @@ moves_loop:  // When in check, search starts here
                     depth++;
                     packedSearchState = ((bool)ttData.move << 6) | (opponentWorsening << 5) 
                         | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-                    auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-                    redHist << -160;
+                    thisThread->reductionHistory[depth][packedSearchState] << -160;
                 }
 
                 // Multi-cut pruning
@@ -1217,8 +1214,8 @@ moves_loop:  // When in check, search starts here
         newDepth += extension;
         packedSearchState = ((bool)ttData.move << 6) | (opponentWorsening << 5) 
             | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth + 1][packedSearchState];
-        redHist << -90*extension;
+
+        thisThread->reductionHistory[depth + 1][packedSearchState] << -90*extension;
 
         // Update the current move (this must be done after singular extension search)
         ss->currentMove = move;
@@ -1319,8 +1316,7 @@ moves_loop:  // When in check, search starts here
                 newDepth--;
                 packedSearchState = ((bool)ttData.move << 6) | (opponentWorsening << 5) 
                     | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-                auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-                redHist << 160;
+                thisThread->reductionHistory[depth][packedSearchState] << 160;
             }
         }
 
