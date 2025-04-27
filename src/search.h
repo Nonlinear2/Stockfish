@@ -76,6 +76,7 @@ struct Stack {
     int                         cutoffCnt;
     int                         reduction;
     bool                        isTTMove;
+    bool                        isPvNode;
 };
 
 
@@ -290,11 +291,19 @@ class Worker {
 
     CorrectionHistory<Pawn>         pawnCorrectionHistory;
     CorrectionHistory<Minor>        minorPieceCorrectionHistory;
-    CorrectionHistory<NonPawn>      nonPawnCorrectionHistory[COLOR_NB];
+    CorrectionHistory<NonPawn>      nonPawnCorrectionHistory;
     CorrectionHistory<Continuation> continuationCorrectionHistory;
+
+    TTMoveHistory ttMoveHistory;
 
    private:
     void iterative_deepening();
+
+    void do_move(Position& pos, const Move move, StateInfo& st);
+    void do_move(Position& pos, const Move move, StateInfo& st, const bool givesCheck);
+    void do_null_move(Position& pos, StateInfo& st);
+    void undo_move(Position& pos, const Move move);
+    void undo_null_move(Position& pos);
 
     // This is the main search function, for both PV and non-PV nodes
     template<NodeType nodeType>
@@ -348,6 +357,7 @@ class Worker {
     const LazyNumaReplicated<Eval::NNUE::Networks>& networks;
 
     // Used by NNUE
+    Eval::NNUE::AccumulatorStack  accumulatorStack;
     Eval::NNUE::AccumulatorCaches refreshTable;
 
     friend class Stockfish::ThreadPool;

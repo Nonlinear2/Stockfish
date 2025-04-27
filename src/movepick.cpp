@@ -19,6 +19,7 @@
 #include "movepick.h"
 
 #include <cassert>
+#include <cstddef>
 #include <limits>
 
 #include "bitboard.h"
@@ -145,7 +146,11 @@ void MovePicker::score() {
     for (auto& m : *this)
         if constexpr (Type == CAPTURES)
             m.value =
-              7 * int(PieceValue[pos.piece_on(m.to_sq())])
+              (2
+                 * (pos.blockers_for_king(~pos.side_to_move()) & m.from_sq()
+                    && !aligned(m.from_sq(), m.to_sq(), pos.square<KING>(~pos.side_to_move())))
+               + 7)
+                * int(PieceValue[pos.piece_on(m.to_sq())])
               + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
 
         else if constexpr (Type == QUIETS)
@@ -162,11 +167,10 @@ void MovePicker::score() {
             m.value += (*continuationHistory[1])[pc][to];
             m.value += (*continuationHistory[2])[pc][to];
             m.value += (*continuationHistory[3])[pc][to];
-            m.value += (*continuationHistory[4])[pc][to] / 3;
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += bool(pos.check_squares(pt) & to) * 16384;
+            m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
 
             // bonus for escaping from capture
             m.value += threatenedPieces & from ? (pt == QUEEN && !(to & threatenedByRook)   ? 51700
@@ -176,7 +180,7 @@ void MovePicker::score() {
                                                : 0;
 
             // malus for putting piece en prise
-            m.value -= (pt == QUEEN ? bool(to & threatenedByRook) * 49000
+            m.value -= (pt == QUEEN && bool(to & threatenedByRook)   ? 49000
                         : pt == ROOK && bool(to & threatenedByMinor) ? 24335
                                                                      : 0);
 
@@ -316,5 +320,31 @@ top:
 }
 
 void MovePicker::skip_quiet_moves() { skipQuiets = true; }
+
+bool MovePicker::otherPieceTypesMobile(PieceType pt, ValueList<Move, 32>& capturesSearched) {
+    if (stage != GOOD_QUIET && stage != BAD_QUIET)
+        return true;
+
+    // verify good captures
+    for (std::size_t i = 0; i < capturesSearched.size(); i++)
+        if (type_of(pos.moved_piece(capturesSearched[i])) != pt)
+        {
+            if (type_of(pos.moved_piece(capturesSearched[i])) != KING)
+                return true;
+            if (pos.legal(capturesSearched[i]))
+                return true;
+        }
+
+    // now verify bad captures and quiets
+    for (ExtMove* c = moves; c < endBadQuiets; ++c)
+        if (type_of(pos.moved_piece(*c)) != pt)
+        {
+            if (type_of(pos.moved_piece(*c)) != KING)
+                return true;
+            if (pos.legal(*c))
+                return true;
+        }
+    return false;
+}
 
 }  // namespace Stockfish

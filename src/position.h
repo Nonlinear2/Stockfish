@@ -26,8 +26,6 @@
 #include <string>
 
 #include "bitboard.h"
-#include "nnue/nnue_accumulator.h"
-#include "nnue/nnue_architecture.h"
 #include "types.h"
 
 namespace Stockfish {
@@ -55,17 +53,11 @@ struct StateInfo {
     Key        key;
     Bitboard   checkersBB;
     StateInfo* previous;
-    StateInfo* next;
     Bitboard   blockersForKing[COLOR_NB];
     Bitboard   pinners[COLOR_NB];
     Bitboard   checkSquares[PIECE_TYPE_NB];
     Piece      capturedPiece;
     int        repetition;
-
-    // Used by NNUE
-    DirtyPiece                                                             dirtyPiece;
-    Eval::NNUE::Accumulator<Eval::NNUE::TransformedFeatureDimensionsBig>   accumulatorBig;
-    Eval::NNUE::Accumulator<Eval::NNUE::TransformedFeatureDimensionsSmall> accumulatorSmall;
 };
 
 
@@ -140,11 +132,11 @@ class Position {
     Piece captured_piece() const;
 
     // Doing and undoing moves
-    void do_move(Move m, StateInfo& newSt, const TranspositionTable* tt);
-    void do_move(Move m, StateInfo& newSt, bool givesCheck, const TranspositionTable* tt);
-    void undo_move(Move m);
-    void do_null_move(StateInfo& newSt, const TranspositionTable& tt);
-    void undo_null_move();
+    void       do_move(Move m, StateInfo& newSt, const TranspositionTable* tt);
+    DirtyPiece do_move(Move m, StateInfo& newSt, bool givesCheck, const TranspositionTable* tt);
+    void       undo_move(Move m);
+    void       do_null_move(StateInfo& newSt, const TranspositionTable& tt);
+    void       undo_null_move();
 
     // Static Exchange Evaluation
     bool see_ge(Move m, int threshold = 0) const;
@@ -172,7 +164,6 @@ class Position {
     bool pos_is_ok() const;
     void flip();
 
-    // Used by NNUE
     StateInfo* state() const;
 
     void put_piece(Piece pc, Square s);
@@ -187,7 +178,12 @@ class Position {
     // Other helpers
     void move_piece(Square from, Square to);
     template<bool Do>
-    void do_castling(Color us, Square from, Square& to, Square& rfrom, Square& rto);
+    void do_castling(Color             us,
+                     Square            from,
+                     Square&           to,
+                     Square&           rfrom,
+                     Square&           rto,
+                     DirtyPiece* const dp = nullptr);
     template<bool AfterMove>
     Key adjust_key50(Key k) const;
 
