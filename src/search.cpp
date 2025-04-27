@@ -573,7 +573,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(66);
-    reductionHistory.fill(-200);
+    reductionHistory.fill(-100);
     lowPlyHistory.fill(105);
     captureHistory.fill(-646);
     pawnHistory.fill(-1262);
@@ -640,7 +640,7 @@ Value Search::Worker::search(
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
-    bool  capture, ttCapture;
+    bool  ttCapture;
     int   priorReduction = (ss - 1)->reduction;
     (ss - 1)->reduction  = 0;
     Piece movedPiece;
@@ -795,6 +795,7 @@ Value Search::Worker::search(
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
         improving             = false;
+        opponentWorsening     = false;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -847,15 +848,15 @@ Value Search::Worker::search(
     if (priorReduction >= 3 && !opponentWorsening)
     {
         depth++;
-        packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
-            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+        packedSearchState  = ((ss - 1)->inCheck << 7) | ((ss - 1)->isTTMove) | (opponentWorsening << 5)
+            | (improving << 4) | ((ss - 1)->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | ((ss - 1)->capture);
         thisThread->reductionHistory[depth + 1][packedSearchState] << -350;
     }
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
     {
         depth--;
-        packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
-            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+        packedSearchState  = ((ss - 1)->inCheck << 7) | ((ss - 1)->isTTMove) | (opponentWorsening << 5)
+            | (improving << 4) | ((ss - 1)->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | ((ss - 1)->capture);
         thisThread->reductionHistory[depth + 1][packedSearchState] << 275;
     }
 
@@ -925,7 +926,7 @@ Value Search::Worker::search(
     {
         depth--;
         packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
-            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ss->capture);
         thisThread->reductionHistory[depth][packedSearchState] << 175;
     }
 
@@ -1040,7 +1041,7 @@ moves_loop:  // When in check, search starts here
             (ss + 1)->pv = nullptr;
 
         extension  = 0;
-        capture    = pos.capture_stage(move);
+        ss->capture    = pos.capture_stage(move);
         movedPiece = pos.moved_piece(move);
         givesCheck = pos.gives_check(move);
 
@@ -1070,7 +1071,7 @@ moves_loop:  // When in check, search starts here
             // Reduced depth of the next LMR search
             int lmrDepth = newDepth - r / 1024;
 
-            if (capture || givesCheck)
+            if (ss->capture || givesCheck)
             {
                 Piece capturedPiece = pos.piece_on(move.to_sq());
                 int   captHist =
@@ -1090,7 +1091,7 @@ moves_loop:  // When in check, search starts here
                 if (!pos.see_ge(move, -154 * depth - seeHist))
                 {
                     bool skip = true;
-                    if (depth > 2 && !capture && givesCheck && alpha < 0
+                    if (depth > 2 && !ss->capture && givesCheck && alpha < 0
                         && pos.non_pawn_material(us) == PieceValue[movedPiece]
                         && PieceValue[movedPiece] >= RookValue
                         && !(PseudoAttacks[KING][pos.square<KING>(us)] & move.from_sq()))
@@ -1180,7 +1181,7 @@ moves_loop:  // When in check, search starts here
 
                     depth++;
                     packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
-                        | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+                        | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ss->capture);
                     thisThread->reductionHistory[depth][packedSearchState] << -250;
                 }
 
@@ -1221,7 +1222,7 @@ moves_loop:  // When in check, search starts here
         ss->currentMove = move;
         ss->isTTMove    = (move == ttData.move);
         ss->continuationHistory =
-          &thisThread->continuationHistory[ss->inCheck][capture][movedPiece][move.to_sq()];
+          &thisThread->continuationHistory[ss->inCheck][ss->capture][movedPiece][move.to_sq()];
         ss->continuationCorrectionHistory =
           &thisThread->continuationCorrectionHistory[movedPiece][move.to_sq()];
         uint64_t nodeCount = rootNode ? uint64_t(nodes) : 0;
@@ -1245,7 +1246,7 @@ moves_loop:  // When in check, search starts here
             r += 2784 + 1038 * !ttData.move;
 
         // Increase reduction if ttMove is a capture but the current move is not a capture
-        if (ttCapture && !capture)
+        if (ttCapture && !ss->capture)
             r += 1171 + (depth < 8) * 985;
 
         // Increase reduction if next ply has a lot of fail high
@@ -1256,7 +1257,7 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 1937;
 
-        if (capture)
+        if (ss->capture)
             ss->statScore =
               846 * int(PieceValue[pos.captured_piece()]) / 128
               + thisThread->captureHistory[movedPiece][move.to_sq()][type_of(pos.captured_piece())]
@@ -1273,7 +1274,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 1582 / 16384;
 
         packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
-            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ss->capture);
         r += thisThread->reductionHistory[depth][packedSearchState] / 10;
 
         // Step 17. Late moves reduction / extension (LMR)
@@ -1315,7 +1316,7 @@ moves_loop:  // When in check, search starts here
             {
                 newDepth--;
                 packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
-                    | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+                    | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ss->capture);
                 thisThread->reductionHistory[depth][packedSearchState] << 175;
             }
         }
@@ -1449,7 +1450,7 @@ moves_loop:  // When in check, search starts here
         // remember it, to update its stats later.
         if (move != bestMove && moveCount <= 32)
         {
-            if (capture)
+            if (ss->capture)
                 capturesSearched.push_back(move);
             else
                 quietsSearched.push_back(move);
