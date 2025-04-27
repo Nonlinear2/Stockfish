@@ -847,16 +847,16 @@ Value Search::Worker::search(
     if (priorReduction >= 3 && !opponentWorsening)
     {
         depth++;
-        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth + 1][packedSearchState];
-        redHist << -350;
+        packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
+            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+        thisThread->reductionHistory[depth + 1][packedSearchState] << -350;
     }
     if (priorReduction >= 1 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 188)
     {
         depth--;
-        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth + 1][packedSearchState];
-        redHist << 275;
+        packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
+            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+        thisThread->reductionHistory[depth + 1][packedSearchState] << 275;
     }
 
     // Step 7. Razoring
@@ -924,9 +924,9 @@ Value Search::Worker::search(
     if (((PvNode || cutNode) && depth >= 7 - 3 * PvNode) && !ttData.move)
     {
         depth--;
-        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-        auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-        redHist << 175;
+        packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
+            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+        thisThread->reductionHistory[depth][packedSearchState] << 175;
     }
 
     // Step 11. ProbCut
@@ -1179,9 +1179,9 @@ moves_loop:  // When in check, search starts here
                               + (value < singularBeta - tripleMargin);
 
                     depth++;
-                    packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-                    auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-                    redHist << -250;
+                    packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
+                        | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+                    thisThread->reductionHistory[depth][packedSearchState] << -250;
                 }
 
                 // Multi-cut pruning
@@ -1272,7 +1272,8 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 1582 / 16384;
 
-        packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+        packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
+            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
         r += thisThread->reductionHistory[depth][packedSearchState] / 10;
 
         // Step 17. Late moves reduction / extension (LMR)
@@ -1313,9 +1314,9 @@ moves_loop:  // When in check, search starts here
             else if (value > alpha && value < bestValue + 9)
             {
                 newDepth--;
-                packedSearchState = (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
-                auto& redHist = thisThread->reductionHistory[depth][packedSearchState];
-                redHist << 175;
+                packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
+                    | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+                thisThread->reductionHistory[depth][packedSearchState] << 175;
             }
         }
 
