@@ -818,9 +818,10 @@ Value Search::Worker::search(
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
         // ttValue can be used as a better position evaluation
-        if (is_valid(ttData.value)
-            && (ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)))
-            eval = ttData.value;
+        if (is_valid(ttData.value) 
+            && ((ttData.bound & (ttData.value > eval ? BOUND_LOWER : BOUND_UPPER)) || 
+               ((ttData.bound & BOUND_LOWER) && eval < ttData.value + 100)))
+                eval = ttData.value;        
     }
     else
     {
