@@ -1292,13 +1292,13 @@ moves_loop:  // When in check, search starts here
 
             ss->reduction = newDepth - d;
 
-            if (PvNode)
+            if (CutNode)
                 searched_nodes = this->nodes;
 
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
             
-            if (PvNode)
+            if (CutNode)
                 searched_nodes = this->nodes - searched_nodes;
 
             avg_nodes[depth] = (avg_nodes[depth] == -1) ? searched_nodes : (avg_nodes[depth] * 3 + searched_nodes)/4;
@@ -1309,8 +1309,8 @@ moves_loop:  // When in check, search starts here
                 // Adjust full-depth search based on LMR results - if the result was
                 // good enough search deeper, if it was bad enough search shallower.
                 const bool doDeeperSearch    = value > (bestValue + 43 + 2 * newDepth 
-                        + 10*(PvNode && searched_nodes > 2*avg_nodes[depth])
-                        - 10*(PvNode && 2*searched_nodes < avg_nodes[depth]));
+                        + 10*(CutNode && searched_nodes > 2*avg_nodes[depth])
+                        - 10*(CutNode && 2*searched_nodes < avg_nodes[depth]));
 
                 const bool doShallowerSearch = value < bestValue + 9;
 
