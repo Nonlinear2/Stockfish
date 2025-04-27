@@ -1287,12 +1287,15 @@ moves_loop:  // When in check, search starts here
             if (cutNode)
             {
                 searched_nodes = this->nodes - searched_nodes;
-                avg_nodes[depth] = (avg_nodes[depth] < 10) ? searched_nodes : (avg_nodes[depth] * 3 + searched_nodes)/4;
+                avg_nodes[depth] = (avg_nodes[depth] == -1) ? searched_nodes : (avg_nodes[depth] * 3 + searched_nodes)/4;
             }
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
             {
+                if (cutNode)
+                    dbg_hit_on(searched_nodes > 10*avg_nodes[depth], 2);
+
                 // Adjust full-depth search based on LMR results - if the result was
                 // good enough search deeper, if it was bad enough search shallower.
                 const bool doDeeperSearch    = value > (bestValue + 42 + 2 * newDepth
