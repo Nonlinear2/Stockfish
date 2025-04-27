@@ -612,6 +612,9 @@ void Search::Worker::clear() {
 
     for (size_t i = 1; i < reductions.size(); ++i)
         reductions[i] = int(2954 / 128.0 * std::log(i));
+    
+    for (size_t i = 1; i < avg_nodes.size(); ++i)
+        avg_nodes[i] = -1; // sentinel value
 
     refreshTable.clear(networks[numaAccessToken]);
 }
@@ -673,6 +676,7 @@ Value Search::Worker::search(
     ss->moveCount      = 0;
     bestValue          = -VALUE_INFINITE;
     maxValue           = VALUE_INFINITE;
+    int nodes_searched;
 
     // Check for the available remaining time
     if (is_mainthread())
@@ -1288,9 +1292,15 @@ moves_loop:  // When in check, search starts here
 
             ss->reduction = newDepth - d;
 
+            if (cutNode)
+                nodes_searched = this->nodes;
+
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
+            
+            nodes_searched = this->nodes - nodes_searched;
 
+            avg_nodes[depth] = (avg_nodes[depth] == -1) ? nodes_searched : (avg_nodes[depth] * 3 + nodes_searched)/4;
 
             // Do a full-depth search when reduced LMR search fails high
             if (value > alpha && d < newDepth)
@@ -1298,7 +1308,7 @@ moves_loop:  // When in check, search starts here
                 // Adjust full-depth search based on LMR results - if the result was
                 // good enough search deeper, if it was bad enough search shallower.
                 const bool doDeeperSearch    = value > (bestValue + 43 + 2 * newDepth);
-                const bool doShallowerSearch = value < bestValue + 9;
+                const bool doShallowerSearch = value < bestValue + 9 + 10*(nodes_searched > 2*avg_nodes[depth]);
 
                 newDepth += doDeeperSearch - doShallowerSearch;
 
