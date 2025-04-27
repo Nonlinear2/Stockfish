@@ -1480,7 +1480,7 @@ moves_loop:  // When in check, search starts here
         if (!PvNode)
         {
             int bonus = ss->isTTMove ? 800 : -870;
-            ttMoveHistory << bonus * (2 + (ttHit && ttData.is_pv))/2;
+            ttMoveHistory << bonus * (4 + (ttHit && ttData.is_pv))/4;
         }
     }
 
