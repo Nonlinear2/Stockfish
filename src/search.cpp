@@ -52,6 +52,23 @@
 
 namespace Stockfish {
 
+// accessed by ttData.move | opponentWorsening | improving | ss->ttPv | PvNode | cutNode | ttCapture
+int tunedReductions[256] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+};
+
+TUNE(SetRange(-1024, 1024), tunedReductions);
+
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -648,6 +665,7 @@ Value Search::Worker::search(
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
+    int packedSearchState;
 
     ValueList<Move, 32> capturesSearched;
     ValueList<Move, 32> quietsSearched;
@@ -801,6 +819,8 @@ Value Search::Worker::search(
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
         improving             = false;
+        opponentWorsening     = false;
+
         goto moves_loop;
     }
     else if (excludedMove)
@@ -1259,6 +1279,11 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
+
+        packedSearchState  = (ss->inCheck << 7) | ((bool)ttData.move << 6) | (opponentWorsening << 5)
+            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
+
+        r += tunedReductions[packedSearchState];
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
