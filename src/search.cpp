@@ -895,6 +895,9 @@ Value Search::Worker::search(
         // Do not return unproven mate or TB scores
         if (nullValue >= beta && !is_win(nullValue))
         {
+            if (is_valid(ttData.value) && ttData.bound == BOUND_LOWER && ttData.value < nullValue && !is_win(nullValue))
+                ttWriter.edit_value(nullValue);
+
             if (thisThread->nmpMinPly || depth < 16)
                 return nullValue;
 

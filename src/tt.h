@@ -70,6 +70,7 @@ struct TTData {
 struct TTWriter {
    public:
     void write(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, uint8_t generation8);
+    void edit_value(Value v);
 
    private:
     friend class TranspositionTable;

@@ -57,6 +57,8 @@ struct TTEntry {
 
     bool is_occupied() const;
     void save(Key k, Value v, bool pv, Bound b, Depth d, Move m, Value ev, uint8_t generation8);
+    void edit_value(Value v);
+
     // The returned age is a multiple of TranspositionTable::GENERATION_DELTA
     uint8_t relative_age(const uint8_t generation8) const;
 
@@ -112,6 +114,9 @@ void TTEntry::save(
     }
 }
 
+void TTEntry::edit_value(Value v) {
+    value16   = int16_t(v);
+}
 
 uint8_t TTEntry::relative_age(const uint8_t generation8) const {
     // Due to our packed storage format for generation and its cyclic
@@ -132,6 +137,9 @@ void TTWriter::write(
     entry->save(k, v, pv, b, d, m, ev, generation8);
 }
 
+void TTWriter::edit_value(Value v) {
+    entry->edit_value(v);
+}
 
 // A TranspositionTable is an array of Cluster, of size clusterCount. Each cluster consists of ClusterSize number
 // of TTEntry. Each non-empty TTEntry contains information on exactly one position. The size of a Cluster should
