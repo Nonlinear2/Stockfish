@@ -52,7 +52,7 @@
 
 namespace Stockfish {
 
-// accessed by isCheck | isTTMove | opponentWorsening | improving | ss->ttPv | PvNode | cutNode | capture
+// accessed by ttData.move | opponentWorsening | improving | ss->ttPv | PvNode | cutNode | ttCapture
 int tunedReductions[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -1280,8 +1280,8 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
 
-        packedSearchState  = (ss->inCheck << 7) | (ss->isTTMove) | (opponentWorsening << 5)
-            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (capture);
+        packedSearchState  = (ss->inCheck << 7) | ((bool)ttData.move << 6) | (opponentWorsening << 5)
+            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
 
         r += tunedReductions[packedSearchState];
 
