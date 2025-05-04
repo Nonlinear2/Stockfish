@@ -52,6 +52,28 @@
 
 namespace Stockfish {
 
+// accessed by inCheck | ttData.move | opponentWorsening | improving | ss->ttPv | PvNode | cutNode | ttCapture
+int tunedReductions[256] = {
+    -2, -28, 36, -30, 11, -31, 3, -30, -3, -12, 40, -80, -7, -21, 6, 54, 2, 
+    -37, 59, -38, 7, -28, -22, -28, -40, 27, 33, -88, 42, -43, 28, 18, -23, 
+    -17, -0, 60, 16, 8, -27, -34, 56, -75, 42, -35, 57, 0, -8, -56, -32, 28, 
+    21, -20, 2, -26, -14, 34, 15, 47, -51, -29, -13, 57, 33, 57, -74, 8, 48, 
+    24, -50, -4, 97, 5, -21, -36, -18, 62, -13, -40, -60, 43, -9, -66, 2, -22, 
+    0, -35, -71, -25, 37, 36, -0, 6, -20, -4, 19, 19, 21, 41, -34, 25,
+    -6, 29, -34, -58, 11, -4, 23, 4, 71, 21, -30, 19, 20, 19, -23, 67, 8, 38, 
+    9, -55, 6, -69, -33, -30, -40, -34, 53, -96, 57, 13, -10, 61, 33, -6, -24, 
+    0, -13, 92, 16, -23, 9, -1, -25, -17, 8, -9, 77, -0, 49, -18, -57, 35, -7, 
+    10, -34, 3, 11, -4, -46, 30, 14, -34, 21, 53, 25, -24, 10, -1, -31, 41, 57, 
+    -58, 42, -27, -15, 4, 15, -39, -53, 7, -55, 9, -70, -43, -35, -20, -36, 27,
+    -4, -24, 40, -26, -15, 69, 33, 28, 47, 100, -13, 59, 80, -2, 45, 19, -1, -34, 
+    -25, 13, -2, 18, 2, -17, 38, 3, -22, 29, -26, 40, -7, -46, -29, 18, -51, -43, 
+    -15, -27, 7, -45, -2, 36, -13, 3, 40, 36, 72, 89, -98, 25, -13, -5, 11, 75, -4,
+    3, 30, 4, -3, -45, -27, -7, -10, 41, -0, 16, 8, -55,
+};
+
+TUNE(SetRange(-1024, 1024), tunedReductions);
+
+
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -90,25 +112,6 @@ Value futility_margin(Depth d,
 constexpr int futility_move_count(bool improving, Depth depth) {
     return (3 + depth * depth) / (2 - improving);
 }
-
-// accessed by ttData.move | opponentWorsening | improving | ss->ttPv | PvNode | cutNode | ttCapture
-constexpr int tunedReductions[256] = {
-    -2, -28, 36, -30, 11, -31, 3, -30, -3, -12, 40, -80, -7, -21, 6, 54, 2, 
-    -37, 59, -38, 7, -28, -22, -28, -40, 27, 33, -88, 42, -43, 28, 18, -23, 
-    -17, -0, 60, 16, 8, -27, -34, 56, -75, 42, -35, 57, 0, -8, -56, -32, 28, 
-    21, -20, 2, -26, -14, 34, 15, 47, -51, -29, -13, 57, 33, 57, -74, 8, 48, 
-    24, -50, -4, 97, 5, -21, -36, -18, 62, -13, -40, -60, 43, -9, -66, 2, -22, 
-    0, -35, -71, -25, 37, 36, -0, 6, -20, -4, 19, 19, 21, 41, -34, 25,
-    -6, 29, -34, -58, 11, -4, 23, 4, 71, 21, -30, 19, 20, 19, -23, 67, 8, 38, 
-    9, -55, 6, -69, -33, -30, -40, -34, 53, -96, 57, 13, -10, 61, 33, -6, -24, 
-    0, -13, 92, 16, -23, 9, -1, -25, -17, 8, -9, 77, -0, 49, -18, -57, 35, -7, 
-    10, -34, 3, 11, -4, -46, 30, 14, -34, 21, 53, 25, -24, 10, -1, -31, 41, 57, 
-    -58, 42, -27, -15, 4, 15, -39, -53, 7, -55, 9, -70, -43, -35, -20, -36, 27,
-    -4, -24, 40, -26, -15, 69, 33, 28, 47, 100, -13, 59, 80, -2, 45, 19, -1, -34, 
-    -25, 13, -2, 18, 2, -17, 38, 3, -22, 29, -26, 40, -7, -46, -29, 18, -51, -43, 
-    -15, -27, 7, -45, -2, 36, -13, 3, 40, 36, 72, 89, -98, 25, -13, -5, 11, 75, -4,
-    3, 30, 4, -3, -45, -27, -7, -10, 41, -0, 16, 8, -55,
-};
 
 int correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
     const Color us    = pos.side_to_move();
@@ -667,7 +670,6 @@ Value Search::Worker::search(
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
-    int packedSearchState;
 
     ValueList<Move, 32> capturesSearched;
     ValueList<Move, 32> quietsSearched;
@@ -1282,10 +1284,9 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 826 / 8192;
 
-        packedSearchState  = (ss->inCheck << 7) | ((bool)ttData.move << 6) | (opponentWorsening << 5)
-            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture);
 
-        r += tunedReductions[packedSearchState];
+        r += tunedReductions[(ss->inCheck << 7) | ((bool)ttData.move << 6) | (opponentWorsening << 5)
+            | (improving << 4) | (ss->ttPv << 3) | (PvNode << 2) | (cutNode << 1) | (ttCapture)];
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
