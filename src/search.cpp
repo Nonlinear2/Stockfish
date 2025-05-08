@@ -899,7 +899,7 @@ Value Search::Worker::search(
             if (thisThread->nmpMinPly || depth < 16){
                 // Save nmp data into transposition table
                 ttWriter.write(posKey, value_to_tt(nullValue, ss->ply), ss->ttPv, BOUND_LOWER,
-                               depth - R/2, move, unadjustedStaticEval, tt.generation());
+                               depth - R/2 - 2, Move::none(), unadjustedStaticEval, tt.generation());
 
                 return nullValue;
             }
