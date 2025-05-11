@@ -896,14 +896,14 @@ Value Search::Worker::search(
         if (nullValue >= beta && !is_win(nullValue))
         {
 
-            if (thisThread->nmpMinPly || depth < 16){
-                if (depth - R > 0){
-                    // Save nmp data into transposition table
-                    ttWriter.write(posKey, value_to_tt(nullValue, ss->ply), ss->ttPv, BOUND_LOWER,
-                                   depth - R/2 - 2, Move::none(), unadjustedStaticEval, tt.generation());
-                }
-                return nullValue;
+            if (depth - R > 0){
+                // Save nmp data into transposition table
+                ttWriter.write(posKey, value_to_tt(nullValue, ss->ply), ss->ttPv, BOUND_LOWER,
+                    depth - R/2 - 1, Move::none(), unadjustedStaticEval, tt.generation());
             }
+
+            if (thisThread->nmpMinPly || depth < 16)
+                return nullValue;
 
             assert(!thisThread->nmpMinPly);  // Recursive verification is not allowed
 
