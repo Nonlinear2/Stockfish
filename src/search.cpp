@@ -896,11 +896,12 @@ Value Search::Worker::search(
         if (nullValue >= beta && !is_win(nullValue))
         {
 
-            if (thisThread->nmpMinPly || depth < 16){
-                if (ttData.depth < depth - 2 && ttData.bound == BOUND_LOWER && ttData.value < nullValue)
-                    ttWriter.edit_value(nullValue);
+            if (ttData.depth < depth - 2 && ttData.bound == BOUND_LOWER
+                && ttData.value < nullValue && !ttData.is_pv)
+                ttWriter.edit_value(nullValue);
+
+            if (thisThread->nmpMinPly || depth < 16)
                 return nullValue;
-            }
 
             assert(!thisThread->nmpMinPly);  // Recursive verification is not allowed
 
