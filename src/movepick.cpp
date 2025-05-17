@@ -126,11 +126,11 @@ void MovePicker::score() {
 
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
+    Color us = pos.side_to_move();
+
     [[maybe_unused]] Bitboard threatenedPieces, threatByLesser[QUEEN + 1];
     if constexpr (Type == QUIETS)
     {
-        Color us = pos.side_to_move();
-
         threatByLesser[KNIGHT] = threatByLesser[BISHOP] = pos.attacks_by<PAWN>(~us);
         threatByLesser[ROOK] =
           pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us) | threatByLesser[KNIGHT];
@@ -143,38 +143,39 @@ void MovePicker::score() {
     }
 
     for (auto& m : *this)
+    {
+        const Square    from          = m.from_sq();
+        const Square    to            = m.to_sq();
+        const Piece     piece         = pos.moved_piece(m);
+        const PieceType pieceType     = type_of(piece);
+        const Piece     capturedPiece = pos.piece_on(to);
+
         if constexpr (Type == CAPTURES)
-            m.value =
-              7 * int(PieceValue[pos.piece_on(m.to_sq())])
-              + 1024 * bool(pos.check_squares(type_of(pos.moved_piece(m))) & m.to_sq())
-              + (*captureHistory)[pos.moved_piece(m)][m.to_sq()][type_of(pos.piece_on(m.to_sq()))];
+            m.value = (*captureHistory)[piece][to][type_of(capturedPiece)]
+              + 7 * int(PieceValue[capturedPiece])
+              + 1024 * bool(pos.check_squares(pieceType) & to);
 
         else if constexpr (Type == QUIETS)
         {
-            Piece     pc   = pos.moved_piece(m);
-            PieceType pt   = type_of(pc);
-            Square    from = m.from_sq();
-            Square    to   = m.to_sq();
-
             // histories
-            m.value = 2 * (*mainHistory)[pos.side_to_move()][m.from_to()];
-            m.value += 2 * (*pawnHistory)[pawn_structure_index(pos)][pc][to];
-            m.value += (*continuationHistory[0])[pc][to];
-            m.value += (*continuationHistory[1])[pc][to];
-            m.value += (*continuationHistory[2])[pc][to];
-            m.value += (*continuationHistory[3])[pc][to];
-            m.value += (*continuationHistory[5])[pc][to];
+            m.value =  2 * (*mainHistory)[us][m.from_to()];
+            m.value += 2 * (*pawnHistory)[pawn_structure_index(pos)][piece][to];
+            m.value += (*continuationHistory[0])[piece][to];
+            m.value += (*continuationHistory[1])[piece][to];
+            m.value += (*continuationHistory[2])[piece][to];
+            m.value += (*continuationHistory[3])[piece][to];
+            m.value += (*continuationHistory[5])[piece][to];
 
             // bonus for checks
-            m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            m.value += (bool(pos.check_squares(pieceType) & to) && pos.see_ge(m, -75)) * 16384;
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
-            if (KNIGHT <= pt && pt <= QUEEN)
+            if (KNIGHT <= pieceType && pieceType <= QUEEN)
             {
                 static constexpr int bonus[QUEEN + 1] = {0, 0, 144, 144, 256, 517};
-                int v = (threatByLesser[pt] & to ? -95 : 100 * bool(threatByLesser[pt] & from));
-                m.value += bonus[pt] * v;
+                int v = (threatByLesser[pieceType] & to ? -95 : 100 * bool(threatByLesser[pieceType] & from));
+                m.value += bonus[pieceType] * v;
             }
 
             if (ply < LOW_PLY_HISTORY_SIZE)
@@ -184,11 +185,12 @@ void MovePicker::score() {
         else  // Type == EVASIONS
         {
             if (pos.capture_stage(m))
-                m.value = PieceValue[pos.piece_on(m.to_sq())] + (1 << 28);
+                m.value = PieceValue[capturedPiece] + (1 << 28);
             else
-                m.value = (*mainHistory)[pos.side_to_move()][m.from_to()]
-                        + (*continuationHistory[0])[pos.moved_piece(m)][m.to_sq()];
+                m.value = (*mainHistory)[us][m.from_to()]
+                        + (*continuationHistory[0])[piece][to];
         }
+    }
 }
 
 // Returns the next move satisfying a predicate function.
@@ -235,12 +237,13 @@ top:
 
     case GOOD_CAPTURE :
         if (select([&]() {
-                if (!pos.see_ge(*cur, -cur->value / 18))
+                if (pos.see_ge(*cur, -cur->value / 18))
+                    return true;
+                else
                 {
                     std::swap(*endBadCaptures++, *cur);
                     return false;
                 }
-                return true;
             }))
             return *(cur - 1);
 
@@ -316,23 +319,17 @@ top:
 
 void MovePicker::skip_quiet_moves() { skipQuiets = true; }
 
-bool MovePicker::other_piece_types_mobile(PieceType pt) {
-    assert(stage == GOOD_QUIET || stage == BAD_QUIET || stage == EVASION);
-
-    // verify all generated captures and quiets
+// this function must be called only after all quiet moves and captures have been generated
+bool MovePicker::can_move_king_or_pawn() {
+    // ensure all necessary moves have been generated
+    assert(stage == GOOD_QUIET || stage == BAD_QUIET); 
     for (ExtMove* m = moves; m < endMoves; ++m)
     {
-        if (*m && type_of(pos.moved_piece(*m)) != pt)
-        {
-            if (type_of(pos.moved_piece(*m)) != KING)
-                return true;
-            if (pos.legal(*m))
-                return true;
-        }
+        PieceType movedPieceType = type_of(pos.moved_piece(*m));
+        if (movedPieceType == PAWN || (movedPieceType == KING && pos.legal(*m)))
+            return true;
     }
     return false;
 }
-
-void MovePicker::mark_current_illegal() { *(cur - 1) = Move::none(); }
 
 }  // namespace Stockfish
