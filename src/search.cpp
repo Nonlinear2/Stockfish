@@ -1561,10 +1561,31 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     pvHit        = ttHit && ttData.is_pv;
 
     // At non-PV nodes we check for an early TT cutoff
-    if (!PvNode && ttData.depth >= DEPTH_QS
-        && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
-        && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
-        return ttData.value;
+    if (!PvNode)
+    {
+        if (ttData.depth >= DEPTH_QS
+            && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
+            && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
+            return ttData.value;
+        else if (!ss->inCheck) // look at an entry with other stm
+        {
+            // there are surely better ways to do that
+            do_null_move(pos, st);
+            Key posKeyNull = pos.key();
+            undo_null_move(pos);
+
+            auto [ttHitNull, ttDataNull, ttWriterNull] = tt.probe(posKeyNull);
+            ttDataNull.value = ttHitNull
+                ? value_from_tt(ttDataNull.value, ss->ply, pos.rule50_count())
+                : VALUE_NONE;
+            
+            if (ttDataNull.depth >= 3 && is_valid(ttDataNull.value)
+                && !is_win(-ttDataNull.value)
+                && (ss - 1)->currentMove != Move::null() && !is_loss(beta)
+                && -ttDataNull.value >= beta && (ttDataNull.bound & BOUND_UPPER))
+                return ttDataNull.value;
+        }
+    }
 
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
