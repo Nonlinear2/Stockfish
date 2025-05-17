@@ -1272,9 +1272,12 @@ moves_loop:  // When in check, search starts here
             if (cutNode)
                 r += 520;
 
+            r -= 2159 + (newDepth < 2 && r > 4969) * 1405;
+            r = std::max(r, 0);
+
             // Note that if expected reduction is high, we reduce search depth here
             value = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha,
-                                   newDepth - (r > 3564) - (r > 4969 && newDepth > 2), !cutNode);
+                                   newDepth - r / 1405, !cutNode);
         }
 
         // For PV nodes only, do a full PV search on the first move or after a fail high,
