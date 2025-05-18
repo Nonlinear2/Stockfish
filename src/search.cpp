@@ -1048,7 +1048,7 @@ moves_loop:  // When in check, search starts here
 
                 // SEE based pruning for captures and checks
                 int seeHist = std::clamp(captHist / 31, -137 * depth, 125 * depth);
-                if (!pos.see_ge(move, -155 * depth - seeHist - 100*(Eval::simple_eval(pos) < -580)))
+                if (!pos.see_ge(move, -155 * depth - seeHist - 100*(Eval::simple_eval(pos) < -980)))
                 {
                     bool skip = true;
                     if (depth > 2 && !capture && givesCheck && alpha < 0
