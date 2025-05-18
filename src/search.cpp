@@ -1571,15 +1571,16 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         {
             // there are surely better ways to do that
             do_null_move(pos, st);
-            Key posKeyNull = pos.key();
-            undo_null_move(pos);
 
+            Key posKeyNull = pos.key();
             auto [ttHitNull, ttDataNull, ttWriterNull] = tt.probe(posKeyNull);
             ttDataNull.value = ttHitNull
                 ? value_from_tt(ttDataNull.value, ss->ply, pos.rule50_count())
                 : VALUE_NONE;
+
+            undo_null_move(pos);
             
-            if (ttDataNull.depth >= 3 && is_valid(ttDataNull.value)
+            if (ttDataNull.depth >= 6 && is_valid(ttDataNull.value)
                 && !is_win(-ttDataNull.value) && -ttDataNull.value >= beta
                 && (ttDataNull.bound & BOUND_UPPER))
                 return -ttDataNull.value;
