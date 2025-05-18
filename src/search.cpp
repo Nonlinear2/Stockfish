@@ -701,7 +701,7 @@ Value Search::Worker::search(
                 return ttData.value;
         }
         else if (cutNode && !ss->inCheck && (ss - 1)->currentMove != Move::null()
-                 && pos.non_pawn_material(us) && !is_loss(beta) && depth < 6) // look at an entry with other stm
+                 && pos.non_pawn_material(us) && !is_loss(beta) && depth < 8) // look at an entry with other stm
         {
             // there are surely better ways to do that
             do_null_move(pos, st);
@@ -715,7 +715,7 @@ Value Search::Worker::search(
             undo_null_move(pos);
             
             if (ttDataNull.depth >= depth && is_valid(ttDataNull.value)
-                && !is_win(-ttDataNull.value) && -ttDataNull.value >= beta + 400 + 25*depth
+                && !is_win(-ttDataNull.value) && -ttDataNull.value >= beta + 250 + 25*depth
                 && (ttDataNull.bound & BOUND_UPPER))
                 return -ttDataNull.value;
         }
