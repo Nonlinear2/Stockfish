@@ -715,7 +715,7 @@ Value Search::Worker::search(
             undo_null_move(pos);
             
             if (ttDataNull.depth >= depth && is_valid(ttDataNull.value)
-                && !is_win(-ttDataNull.value) && -ttDataNull.value >= beta + 200 + 25*depth
+                && !is_win(-ttDataNull.value) && -ttDataNull.value >= beta + 400 + 25*depth
                 && (ttDataNull.bound & BOUND_UPPER))
                 return -ttDataNull.value;
         }
