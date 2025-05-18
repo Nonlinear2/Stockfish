@@ -1580,7 +1580,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
             undo_null_move(pos);
             
-            if (ttDataNull.depth >= 6 && is_valid(ttDataNull.value)
+            if (ttDataNull.depth >= DEPTH_QS && is_valid(ttDataNull.value)
                 && !is_win(-ttDataNull.value) && -ttDataNull.value >= beta
                 && (ttDataNull.bound & BOUND_UPPER))
                 return -ttDataNull.value;
