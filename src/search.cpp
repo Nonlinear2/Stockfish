@@ -883,7 +883,7 @@ Value Search::Worker::search(
                     return nullValue;
             }
         }
-        else if (depth < 8) // look at an entry with other stm
+        else if (ss->staticEval >= beta - 16 * depth + 200 && eval >= beta-100 && depth < 8) // look at an entry with other stm
         {
             // there are surely better ways to do that
             do_null_move(pos, st);
@@ -897,7 +897,7 @@ Value Search::Worker::search(
             undo_null_move(pos);
 
             if (ttDataNull.depth >= depth && is_valid(ttDataNull.value)
-                && !is_win(-ttDataNull.value) && -ttDataNull.value >= beta + 25*depth
+                && !is_win(-ttDataNull.value) && -ttDataNull.value >= beta
                 && (ttDataNull.bound & BOUND_UPPER))
                 return -ttDataNull.value;
         }
