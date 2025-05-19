@@ -604,7 +604,7 @@ Value Search::Worker::search(
     Depth extension, newDepth;
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening;
-    bool  capture, ttCapture;
+    bool  capture, ttCapture, ttGivesCheck;
     int   priorReduction;
     Piece movedPiece;
 
@@ -670,6 +670,7 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+    ttGivesCheck = ttData.move && pos.gives_check(ttData.move);
 
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
@@ -1195,7 +1196,7 @@ moves_loop:  // When in check, search starts here
             r += 2864 + 966 * !ttData.move;
 
         // Increase reduction if ttMove is a capture but the current move is not a capture
-        if (ttCapture)
+        if (ttCapture || ttGivesCheck)
             r += 1210 + (depth < 8) * 963;
 
         // Increase reduction if next ply has a lot of fail high
