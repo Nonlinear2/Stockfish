@@ -1232,6 +1232,8 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 2006;
 
+        r -= std::min(std::abs(ss->staticEval - (ss - 2)->staticEval), 6000)/10;
+
         if (capture)
             ss->statScore =
               826 * int(PieceValue[pos.captured_piece()]) / 128
