@@ -1199,7 +1199,7 @@ moves_loop:  // When in check, search starts here
             r += 1210 + (depth < 8) * 963;
 
         if (priorCapture && !capture && !givesCheck)
-            r += 550;
+            r += 200;
 
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 2)
