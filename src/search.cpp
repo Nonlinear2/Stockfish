@@ -675,52 +675,72 @@ Value Search::Worker::search(
     // to save indentation, we list the condition in all code between here and there.
 
     // At non-PV nodes we check for an early TT cutoff
-    if (!PvNode && !excludedMove && ttData.depth > depth - (ttData.value <= beta)
-        && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
-        && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER))
-        && (cutNode == (ttData.value >= beta) || depth > 5))
+    if (!PvNode && !excludedMove && is_valid(ttData.value)
+        && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
     {
-
-
-        // If ttMove is quiet, update move sorting heuristics on TT hit
-        if (ttData.move && ttData.value >= beta)
+        if (ttData.depth > depth - (ttData.value <= beta)
+            && (cutNode == (ttData.value >= beta) || depth > 5))
         {
-            // Bonus for a quiet ttMove that fails high
-            if (!ttCapture)
-                update_quiet_histories(pos, ss, *this, ttData.move,
-                                       std::min(125 * depth - 77, 1157));
+            // If ttMove is quiet, update move sorting heuristics on TT hit
+            if (ttData.move && ttData.value >= beta)
+            {
+                // Bonus for a quiet ttMove that fails high
+                if (!ttCapture)
+                    update_quiet_histories(pos, ss, *this, ttData.move,
+                                        std::min(125 * depth - 77, 1157));
 
-            // Extra penalty for early quiet moves of the previous ply
-            if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 3 && !priorCapture)
-                update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, -2301);
+                // Extra penalty for early quiet moves of the previous ply
+                if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 3 && !priorCapture)
+                    update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, -2301);
+            }
+
+            // Partial workaround for the graph history interaction problem
+            // For high rule50 counts don't produce transposition table cutoffs.
+            if (pos.rule50_count() < 90)
+            {
+                if (depth >= 8 && ttData.move && pos.pseudo_legal(ttData.move) && pos.legal(ttData.move)
+                    && !is_decisive(ttData.value))
+                {
+                    do_move(pos, ttData.move, st);
+                    Key nextPosKey                             = pos.key();
+                    auto [ttHitNext, ttDataNext, ttWriterNext] = tt.probe(nextPosKey);
+                    ttDataNext.value =
+                    ttHitNext ? value_from_tt(ttDataNext.value, ss->ply + 1, pos.rule50_count())
+                              : VALUE_NONE;
+                    undo_move(pos, ttData.move);
+
+                    if (!is_valid(ttDataNext.value))
+                        return ttData.value;
+                    if (ttData.value >= beta && -ttDataNext.value >= beta)
+                        return ttData.value;
+                    if (ttData.value <= alpha && -ttDataNext.value <= alpha)
+                        return ttData.value;
+                }
+                else
+                {
+                    return ttData.value;
+                }
+            }
         }
-
-        // Partial workaround for the graph history interaction problem
-        // For high rule50 counts don't produce transposition table cutoffs.
-        if (pos.rule50_count() < 90)
+        // look at an entry with other stm
+        else if (ttData.depth >= depth - 3 && ttData.value >= beta + 100 && pos.rule50_count() < 90
+                && cutNode && (ss - 1)->currentMove != Move::null() && !excludedMove
+                && pos.non_pawn_material(us) && ss->ply >= thisThread->nmpMinPly && !is_loss(beta))
         {
-            if (depth >= 8 && ttData.move && pos.pseudo_legal(ttData.move) && pos.legal(ttData.move)
-                && !is_decisive(ttData.value))
-            {
-                do_move(pos, ttData.move, st);
-                Key nextPosKey                             = pos.key();
-                auto [ttHitNext, ttDataNext, ttWriterNext] = tt.probe(nextPosKey);
-                ttDataNext.value =
-                  ttHitNext ? value_from_tt(ttDataNext.value, ss->ply + 1, pos.rule50_count())
-                            : VALUE_NONE;
-                undo_move(pos, ttData.move);
+            // there are surely better ways to do that
+            do_null_move(pos, st);
+            Key posKeyNull = pos.key();
+            auto [ttHitNull, ttDataNull, ttWriterNull] = tt.probe(posKeyNull);
+            ttDataNull.value = ttHitNull
+                ? value_from_tt(ttDataNull.value, ss->ply, pos.rule50_count())
+                : VALUE_NONE;
 
-                if (!is_valid(ttDataNext.value))
-                    return ttData.value;
-                if (ttData.value >= beta && -ttDataNext.value >= beta)
-                    return ttData.value;
-                if (ttData.value <= alpha && -ttDataNext.value <= alpha)
-                    return ttData.value;
-            }
-            else
-            {
-                return ttData.value;
-            }
+            undo_null_move(pos);
+
+            if (ttDataNull.depth >= depth - 4 && is_valid(ttDataNull.value)
+                && !is_win(-ttDataNull.value) && -ttDataNull.value >= beta
+                && (ttDataNull.bound & BOUND_UPPER))
+                return -ttDataNull.value;
         }
     }
 
