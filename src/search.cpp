@@ -724,7 +724,7 @@ Value Search::Worker::search(
         }
         // look at an entry with other stm
         else if (ttData.depth >= depth - 3 && ttData.value >= beta + 100 && pos.rule50_count() < 90
-                && cutNode && (ss - 1)->currentMove != Move::null() && !excludedMove
+                && cutNode && (ss - 1)->currentMove != Move::null() && !ss->inCheck
                 && pos.non_pawn_material(us) && ss->ply >= thisThread->nmpMinPly && !is_loss(beta))
         {
             // there are surely better ways to do that
