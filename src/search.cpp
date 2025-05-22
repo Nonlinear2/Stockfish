@@ -777,6 +777,8 @@ Value Search::Worker::search(
         }
     }
 
+    Value simple_eval = Eval::simple_eval(pos);
+
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
     const auto correctionValue      = correction_value(*thisThread, pos, ss);
@@ -827,7 +829,6 @@ Value Search::Worker::search(
               << bonus * 1266 / 1024;
     }
 
-    Value simple_eval = Eval::simple_eval(pos);    
 
     // Set up the improving flag, which is true if current static evaluation is
     // bigger than the previous static evaluation at our turn (if we were in
