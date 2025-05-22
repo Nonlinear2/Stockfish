@@ -1235,7 +1235,7 @@ moves_loop:  // When in check, search starts here
         else if (move == ttData.move)
             r -= 2006;
 
-        r -= std::min(std::abs(ss->staticEval - simple_eval), 7500)/15;
+        r -= std::min(std::abs(ss->staticEval - simple_eval), 7500)/20;
 
         if (capture)
             ss->statScore =
