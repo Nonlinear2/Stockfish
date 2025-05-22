@@ -827,6 +827,8 @@ Value Search::Worker::search(
               << bonus * 1266 / 1024;
     }
 
+    Value simple_eval = Eval::simple_eval(pos);    
+
     // Set up the improving flag, which is true if current static evaluation is
     // bigger than the previous static evaluation at our turn (if we were in
     // check at our previous move we go back until we weren't in check) and is
@@ -1231,6 +1233,8 @@ moves_loop:  // When in check, search starts here
         // For first picked move (ttMove) reduce reduction
         else if (move == ttData.move)
             r -= 2006;
+
+        r -= std::min(std::abs(ss->staticEval - simple_eval), 7500)/15;
 
         if (capture)
             ss->statScore =
