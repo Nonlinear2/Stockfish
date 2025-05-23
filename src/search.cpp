@@ -1812,12 +1812,12 @@ Value Search::Worker::evaluate(const Position& pos) {
 }
 
 Value Search::Worker::apply_50mr_dampening(int r50_count, Value eval) {
-    eval -= eval * r50_count / 195;
+    eval -= eval * r50_count / 212;
     return eval;
 };
 
 Value Search::Worker::remove_50mr_dampening(int r50_count, Value eval) {
-    return eval / (1 - r50_count / 195);
+    return eval / (1 - r50_count / 212);
 };
 
 namespace {
