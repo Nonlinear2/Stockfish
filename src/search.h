@@ -325,6 +325,9 @@ class Worker {
 
     Value evaluate(const Position&);
 
+    Value apply_50mr_dampening(int r50_count, Value eval);
+    Value remove_50mr_dampening(int r50_count, Value eval);
+
     LimitsType limits;
 
     size_t                pvIdx, pvLast;

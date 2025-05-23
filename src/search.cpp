@@ -798,6 +798,8 @@ Value Search::Worker::search(
         unadjustedStaticEval = ttData.eval;
         if (!is_valid(unadjustedStaticEval))
             unadjustedStaticEval = evaluate(pos);
+        else
+            unadjustedStaticEval = apply_50mr_dampening(pos.rule50_count(), unadjustedStaticEval);
 
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
@@ -813,7 +815,7 @@ Value Search::Worker::search(
 
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
-                       unadjustedStaticEval, tt.generation());
+                       remove_50mr_dampening(pos.rule50_count(), unadjustedStaticEval), tt.generation());
     }
 
     // Use static evaluation difference to improve quiet move ordering
@@ -963,7 +965,9 @@ Value Search::Worker::search(
             {
                 // Save ProbCut data into transposition table
                 ttWriter.write(posKey, value_to_tt(value, ss->ply), ss->ttPv, BOUND_LOWER,
-                               probCutDepth + 1, move, unadjustedStaticEval, tt.generation());
+                               probCutDepth + 1, move, 
+                               remove_50mr_dampening(pos.rule50_count(), unadjustedStaticEval),
+                               tt.generation());
 
                 if (!is_decisive(value))
                     return value - (probCutBeta - beta);
@@ -1498,7 +1502,8 @@ moves_loop:  // When in check, search starts here
                        : PvNode && bestMove ? BOUND_EXACT
                                             : BOUND_UPPER,
                        moveCount != 0 ? depth : std::min(MAX_PLY - 1, depth + 6), bestMove,
-                       unadjustedStaticEval, tt.generation());
+                       remove_50mr_dampening(pos.rule50_count(), unadjustedStaticEval),
+                       tt.generation());
 
     // Adjust correction history
     if (!ss->inCheck && !(bestMove && pos.capture(bestMove))
@@ -1599,6 +1604,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             unadjustedStaticEval = ttData.eval;
             if (!is_valid(unadjustedStaticEval))
                 unadjustedStaticEval = evaluate(pos);
+            else
+                unadjustedStaticEval = apply_50mr_dampening(pos.rule50_count(), unadjustedStaticEval);
+
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
@@ -1623,7 +1631,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 bestValue = (bestValue + beta) / 2;
             if (!ss->ttHit)
                 ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), false, BOUND_LOWER,
-                               DEPTH_UNSEARCHED, Move::none(), unadjustedStaticEval,
+                               DEPTH_UNSEARCHED, Move::none(),
+                               remove_50mr_dampening(pos.rule50_count(), unadjustedStaticEval),
                                tt.generation());
             return bestValue;
         }
@@ -1770,7 +1779,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // is saved as it was before adjustment by correction history.
     ttWriter.write(posKey, value_to_tt(bestValue, ss->ply), pvHit,
                    bestValue >= beta ? BOUND_LOWER : BOUND_UPPER, DEPTH_QS, bestMove,
-                   unadjustedStaticEval, tt.generation());
+                   remove_50mr_dampening(pos.rule50_count(), unadjustedStaticEval),
+                   tt.generation());
 
     assert(bestValue > -VALUE_INFINITE && bestValue < VALUE_INFINITE);
 
@@ -1800,6 +1810,15 @@ Value Search::Worker::evaluate(const Position& pos) {
     return Eval::evaluate(networks[numaAccessToken], pos, accumulatorStack, refreshTable,
                           optimism[pos.side_to_move()]);
 }
+
+Value Search::Worker::apply_50mr_dampening(int r50_count, Value eval) {
+    eval -= eval * r50_count / 212;
+    return eval;
+};
+
+Value Search::Worker::remove_50mr_dampening(int r50_count, Value eval) {
+    return eval / (1 - r50_count / 212);
+};
 
 namespace {
 // Adjusts a mate or TB score from "plies to mate from the root" to
