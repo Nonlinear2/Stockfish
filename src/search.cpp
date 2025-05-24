@@ -1812,11 +1812,11 @@ Value Search::Worker::evaluate(const Position& pos) {
 }
 
 Value Search::Worker::apply_50mr_dampening(int r50_count, Value eval) {
-    return eval * (195 - r50_count) / 195;
+    return eval * (235 - r50_count) / 235;
 };
 
 Value Search::Worker::remove_50mr_dampening(int r50_count, Value eval) {
-    return 195 * eval / (195 - r50_count);
+    return std::clamp(235 * eval / (235 - r50_count), VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 };
 
 namespace {
