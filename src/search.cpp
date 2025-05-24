@@ -1225,12 +1225,15 @@ moves_loop:  // When in check, search starts here
         if ((ss + 1)->cutoffCnt > 2)
             r += 1036 + allNode * 848;
 
+        if (rootNode && moveCount < 3)
+            r -= 1024;
+
         if (!capture && !givesCheck && ss->quietMoveStreak >= 2)
             r += (ss->quietMoveStreak - 1) * 50;
 
         // For first picked move (ttMove) reduce reduction
         else if (move == ttData.move)
-            r -= 2006 + 1000*rootNode;
+            r -= 2006;
 
         if (capture)
             ss->statScore =
