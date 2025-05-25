@@ -1225,7 +1225,7 @@ moves_loop:  // When in check, search starts here
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
-            r -= 2006;
+            r -= 2250 - 500 * (ss->ply <= 8);
 
         if (capture)
             ss->statScore =
