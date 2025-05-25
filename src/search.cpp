@@ -779,7 +779,7 @@ Value Search::Worker::search(
     if (ss->inCheck)
     {
         // Skip early pruning when in check
-        ss->staticEval = eval = std::clamp((ss - 2)->staticEval - 150, 
+        ss->staticEval = eval = std::clamp((ss - 2)->staticEval - 350, 
             VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
         improving             = false;
