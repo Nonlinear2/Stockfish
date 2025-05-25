@@ -830,7 +830,7 @@ Value Search::Worker::search(
     // false otherwise. The improving flag is used in various pruning heuristics.
     improving = ss->staticEval > (ss - 2)->staticEval;
 
-    longTermImproving = ss->staticEval > ((ss - 2)->staticEval + (ss - 4)->staticEval) / 2;
+    longTermImproving = ss->staticEval > ((ss - 2)->staticEval + (ss - 4)->staticEval + (ss - 6)->staticEval) / 3;
 
     opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
 
@@ -906,6 +906,8 @@ Value Search::Worker::search(
 
     improving |= ss->staticEval >= beta + 94;
 
+    improving |= longTermImproving;
+
     // Step 10. Internal iterative reductions
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
     // (*Scaler) Especially if they make IIR less aggressive.
@@ -915,7 +917,7 @@ Value Search::Worker::search(
     // Step 11. ProbCut
     // If we have a good enough capture (or queen promotion) and a reduced search
     // returns a value much above beta, we can (almost) safely prune the previous move.
-    probCutBeta = beta + 216 - 55 * improving - 32 * longTermImproving;
+    probCutBeta = beta + 201 - 58 * improving;
     if (depth >= 3
         && !is_decisive(beta)
         // If value from transposition table is lower than probCutBeta, don't attempt
