@@ -854,6 +854,7 @@ Value Search::Worker::search(
             return futilityMult * d                      //
                  - improving * futilityMult * 2          //
                  - opponentWorsening * futilityMult / 3  //
+                 - longTermImproving * futilityMult / 5  //
                  + (ss - 1)->statScore / 376             //
                  + std::abs(correctionValue) / 168639;
         };
@@ -905,8 +906,6 @@ Value Search::Worker::search(
     }
 
     improving |= ss->staticEval >= beta + 94;
-
-    improving |= longTermImproving;
 
     // Step 10. Internal iterative reductions
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
