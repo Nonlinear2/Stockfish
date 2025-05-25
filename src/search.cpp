@@ -817,10 +817,6 @@ Value Search::Worker::search(
                        unadjustedStaticEval, tt.generation());
     }
 
-    if (rootNode)
-        for (int i = 7; i > 0; --i)
-            (ss - i)->staticEval = (i % 2 == 0 ? 1 : -1) * ss->staticEval;
-
     // Use static evaluation difference to improve quiet move ordering
     if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture
         && (ttData.depth - 2) <= depth)
