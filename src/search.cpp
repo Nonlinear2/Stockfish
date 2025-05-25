@@ -773,13 +773,19 @@ Value Search::Worker::search(
         }
     }
 
+    if (rootNode)
+        for (int i = 7; i > 0; --i)
+            (ss - i)->staticEval = (i % 2 == 0 ? 1 : -1) * ss->staticEval;
+
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
     const auto correctionValue      = correction_value(*thisThread, pos, ss);
     if (ss->inCheck)
     {
+        // assert((ss - 2)->staticEval != VALUE_NONE);
+
         // Skip early pruning when in check
-        ss->staticEval = eval = std::clamp((ss - 2)->staticEval - 350, 
+        ss->staticEval = eval = std::clamp((ss - 2)->staticEval - 200,
             VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
         improving             = false;
