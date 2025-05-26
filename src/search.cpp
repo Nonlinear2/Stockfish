@@ -1224,7 +1224,7 @@ moves_loop:  // When in check, search starts here
             r += (ss->quietMoveStreak - 1) * 50;
 
         if (is_valid(ttData.value) && cutNode != (ttData.value >= beta))
-            r -= 550;
+            r -= 850;
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
