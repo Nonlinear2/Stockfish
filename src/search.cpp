@@ -706,7 +706,7 @@ Value Search::Worker::search(
                             : VALUE_NONE;
                 undo_move(pos, ttData.move);
 
-                if (!is_valid(ttDataNext.value))
+                if (!is_valid(ttDataNext.value) || ttDataNext.depth < ttData.depth - 5)
                     return ttData.value;
 
                 if (ttData.value >= beta && -ttDataNext.value >= beta)
