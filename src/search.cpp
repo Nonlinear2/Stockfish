@@ -709,12 +709,10 @@ Value Search::Worker::search(
                 if (!is_valid(ttDataNext.value))
                     return ttData.value;
 
-                if (ttData.value >= beta
-                    && (((ttDataNext.bound == BOUND_UPPER) && -ttDataNext.value >= beta-100) || -ttDataNext.value >= beta))
+                if (ttData.value >= beta && (ttDataNext.bound == BOUND_UPPER || -ttDataNext.value >= beta))
                     return ttData.value;
 
-                if (ttData.value <= alpha
-                    && (((ttDataNext.bound == BOUND_LOWER) && -ttDataNext.value <= alpha+100) || -ttDataNext.value <= alpha))
+                if (ttData.value <= alpha && (ttDataNext.bound == BOUND_LOWER || -ttDataNext.value <= alpha))
                     return ttData.value;
             }
             else
