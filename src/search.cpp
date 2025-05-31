@@ -710,10 +710,14 @@ Value Search::Worker::search(
                     return ttData.value;
 
                 if (ttData.value >= beta && -ttDataNext.value >= beta)
-                    return ttDataNext.depth > ttData.depth ? -ttDataNext.value : ttData.value;
+                {
+                    int next_depth = std::max(0, ttDataNext.depth);
+                    return (ttData.depth * ttData.value - next_depth * ttDataNext.value)
+                        / (ttData.depth + next_depth);
+                }
 
                 if (ttData.value <= alpha && -ttDataNext.value <= alpha)
-                    return ttDataNext.depth > ttData.depth ? -ttDataNext.value : ttData.value;
+                    return ttData.value;
             }
             else
                 return ttData.value;
