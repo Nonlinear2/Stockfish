@@ -710,10 +710,10 @@ Value Search::Worker::search(
                     return ttData.value;
 
                 if (ttData.value >= beta && -ttDataNext.value >= beta)
-                    return ttDataNext.depth > ttData.depth + 4 ? -ttDataNext.value : ttData.value;
+                    return ttDataNext.depth > ttData.depth + 2 ? -ttDataNext.value : ttData.value;
 
                 if (ttData.value <= alpha && -ttDataNext.value <= alpha)
-                    return ttDataNext.depth > ttData.depth + 4 ? -ttDataNext.value : ttData.value;
+                    return ttDataNext.depth > ttData.depth + 2 ? -ttDataNext.value : ttData.value;
             }
             else
                 return ttData.value;
