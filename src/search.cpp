@@ -712,6 +712,8 @@ Value Search::Worker::search(
                 if ((ttData.value >= beta && -ttDataNext.value >= beta)
                     || (ttData.value <= alpha && -ttDataNext.value <= alpha))
                 {
+                    if (is_decisive(ttData.value) || is_decisive(ttDataNext.value))
+                        return ttData.value;
                     int next_depth = std::max(0, ttDataNext.depth);
                     return (ttData.depth * ttData.value - next_depth * ttDataNext.value)
                         / (ttData.depth + next_depth);
