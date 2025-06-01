@@ -714,10 +714,10 @@ Value Search::Worker::search(
                 {
                     int next_depth = std::max(0, ttDataNext.depth);
                     if (ttData.depth >= next_depth)
-                        return ((ttData.depth - next_depth + 1) * ttData.value + ttDataNext.depth)
+                        return ((ttData.depth - next_depth + 1) * ttData.value - ttDataNext.value)
                             / (ttData.depth - next_depth + 2);
                     else
-                        return ((next_depth - ttData.depth + 1) * ttDataNext.value + ttData.depth)
+                        return (-(next_depth - ttData.depth + 1) * ttDataNext.value + ttData.depth)
                             / (next_depth - ttData.depth + 2);
                 }
             }
