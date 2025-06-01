@@ -709,15 +709,13 @@ Value Search::Worker::search(
                 if (!is_valid(ttDataNext.value))
                     return ttData.value;
 
-                if (ttData.value >= beta && -ttDataNext.value >= beta)
-                    return (ttDataNext.depth > ttData.depth + 2 && (ttDataNext.bound & BOUND_UPPER))
-                        ? -ttDataNext.value
-                        : ttData.value;
-
-                if (ttData.value <= alpha && -ttDataNext.value <= alpha)
-                    return (ttDataNext.depth > ttData.depth + 2 && (ttDataNext.bound & BOUND_LOWER))
-                        ? -ttDataNext.value
-                        : ttData.value;
+                if ((ttData.value >= beta && -ttDataNext.value >= beta)
+                    || (ttData.value <= alpha && -ttDataNext.value <= alpha))
+                {
+                    int next_depth = std::max(0, ttDataNext.depth-1);
+                    return (ttData.depth * ttData.value - next_depth * ttDataNext.value)
+                        / (ttData.depth + next_depth);
+                }
             }
             else
                 return ttData.value;
