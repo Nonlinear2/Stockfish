@@ -712,7 +712,7 @@ Value Search::Worker::search(
                 if ((ttData.value >= beta && -ttDataNext.value >= beta)
                     || (ttData.value <= alpha && -ttDataNext.value <= alpha))
                 {
-                    int next_depth = std::max(0, ttDataNext.depth-2);
+                    int next_depth = std::max(0, ttDataNext.depth-3);
                     return (ttData.depth * ttData.value - next_depth * ttDataNext.value)
                         / (ttData.depth + next_depth);
                 }
