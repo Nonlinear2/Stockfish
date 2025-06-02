@@ -708,6 +708,8 @@ Value Search::Worker::search(
                     return ttData.value;
                 if ((ttData.value >= beta) == (-ttDataNext.value >= beta))
                     return ttData.value;
+                else
+                    ttMoveHistory << -50;
             }
             else
                 return ttData.value;
