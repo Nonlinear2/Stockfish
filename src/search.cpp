@@ -711,7 +711,7 @@ Value Search::Worker::search(
 
                 if (ttData.value >= beta && -ttDataNext.value >= beta)
                 {
-                    if (ttDataNext.bound & BOUND_LOWER)
+                    if (ttDataNext.bound & BOUND_UPPER)
                     {
                         int next_depth = std::max(0, ttDataNext.depth);
                         return (ttData.depth * ttData.value - next_depth * ttDataNext.value)
@@ -722,7 +722,7 @@ Value Search::Worker::search(
                 }
                 if (ttData.value <= alpha && -ttDataNext.value <= alpha)
                 {
-                    if (ttDataNext.bound & BOUND_UPPER)
+                    if (ttDataNext.bound & BOUND_LOWER)
                     {
                         int next_depth = std::max(0, ttDataNext.depth);
                         return (ttData.depth * ttData.value - next_depth * ttDataNext.value)
