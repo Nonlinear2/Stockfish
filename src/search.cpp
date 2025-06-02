@@ -709,12 +709,27 @@ Value Search::Worker::search(
                 if (!is_valid(ttDataNext.value))
                     return ttData.value;
 
-                if ((ttData.value >= beta && -ttDataNext.value >= beta)
-                    || (ttData.value <= alpha && -ttDataNext.value <= alpha))
+                if (ttData.value >= beta && -ttDataNext.value >= beta)
                 {
-                    int next_depth = std::max(0, ttDataNext.depth-3);
-                    return (ttData.depth * ttData.value - next_depth * ttDataNext.value)
-                        / (ttData.depth + next_depth);
+                    if (ttDataNext.bound & BOUND_LOWER)
+                    {
+                        int next_depth = std::max(0, ttDataNext.depth);
+                        return (ttData.depth * ttData.value - next_depth * ttDataNext.value)
+                            / (ttData.depth + next_depth);
+                    }
+                    else
+                        return ttData.value;
+                }
+                if (ttData.value <= alpha && -ttDataNext.value <= alpha)
+                {
+                    if (ttDataNext.bound & BOUND_UPPER)
+                    {
+                        int next_depth = std::max(0, ttDataNext.depth);
+                        return (ttData.depth * ttData.value - next_depth * ttDataNext.value)
+                            / (ttData.depth + next_depth);
+                    }
+                    else
+                        return ttData.value;
                 }
             }
             else
