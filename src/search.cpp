@@ -1203,8 +1203,8 @@ moves_loop:  // When in check, search starts here
         if (ttCapture)
             r += 1210 + (depth < 8) * 963;
 
-        if ((ss - 1)->currentMove == Move::null() && ss->staticEval + (ss - 1)->staticEval > 275)
-            r += 550;
+        if ((ss - 1)->currentMove == Move::null() && ss->staticEval + (ss - 1)->staticEval > 375)
+            r += 850;
 
         // Increase reduction if next ply has a lot of fail high
         if ((ss + 1)->cutoffCnt > 2)
