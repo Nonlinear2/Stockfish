@@ -708,8 +708,9 @@ Value Search::Worker::search(
                     return ttData.value;
                 if ((ttData.value >= beta) == (-ttDataNext.value >= beta))
                     return ttData.value;
-                else
-                    ttMoveHistory << -50;
+                else if (ttData.value >= beta && ttDataNext.move && !pos.capture_stage(ttDataNext.move))
+                    // bonus for next move
+                    update_quiet_histories(pos, ss, *this, ttData.move, std::min(50 * depth - 30, 500));
             }
             else
                 return ttData.value;
