@@ -1203,7 +1203,6 @@ moves_loop:  // When in check, search starts here
         if (ttCapture)
             r += 1210 + (depth < 8) * 963;
 
-        dbg_hit_on((ss - 1)->currentMove == Move::null() && ss->staticEval + (ss - 1)->staticEval > 275);
         if ((ss - 1)->currentMove == Move::null() && ss->staticEval + (ss - 1)->staticEval > 275)
             r += 550;
 
