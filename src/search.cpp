@@ -710,7 +710,7 @@ Value Search::Worker::search(
                     return ttData.value;
                 else if (ttData.value >= beta && ttDataNext.move && !pos.capture_stage(ttDataNext.move))
                     // bonus for next move
-                    update_quiet_histories(pos, ss, *this, ttDataNext.move, std::min(25 * depth - 15, 250));
+                    update_quiet_histories(pos, ss, *this, ttDataNext.move, std::min(67 * depth - 38, 740));
             }
             else
                 return ttData.value;
