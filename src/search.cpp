@@ -711,7 +711,7 @@ Value Search::Worker::search(
                 else if (ttData.value >= beta && ttDataNext.move && !pos.capture_stage(ttDataNext.move)
                          && ttDataNext.depth > depth)
                     // bonus for next move
-                    update_quiet_histories(pos, ss, *this, ttDataNext.move, std::min(50 * depth - 30, 500))
+                    update_quiet_histories(pos, ss, *this, ttDataNext.move, std::min(50 * depth - 30, 500));
                 else if (-ttDataNext.value >= beta && ttDataNext.move && !pos.capture_stage(ttDataNext.move)
                          && ttDataNext.depth > depth)
                     // malus for next move
