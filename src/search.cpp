@@ -1584,7 +1584,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 && (ttData.bound & (ttData.value > bestValue ? BOUND_LOWER : BOUND_UPPER)))
             {
                 bestValue = ttData.value;
-                isEvalAdjusted = ttData.depth > 4;
+                isEvalAdjusted = ttData.depth > 10;
             }
         }
         else
