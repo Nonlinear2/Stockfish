@@ -47,7 +47,7 @@ int Eval::simple_eval(const Position& pos) {
 }
 
 bool Eval::use_smallnet(const Position& pos, int correctionValue) {
-    return std::abs(simple_eval(pos) + correctionValue / 231072) > 962;
+    return std::abs(simple_eval(pos) + correctionValue / 191072) > 962;
 }
 
 // Evaluate is the evaluator for the outer world. It returns a static evaluation
