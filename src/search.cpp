@@ -681,11 +681,6 @@ Value Search::Worker::search(
         // If ttMove is quiet, update move sorting heuristics on TT hit
         if (ttData.move && ttData.value >= beta)
         {
-            // Bonus for a quiet ttMove that fails high
-            if (!ttCapture)
-                update_quiet_histories(pos, ss, *this, ttData.move,
-                                       std::min(125 * depth - 77, 1157));
-
             // Extra penalty for early quiet moves of the previous ply
             if (prevSq != SQ_NONE && (ss - 1)->moveCount <= 3 && !priorCapture)
                 update_continuation_histories(ss - 1, pos.piece_on(prevSq), prevSq, -2301);
@@ -705,13 +700,29 @@ Value Search::Worker::search(
 
                 // Check that the ttValue after the tt move would also trigger a cutoff
                 if (!is_valid(ttDataNext.value))
+                {
+                    if (ttData.move && ttData.value >= beta && !ttCapture)
+                        update_quiet_histories(pos, ss, *this, ttData.move,
+                            std::min(125 * depth - 77, 1157));
                     return ttData.value;
+                }
                 if ((ttData.value >= beta) == (-ttDataNext.value >= beta))
+                {
+                    if (ttData.move && ttData.value >= beta && !ttCapture)
+                        update_quiet_histories(pos, ss, *this, ttData.move,
+                            std::min(125 * depth - 77, 1157));
                     return ttData.value;
+                }
             }
             else
+            {
+                if (ttData.move && ttData.value >= beta && !ttCapture)
+                    update_quiet_histories(pos, ss, *this, ttData.move, std::min(125 * depth - 77, 1157));
                 return ttData.value;
+            }
         }
+        else if (ttData.move && ttData.value >= beta && !ttCapture)
+            update_quiet_histories(pos, ss, *this, ttData.move, std::min(125 * depth - 77, 1157));   
     }
 
     // Step 5. Tablebases probe
