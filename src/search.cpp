@@ -852,7 +852,8 @@ Value Search::Worker::search(
 
     // Step 9. Null move search with verification search
     if (cutNode && (ss - 1)->currentMove != Move::null() && eval >= beta
-        && unadjustedStaticEval + 64*correctionValue / 8388608
+        && std::clamp(unadjustedStaticEval + 64*correctionValue / 8388608,
+                VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1)
             >= beta - 19 * depth + 389 && !excludedMove && pos.non_pawn_material(us)
         && ss->ply >= thisThread->nmpMinPly && !is_loss(beta))
     {
@@ -892,7 +893,8 @@ Value Search::Worker::search(
         }
     }
 
-    improving |= unadjustedStaticEval + 64*correctionValue / 8388608 >= beta + 94;
+    improving |= std::clamp(unadjustedStaticEval + 64*correctionValue / 8388608,
+                        VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1) >= beta + 94;
 
     // Step 10. Internal iterative reductions
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
@@ -1047,9 +1049,8 @@ moves_loop:  // When in check, search starts here
                 // Futility pruning for captures
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
-                    Value futilityValue = std::clamp(unadjustedStaticEval + 64*correctionValue / 8388608,
-                        VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1)
-                        + 232 + 224 * lmrDepth + PieceValue[capturedPiece] + 131 * captHist / 1024;
+                    Value futilityValue = ss->staticEval + 232 + 224 * lmrDepth
+                                        + PieceValue[capturedPiece] + 131 * captHist / 1024;
                     if (futilityValue <= alpha)
                         continue;
                 }
