@@ -50,10 +50,10 @@
 #include "ucioption.h"
 
 namespace Stockfish {
-int a1 = 32;
-int a2 = 32;
-int a3 = 32;
-int a4 = 32;
+int a1 = 131072;
+int a2 = 131072;
+int a3 = 131072;
+int a4 = 131072;
 TUNE(a1, a2, a3, a4);
 
 namespace TB = Tablebases;
@@ -796,11 +796,11 @@ Value Search::Worker::search(
 
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
-        tunedStaticEval1 = std::clamp(unadjustedStaticEval + a1*correctionValue / 4194304,
+        tunedStaticEval1 = std::clamp(unadjustedStaticEval + correctionValue / a1,
                 VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
-        tunedStaticEval2 = std::clamp(unadjustedStaticEval + a2*correctionValue / 4194304,
+        tunedStaticEval2 = std::clamp(unadjustedStaticEval + correctionValue / a2,
                 VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
-        tunedStaticEval3 = std::clamp(unadjustedStaticEval + a3*correctionValue / 4194304,
+        tunedStaticEval3 = std::clamp(unadjustedStaticEval + correctionValue / a3,
                 VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
         // ttValue can be used as a better position evaluation
@@ -812,11 +812,11 @@ Value Search::Worker::search(
     {
         unadjustedStaticEval = evaluate(pos);
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
-        tunedStaticEval1 = std::clamp(unadjustedStaticEval + a1*correctionValue / 4194304,
+        tunedStaticEval1 = std::clamp(unadjustedStaticEval + correctionValue / a1,
                 VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
-        tunedStaticEval2 = std::clamp(unadjustedStaticEval + a2*correctionValue / 4194304,
+        tunedStaticEval2 = std::clamp(unadjustedStaticEval + correctionValue / a2,
                 VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
-        tunedStaticEval3 = std::clamp(unadjustedStaticEval + a3*correctionValue / 4194304,
+        tunedStaticEval3 = std::clamp(unadjustedStaticEval + correctionValue / a3,
                 VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
         // Static evaluation is saved as it was before adjustment by correction history
@@ -1600,7 +1600,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
-            tunedStaticEval = std::clamp(unadjustedStaticEval + a4*correctionValue / 8388608,
+            tunedStaticEval = std::clamp(unadjustedStaticEval + correctionValue / a4,
                 VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
             // ttValue can be used as a better position evaluation
@@ -1615,7 +1615,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
-            tunedStaticEval = std::clamp(unadjustedStaticEval + a4*correctionValue / 4194304,
+            tunedStaticEval = std::clamp(unadjustedStaticEval + correctionValue / a4,
                 VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
         }
 
