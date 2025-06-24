@@ -50,6 +50,11 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+int a1 = 64;
+int a2 = 64;
+int a3 = 64;
+int a4 = 64;
+TUNE(a1, a2, a3, a4);
 
 namespace TB = Tablebases;
 
@@ -605,6 +610,7 @@ Value Search::Worker::search(
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
+    Value tunedStaticEval1, tunedStaticEval2, tunedStaticEval3;
 
     ValueList<Move, 32> capturesSearched;
     ValueList<Move, 32> quietsSearched;
@@ -773,12 +779,14 @@ Value Search::Worker::search(
     if (ss->inCheck)
     {
         // Skip early pruning when in check
-        ss->staticEval = eval = (ss - 2)->staticEval;
+        tunedStaticEval1 = tunedStaticEval2 = tunedStaticEval3
+                         = ss->staticEval = eval = (ss - 2)->staticEval;
         improving             = false;
         goto moves_loop;
     }
     else if (excludedMove)
-        unadjustedStaticEval = eval = ss->staticEval;
+        tunedStaticEval1 = tunedStaticEval2 = tunedStaticEval3
+                         = unadjustedStaticEval = eval = ss->staticEval;
     else if (ss->ttHit)
     {
         // Never assume anything about values stored in TT
@@ -787,6 +795,12 @@ Value Search::Worker::search(
             unadjustedStaticEval = evaluate(pos);
 
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        tunedStaticEval1 = std::clamp(unadjustedStaticEval + a1*correctionValue / 8388608,
+                VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+        tunedStaticEval2 = std::clamp(unadjustedStaticEval + a2*correctionValue / 8388608,
+                VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+        tunedStaticEval3 = std::clamp(unadjustedStaticEval + a3*correctionValue / 8388608,
+                VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
         // ttValue can be used as a better position evaluation
         if (is_valid(ttData.value)
@@ -797,6 +811,12 @@ Value Search::Worker::search(
     {
         unadjustedStaticEval = evaluate(pos);
         ss->staticEval = eval = to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+        tunedStaticEval1 = std::clamp(unadjustedStaticEval + a1*correctionValue / 8388608,
+                VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+        tunedStaticEval2 = std::clamp(unadjustedStaticEval + a2*correctionValue / 8388608,
+                VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+        tunedStaticEval3 = std::clamp(unadjustedStaticEval + a3*correctionValue / 8388608,
+                VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
         // Static evaluation is saved as it was before adjustment by correction history
         ttWriter.write(posKey, VALUE_NONE, ss->ttPv, BOUND_NONE, DEPTH_UNSEARCHED, Move::none(),
@@ -852,9 +872,7 @@ Value Search::Worker::search(
 
     // Step 9. Null move search with verification search
     if (cutNode && (ss - 1)->currentMove != Move::null() && eval >= beta
-        && std::clamp(unadjustedStaticEval + 64*correctionValue / 8388608,
-                VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1)
-            >= beta - 19 * depth + 389 && !excludedMove && pos.non_pawn_material(us)
+        && tunedStaticEval1 >= beta - 19 * depth + 389 && !excludedMove && pos.non_pawn_material(us)
         && ss->ply >= thisThread->nmpMinPly && !is_loss(beta))
     {
         assert(eval - beta >= 0);
@@ -893,8 +911,7 @@ Value Search::Worker::search(
         }
     }
 
-    improving |= std::clamp(unadjustedStaticEval + 64*correctionValue / 8388608,
-                        VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1) >= beta + 94;
+    improving |= tunedStaticEval2 >= beta + 94;
 
     // Step 10. Internal iterative reductions
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
@@ -1480,13 +1497,12 @@ moves_loop:  // When in check, search starts here
                        unadjustedStaticEval, tt.generation());
 
     // Adjust correction history
-    Value tunedStaticEval = std::clamp(unadjustedStaticEval + 64*correctionValue / 8388608,
         VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
     if (!ss->inCheck && !(bestMove && pos.capture(bestMove))
-        && ((bestValue < tunedStaticEval && bestValue < beta)  // negative correction & no fail high
-            || (bestValue > tunedStaticEval && bestMove)))     // positive correction & no fail low
+        && ((bestValue < tunedStaticEval3 && bestValue < beta)  // negative correction & no fail high
+            || (bestValue > tunedStaticEval3 && bestMove)))     // positive correction & no fail low
     {
-        auto bonus = std::clamp(int(bestValue - tunedStaticEval) * depth / 8,
+        auto bonus = std::clamp(int(bestValue - tunedStaticEval3) * depth / 8,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *thisThread, bonus);
     }
@@ -1528,6 +1544,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     Value bestValue, value, futilityBase;
     bool  pvHit, givesCheck, capture;
     int   moveCount;
+    Value tunedStaticEval;
 
     // Step 1. Initialize node
     if (PvNode)
@@ -1583,6 +1600,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, correctionValue);
 
+            tunedStaticEval = std::clamp(unadjustedStaticEval + a4*correctionValue / 8388608,
+                VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+
             // ttValue can be used as a better position evaluation
             if (is_valid(ttData.value) && !is_decisive(ttData.value)
                 && (ttData.bound & (ttData.value > bestValue ? BOUND_LOWER : BOUND_UPPER)))
@@ -1594,6 +1614,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
             ss->staticEval = bestValue =
               to_corrected_static_eval(unadjustedStaticEval, correctionValue);
+
+            tunedStaticEval = std::clamp(unadjustedStaticEval + a4*correctionValue / 8388608,
+                VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
         }
 
         // Stand pat. Return immediately if static value is at least beta
@@ -1611,8 +1634,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         if (bestValue > alpha)
             alpha = bestValue;
 
-        futilityBase = std::clamp(unadjustedStaticEval + 64*correctionValue / 8388608,
-            VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1) + 376;
+        futilityBase = tunedStaticEval + 376;
     }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
