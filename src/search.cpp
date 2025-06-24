@@ -852,7 +852,8 @@ Value Search::Worker::search(
 
     // Step 9. Null move search with verification search
     if (cutNode && (ss - 1)->currentMove != Move::null() && eval >= beta
-        && ss->staticEval >= beta - 19 * depth + 389 && !excludedMove && pos.non_pawn_material(us)
+        && unadjustedStaticEval + unadjustedStaticEval + 64*correctionValue / 8388608
+            >= beta - 19 * depth + 389 && !excludedMove && pos.non_pawn_material(us)
         && ss->ply >= thisThread->nmpMinPly && !is_loss(beta))
     {
         assert(eval - beta >= 0);
@@ -891,7 +892,7 @@ Value Search::Worker::search(
         }
     }
 
-    improving |= ss->staticEval >= beta + 94;
+    improving |= unadjustedStaticEval + 64*correctionValue / 8388608 >= beta + 94;
 
     // Step 10. Internal iterative reductions
     // For PV nodes without a ttMove as well as for deep enough cutNodes, we decrease depth.
@@ -1046,8 +1047,9 @@ moves_loop:  // When in check, search starts here
                 // Futility pruning for captures
                 if (!givesCheck && lmrDepth < 7 && !ss->inCheck)
                 {
-                    Value futilityValue = ss->staticEval + 232 + 224 * lmrDepth
-                                        + PieceValue[capturedPiece] + 131 * captHist / 1024;
+                    Value futilityValue = std::clamp(unadjustedStaticEval + 64*correctionValue / 8388608,
+                        VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1)
+                        + 232 + 224 * lmrDepth + PieceValue[capturedPiece] + 131 * captHist / 1024;
                     if (futilityValue <= alpha)
                         continue;
                 }
@@ -1477,11 +1479,13 @@ moves_loop:  // When in check, search starts here
                        unadjustedStaticEval, tt.generation());
 
     // Adjust correction history
+    Value tunedStaticEval = std::clamp(unadjustedStaticEval + 64*correctionValue / 8388608,
+        VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
     if (!ss->inCheck && !(bestMove && pos.capture(bestMove))
-        && ((bestValue < ss->staticEval && bestValue < beta)  // negative correction & no fail high
-            || (bestValue > ss->staticEval && bestMove)))     // positive correction & no fail low
+        && ((bestValue < tunedStaticEval && bestValue < beta)  // negative correction & no fail high
+            || (bestValue > tunedStaticEval && bestMove)))     // positive correction & no fail low
     {
-        auto bonus = std::clamp(int(bestValue - ss->staticEval) * depth / 8,
+        auto bonus = std::clamp(int(bestValue - tunedStaticEval) * depth / 8,
                                 -CORRECTION_HISTORY_LIMIT / 4, CORRECTION_HISTORY_LIMIT / 4);
         update_correction_history(pos, ss, *thisThread, bonus);
     }
@@ -1606,7 +1610,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         if (bestValue > alpha)
             alpha = bestValue;
 
-        futilityBase = ss->staticEval + 338 + std::abs(correctionValue) / 131072;
+        futilityBase = std::clamp(unadjustedStaticEval + 64*correctionValue / 8388608,
+            VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1) + 376;
     }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
