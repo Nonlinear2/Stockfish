@@ -50,19 +50,6 @@
 #include "ucioption.h"
 
 namespace Stockfish {
-int a1  = 125,
-    a2  = 77,
-    a3  = 1157,
-    a4  = 63,
-    a5  = 39,
-    a6  = 580;
-
-TUNE(SetRange(0, 300), a1,
-     SetRange(0, 180), a2,
-     SetRange(0, 2300), a3,
-     SetRange(0, 280), a4, 
-     SetRange(0, 160), a5,
-     SetRange(0, 2100), a6);
 
 namespace TB = Tablebases;
 
@@ -724,11 +711,11 @@ Value Search::Worker::search(
                 else if (ttData.value >= beta && ttDataNext.move && !pos.capture_stage(ttDataNext.move)
                          && ttDataNext.depth > depth)
                     // bonus for next move
-                    update_quiet_histories(pos, ss, *this, ttDataNext.move, std::min(a1 * depth - a2, a3));
+                    update_quiet_histories(pos, ss, *this, ttDataNext.move, std::min(120 * depth - 72, 1167));
                 else if (-ttDataNext.value >= beta && ttDataNext.move && !pos.capture_stage(ttDataNext.move)
                          && ttDataNext.depth > depth)
                     // malus for next move
-                    update_quiet_histories(pos, ss, *this, ttData.move, std::min(a4 * depth - a5, a6));
+                    update_quiet_histories(pos, ss, *this, ttData.move, std::min(64 * depth - 42, 558));
             }
             else
                 return ttData.value;
