@@ -131,17 +131,11 @@ void MovePicker::score() {
     [[maybe_unused]] Bitboard attackedByPawn;
     [[maybe_unused]] Bitboard attackedByBishopKnight;
     [[maybe_unused]] Bitboard attackedByRook;
-    [[maybe_unused]] Bitboard threatByLesser[QUEEN + 1];
     if constexpr (Type == QUIETS)
     {
         attackedByPawn = pos.attacks_by<PAWN>(~us);
         attackedByBishopKnight = pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us);
         attackedByRook = pos.attacks_by<ROOK>(~us);
-
-        threatByLesser[KNIGHT] = threatByLesser[BISHOP] = pos.attacks_by<PAWN>(~us);
-        threatByLesser[ROOK] =
-          pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us) | threatByLesser[KNIGHT];
-        threatByLesser[QUEEN] = pos.attacks_by<ROOK>(~us) | threatByLesser[ROOK];
     }
 
     for (auto& m : *this)
@@ -172,30 +166,24 @@ void MovePicker::score() {
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
-            if (KNIGHT <= pt && pt <= QUEEN)
+            switch (pt)
             {
-                static constexpr int bonus[QUEEN + 1] = {0, 0, 144, 144, 256, 517};
-                int v;
-                switch (pt)
-                {
-                    case KNIGHT:
-                    case BISHOP:
-                        v = attackedByPawn & to ? -95 : 100 * bool(attackedByPawn & from);
-                        break;
-                    case ROOK:
-                        v = (attackedByPawn | attackedByBishopKnight) & to
-                            ? -95
-                            : 100 * bool((attackedByPawn | attackedByBishopKnight) & from);
-                        break;
-                    case QUEEN:
-                        v = (attackedByPawn | attackedByBishopKnight | attackedByRook) & to
-                            ? -95
-                            : 100 * bool((attackedByPawn | attackedByBishopKnight | attackedByRook) & from);
-                        break;
-                    default:
-                        break;
-                }
-                m.value += bonus[pt] * v;
+                case KNIGHT:
+                case BISHOP:
+                    m.value += 144 * (attackedByPawn & to ? -95 : 100 * bool(attackedByPawn & from));
+                    break;
+                case ROOK:
+                    m.value += 256 * ((attackedByPawn | attackedByBishopKnight) & to
+                        ? -95
+                        : 100 * bool((attackedByPawn | attackedByBishopKnight) & from));
+                    break;
+                case QUEEN:
+                    m.value += 517 * ((attackedByPawn | attackedByBishopKnight | attackedByRook) & to
+                        ? -95
+                        : 100 * bool((attackedByPawn | attackedByBishopKnight | attackedByRook) & from));
+                    break;
+                default:
+                    break;
             }
 
             if (ply < LOW_PLY_HISTORY_SIZE)
