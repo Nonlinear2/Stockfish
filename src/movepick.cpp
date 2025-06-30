@@ -128,9 +128,16 @@ void MovePicker::score() {
 
     Color us = pos.side_to_move();
 
+    [[maybe_unused]] Bitboard attackedByPawn;
+    [[maybe_unused]] Bitboard attackedByBishopKnight;
+    [[maybe_unused]] Bitboard attackedByRook;
     [[maybe_unused]] Bitboard threatByLesser[QUEEN + 1];
     if constexpr (Type == QUIETS)
     {
+        attackedByPawn = pos.attacks_by<PAWN>(~us);
+        attackedByBishopKnight = pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us);
+        attackedByRook = pos.attacks_by<ROOK>(~us);
+
         threatByLesser[KNIGHT] = threatByLesser[BISHOP] = pos.attacks_by<PAWN>(~us);
         threatByLesser[ROOK] =
           pos.attacks_by<KNIGHT>(~us) | pos.attacks_by<BISHOP>(~us) | threatByLesser[KNIGHT];
@@ -168,7 +175,26 @@ void MovePicker::score() {
             if (KNIGHT <= pt && pt <= QUEEN)
             {
                 static constexpr int bonus[QUEEN + 1] = {0, 0, 144, 144, 256, 517};
-                int v = threatByLesser[pt] & to ? -95 : 100 * bool(threatByLesser[pt] & from);
+                int v;
+                switch (pt)
+                {
+                    case KNIGHT:
+                    case BISHOP:
+                        v = attackedByPawn & to ? -95 : 100 * bool(attackedByPawn & from);
+                        break;
+                    case ROOK:
+                        v = (attackedByPawn | attackedByBishopKnight) & to
+                            ? -95
+                            : 100 * bool((attackedByPawn | attackedByBishopKnight) & from);
+                        break;
+                    case QUEEN:
+                        v = (attackedByPawn | attackedByBishopKnight | attackedByRook) & to
+                            ? -95
+                            : 100 * bool((attackedByPawn | attackedByBishopKnight | attackedByRook) & from);
+                        break;
+                    default:
+                        break;
+                }
                 m.value += bonus[pt] * v;
             }
 
