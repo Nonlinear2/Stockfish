@@ -187,30 +187,33 @@ void MovePicker::score() {
                 case BISHOP:
                     if (attackedByPawn & to)
                         m.value += a1;
-                    else if (attackedByPawn & from)
+
+                    if (attackedByPawn & from)
                         m.value += a2;
                     break;
                 case ROOK:
                     if (attackedByPawn & to)
                         m.value += a3;
-                    else if (attackedByPawn & from)
-                        m.value += a5;
                     else if (attackedByBishopKnight & to)
                         m.value += a4;
+
+                    if (attackedByPawn & from)
+                        m.value += a5;
                     else if (attackedByBishopKnight & from)
                         m.value += a6;
                     break;
                 case QUEEN:
                     if (attackedByPawn & to)
                         m.value += a7;
-                    else if (attackedByPawn & from)
-                        m.value += a10;
                     else if (attackedByBishopKnight & to)
                         m.value += a8;
-                    else if (attackedByBishopKnight & from)
-                        m.value += a11;
                     else if (attackedByRook & to)
                         m.value += a9;
+
+                    if (attackedByPawn & from)
+                        m.value += a10;
+                    else if (attackedByBishopKnight & from)
+                        m.value += a11;
                     else if (attackedByRook & from)
                         m.value += a12;
                     break;
