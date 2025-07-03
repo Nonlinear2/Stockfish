@@ -28,21 +28,6 @@
 
 namespace Stockfish {
 
-int a1 = -13680;
-int a2 = 14400;
-int a3 = -24320;
-int a4 = -24320;
-int a5 = 25600;
-int a6 = 25600;
-int a7 = -49115;
-int a8 = -49115;
-int a9 = -49115;
-int a10 = 51700;
-int a11 = 51700;
-int a12 = 51700;
-
-TUNE(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12);
-
 namespace {
 
 enum Stages {
@@ -187,36 +172,36 @@ void MovePicker::score() {
                 case KNIGHT:
                 case BISHOP:
                     if (attackedByPawn & to)
-                        m.value += a1;
+                        m.value += -14379;
 
                     if (attackedByPawn & from)
-                        m.value += a2;
+                        m.value += 14652;
                     break;
                 case ROOK:
                     if (attackedByPawn & to)
-                        m.value += a3;
+                        m.value += -23592;
                     else if (attackedByBishopKnight & to)
-                        m.value += a4;
+                        m.value += -23900;
 
                     if (attackedByPawn & from)
-                        m.value += a5;
+                        m.value += 25680;
                     else if (attackedByBishopKnight & from)
-                        m.value += a6;
+                        m.value += 23593;
                     break;
                 case QUEEN:
                     if (attackedByPawn & to)
-                        m.value += a7;
+                        m.value += -45758;
                     else if (attackedByBishopKnight & to)
-                        m.value += a8;
+                        m.value += -50002;
                     else if (attackedByRook & to)
-                        m.value += a9;
+                        m.value += -50866;
 
                     if (attackedByPawn & from)
-                        m.value += a10;
+                        m.value += 49053;
                     else if (attackedByBishopKnight & from)
-                        m.value += a11;
+                        m.value += 51494;
                     else if (attackedByRook & from)
-                        m.value += a12;
+                        m.value += 51761;
                     break;
                 default:
                     break;
