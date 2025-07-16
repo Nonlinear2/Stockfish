@@ -776,7 +776,7 @@ Value Search::Worker::search(
     {
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
-        improving             = (ss - 1)->staticEval < (ss - 3)->staticEval - 100;
+        improving             = (ss - 1)->staticEval < (ss - 3)->staticEval - 200;
         goto moves_loop;
     }
     else if (excludedMove)
