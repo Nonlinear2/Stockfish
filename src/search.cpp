@@ -709,7 +709,7 @@ Value Search::Worker::search(
                 if (!is_valid(ttDataNext.value))
                     return ttData.value;
                 if ((ttData.value >= beta) == (-ttDataNext.value >= beta))
-                    return ttData.value;
+                    return ttDataNext.depth >= ttData.depth ? std::max(ttData.value, -ttDataNext.value) : ttData.value;
             }
             else
                 return ttData.value;
