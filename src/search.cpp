@@ -1200,7 +1200,7 @@ moves_loop:  // When in check, search starts here
         r += (ss + 1)->quietMoveStreak * 50;
 
         if (move.to_sq() == prevSq)
-            r -= std::max(0, 740 - depth * 17);
+            r -= std::max(0, 840 - depth * 21);
 
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
