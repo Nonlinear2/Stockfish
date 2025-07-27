@@ -75,7 +75,7 @@ struct Stack {
     bool                        ttHit;
     int                         cutoffCnt;
     int                         reduction;
-    int                         quietMoveStreak;
+    int                         quietMoveStreak = 0;
     int                         cumulativeMoveCount;
 };
 
