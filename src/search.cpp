@@ -261,6 +261,7 @@ void Search::Worker::iterative_deepening() {
           &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
+        (ss - i)->cumulativeMoveCount           = 0;
     }
 
     for (int i = 0; i <= MAX_PLY + 2; ++i)
@@ -990,6 +991,7 @@ moves_loop:  // When in check, search starts here
             continue;
 
         ss->moveCount = ++moveCount;
+        ss->cumulativeMoveCount = (ss - 1)->cumulativeMoveCount + ss->moveCount;
 
         if (rootNode && is_mainthread() && nodes > 10000000)
         {
@@ -1184,6 +1186,7 @@ moves_loop:  // When in check, search starts here
         r += 650;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 66;
         r -= std::abs(correctionValue) / 28047;
+        r -= 20 * ss->cumulativeMoveCount / ss->ply;
 
         // Increase reduction for cut nodes
         if (cutNode)
