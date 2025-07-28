@@ -929,7 +929,7 @@ Value Search::Worker::search(
               &continuationCorrectionHistory[movedPiece][move.to_sq()];
 
             // Perform a preliminary qsearch to verify that the move holds
-            value = -search<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1, probCutDepth - 7,
+            value = -search<NonPV>(pos, ss + 1, -probCutBeta, -probCutBeta + 1, probCutDepth - 5,
                                    !cutNode);
 
             // If the qsearch held, perform the regular search
