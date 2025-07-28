@@ -1535,7 +1535,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
     {
-        ss->ttCutoff = ttData.depth > 3;
+        ss->ttCutoff = ttData.depth > DEPTH_QS;
         return ttData.value;
     }
     else
