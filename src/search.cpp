@@ -1534,7 +1534,12 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     if (!PvNode && ttData.depth >= DEPTH_QS
         && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
+    {
+        ss->ttCutoff = ttData.depth > 3;
         return ttData.value;
+    }
+    else
+        ss->ttCutoff = false;
 
     // Step 4. Static evaluation of the position
     Value unadjustedStaticEval = VALUE_NONE;
@@ -1594,6 +1599,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
     // captures, or evasions only when in check.
     MovePicker mp(pos, ttData.move, DEPTH_QS, &mainHistory, &lowPlyHistory, &captureHistory,
                   contHist, &pawnHistory, ss->ply);
+   
+    bool isCutoffValue = false;
 
     // Step 5. Loop through all pseudo-legal moves until no moves remain or a beta
     // cutoff occurs.
@@ -1662,6 +1669,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         if (value > bestValue)
         {
             bestValue = value;
+            isCutoffValue = (ss+1)->ttCutoff;
 
             if (value > alpha)
             {
@@ -1687,8 +1695,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         return mated_in(ss->ply);  // Plies to mate from the root
     }
 
-    if (!is_decisive(bestValue) && bestValue > beta)
-        bestValue = ((1 + !pos.capture_stage(bestMove)) * bestValue + beta) / (2 + !pos.capture_stage(bestMove));
+    if (!is_decisive(bestValue) && bestValue > beta && !isCutoffValue)
+        bestValue = (bestValue + beta) / 2;
 
 
     Color us = pos.side_to_move();
