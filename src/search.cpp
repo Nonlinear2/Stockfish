@@ -1687,8 +1687,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         return mated_in(ss->ply);  // Plies to mate from the root
     }
 
-    if (!is_decisive(bestValue) && bestValue > beta && pos.capture_stage(bestMove))
-        bestValue = (bestValue + beta) / 2;
+    if (!is_decisive(bestValue) && bestValue > beta)
+        bestValue = ((1 + !pos.capture_stage(bestMove)) * bestValue + beta) / (2 + !pos.capture_stage(bestMove));
 
 
     Color us = pos.side_to_move();
