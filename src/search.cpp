@@ -1145,7 +1145,7 @@ moves_loop:  // When in check, search starts here
             // singular (multiple moves fail high), and we can prune the whole
             // subtree by returning a softbound.
             else if (value >= beta && !is_decisive(value))
-                return (3*value + beta) / 4;
+                return std::min(value + (value - beta) / 5, VALUE_TB_WIN_IN_MAX_PLY - 1);
 
             // Negative extensions
             // If other moves failed high over (ttValue - margin) without the
