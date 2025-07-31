@@ -774,7 +774,7 @@ Value Search::Worker::search(
 
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
-    const auto correctionValue      = (8 + 2*ttCapture) * correction_value(*this, pos, ss) / 9;
+    const auto correctionValue      = (4 + 2*ttCapture) * correction_value(*this, pos, ss) / 5;
     if (ss->inCheck)
     {
         // Skip early pruning when in check
