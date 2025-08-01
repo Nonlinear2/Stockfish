@@ -1535,7 +1535,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER)))
     {
-        ss->ttCutoff = true;
+        ss->ttCutoff = ttData.depth > DEPTH_QS;
         return ttData.value;
     }
     else
@@ -1695,8 +1695,8 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         return mated_in(ss->ply);  // Plies to mate from the root
     }
 
-    if (!is_decisive(bestValue) && bestValue > beta && !isCutoffValue)
-        bestValue = (bestValue + beta) / 2;
+    if (!is_decisive(bestValue) && bestValue > beta)
+        bestValue = ((1 + 2*isCutoffValue) * bestValue + beta) / (2 + 2*isCutoffValue);
 
 
     Color us = pos.side_to_move();
