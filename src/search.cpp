@@ -776,7 +776,7 @@ Value Search::Worker::search(
     // Step 6. Static evaluation of the position
     Value      unadjustedStaticEval = VALUE_NONE;
     Value simpleEval = Eval::simple_eval(pos);
-    const auto correctionValue      = (3 + 2 * (std::abs(ss->staticEval - simpleEval) > 350)) * correction_value(*this, pos, ss) / 4;
+    const auto correctionValue      = (15 + 5 * (std::abs(ss->staticEval - simpleEval) > 350)) * correction_value(*this, pos, ss) / 16;
     if (ss->inCheck)
     {
         // Skip early pruning when in check
