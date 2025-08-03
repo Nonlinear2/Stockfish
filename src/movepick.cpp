@@ -83,6 +83,7 @@ void partial_insertion_sort(ExtMove* begin, ExtMove* end, int limit) {
 MovePicker::MovePicker(const Position&              p,
                        Move                         ttm,
                        Depth                        d,
+                       Depth                        rd,
                        const ButterflyHistory*      mh,
                        const LowPlyHistory*         lph,
                        const CapturePieceToHistory* cph,
@@ -97,6 +98,7 @@ MovePicker::MovePicker(const Position&              p,
     pawnHistory(ph),
     ttMove(ttm),
     depth(d),
+    rootDepth(rd),
     ply(pl) {
 
     if (pos.checkers())
@@ -151,7 +153,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
         const Piece     capturedPiece = pos.piece_on(to);
 
         if constexpr (Type == CAPTURES)
-            m.value = (8 + 2*(depth == DEPTH_QS)) * (*captureHistory)[pc][to][type_of(capturedPiece)] / 9
+            m.value = (8 - 2*(depth == DEPTH_QS && rootDepth < 16)) * (*captureHistory)[pc][to][type_of(capturedPiece)] / 7
                     + 7 * int(PieceValue[capturedPiece]) + 1024 * bool(pos.check_squares(pt) & to);
 
         else if constexpr (Type == QUIETS)

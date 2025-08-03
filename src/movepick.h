@@ -41,6 +41,7 @@ class MovePicker {
     MovePicker(const Position&,
                Move,
                Depth,
+               Depth,
                const ButterflyHistory*,
                const LowPlyHistory*,
                const CapturePieceToHistory*,
@@ -71,6 +72,7 @@ class MovePicker {
     int                          stage;
     int                          threshold;
     Depth                        depth = DEPTH_UNSEARCHED;
+    Depth                        rootDepth;
     int                          ply;
     bool                         skipQuiets = false;
     ExtMove                      moves[MAX_MOVES];
