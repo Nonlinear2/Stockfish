@@ -165,6 +165,9 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[3])[pc][to];
             m.value += (*continuationHistory[5])[pc][to];
 
+            if (depth == 1 || depth == DEPTH_QS)
+                m.value = 7 * m.value / 8;
+
             // bonus for checks
             m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
 
