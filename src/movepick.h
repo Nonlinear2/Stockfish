@@ -72,7 +72,7 @@ class MovePicker {
     int                          stage;
     int                          threshold;
     Depth                        depth = DEPTH_UNSEARCHED;
-    Depth                        rootDepth;
+    Depth                        rootDepth = DEPTH_UNSEARCHED;
     int                          ply;
     bool                         skipQuiets = false;
     ExtMove                      moves[MAX_MOVES];
