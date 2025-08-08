@@ -166,29 +166,26 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
-
-            // small bonus for aligning a piece with the opponent's king
-            Square opp_king_sq = pos.square<KING>(~us);
-            switch (pt)
+            if (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75))
+                m.value += 16384;
+            else
             {
-            case PAWN:
-                m.value += bool(attacks_bb<PAWN>(to) & opp_king_sq) * 4384;
-                break;
-            case BISHOP:
-                m.value += bool(attacks_bb<BISHOP>(to) & opp_king_sq) * 4384;
-                break;
-            case KNIGHT:
-                m.value += bool(attacks_bb<KNIGHT>(to) & opp_king_sq) * 4384;
-                break;
-            case ROOK:
-                m.value += bool(attacks_bb<ROOK>(to) & opp_king_sq) * 4384;
-                break;
-            case QUEEN:
-                m.value += bool(attacks_bb<QUEEN>(to) & opp_king_sq) * 4384;
-                break;
-            default:
-                break;
+                // small bonus for aligning a piece with the opponent's king
+                Square opp_king_sq = pos.square<KING>(~us);
+                switch (pt)
+                {
+                case BISHOP:
+                    m.value += bool(attacks_bb<BISHOP>(to) & opp_king_sq) * 4384;
+                    break;
+                case ROOK:
+                    m.value += bool(attacks_bb<ROOK>(to) & opp_king_sq) * 4384;
+                    break;
+                case QUEEN:
+                    m.value += bool(attacks_bb<QUEEN>(to) & opp_king_sq) * 4384;
+                    break;
+                default:
+                    break;
+                }
             }
 
             // penalty for moving to a square threatened by a lesser piece
