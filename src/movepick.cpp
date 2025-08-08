@@ -170,7 +170,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             if (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75))
                 m.value += 16384;
             else if (bool(attacks_bb<QUEEN>(opp_king_sq) & to))
-                m.value += 7500;
+                m.value += 2500;
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
