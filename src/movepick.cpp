@@ -128,6 +128,7 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
     static_assert(Type == CAPTURES || Type == QUIETS || Type == EVASIONS, "Wrong type");
 
     Color us = pos.side_to_move();
+    Square opp_king_sq = pos.square<KING>(~us);
 
     [[maybe_unused]] Bitboard threatByLesser[QUEEN + 1];
     if constexpr (Type == QUIETS)
@@ -168,25 +169,8 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             // bonus for checks
             if (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75))
                 m.value += 16384;
-            else
-            {
-                // small bonus for aligning a piece with the opponent's king
-                Square opp_king_sq = pos.square<KING>(~us);
-                switch (pt)
-                {
-                case BISHOP:
-                    m.value += bool(attacks_bb<BISHOP>(to) & opp_king_sq) * 7384;
-                    break;
-                case ROOK:
-                    m.value += bool(attacks_bb<ROOK>(to) & opp_king_sq) * 7384;
-                    break;
-                case QUEEN:
-                    m.value += bool(attacks_bb<QUEEN>(to) & opp_king_sq) * 5384;
-                    break;
-                default:
-                    break;
-                }
-            }
+            else if (bool(attacks_bb<QUEEN>(opp_king_sq) & to))
+                m.value += 5000;
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
