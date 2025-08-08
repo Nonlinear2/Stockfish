@@ -1545,7 +1545,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
     {
-        const auto correctionValue = (8 + 2*(ttData.move && pos.capture_stage(ttData.move))) * correction_value(*this, pos, ss) / 9;;
+        const auto correctionValue = (9 + 4*(ttData.move && pos.capture_stage(ttData.move))) * correction_value(*this, pos, ss) / 10;
 
         if (ss->ttHit)
         {
