@@ -175,13 +175,13 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 switch (pt)
                 {
                 case BISHOP:
-                    m.value += bool(attacks_bb<BISHOP>(to) & opp_king_sq) * 4384;
+                    m.value += bool(attacks_bb<BISHOP>(to) & opp_king_sq) * 7384;
                     break;
                 case ROOK:
-                    m.value += bool(attacks_bb<ROOK>(to) & opp_king_sq) * 4384;
+                    m.value += bool(attacks_bb<ROOK>(to) & opp_king_sq) * 7384;
                     break;
                 case QUEEN:
-                    m.value += bool(attacks_bb<QUEEN>(to) & opp_king_sq) * 4384;
+                    m.value += bool(attacks_bb<QUEEN>(to) & opp_king_sq) * 5384;
                     break;
                 default:
                     break;
