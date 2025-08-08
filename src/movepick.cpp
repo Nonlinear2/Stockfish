@@ -28,6 +28,14 @@
 
 namespace Stockfish {
 
+int a1 = 16384,
+    a2 = 16384,
+    a3 = 16384,
+    a4 = 16384,
+    a5 = 16384;
+
+TUNE(a1, a2, a3, a4, a5);
+
 namespace {
 
 enum Stages {
@@ -166,7 +174,30 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
             m.value += (*continuationHistory[5])[pc][to];
 
             // bonus for checks
-            m.value += (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75)) * 16384;
+            if (bool(pos.check_squares(pt) & to) && pos.see_ge(m, -75))
+            {
+                switch (pt)
+                {
+                case PAWN:
+                    m.value += a1;
+                    break;
+                case BISHOP:
+                    m.value += a2;
+                    break;
+                case KNIGHT:
+                    m.value += a3;
+                    break;
+                case ROOK:
+                    m.value += a4;
+                    break;
+                case QUEEN:
+                    m.value += a5;
+                    break;
+                default:
+                    assert(false);
+                    break;
+                }
+            }
 
             // penalty for moving to a square threatened by a lesser piece
             // or bonus for escaping an attack by a lesser piece.
