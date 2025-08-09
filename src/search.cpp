@@ -612,6 +612,7 @@ Value Search::Worker::search(
     bool  givesCheck, improving, priorCapture, opponentWorsening;
     bool  capture, ttCapture;
     int   priorReduction;
+    int   priorR;
     Piece movedPiece;
 
     SearchedList capturesSearched;
@@ -657,7 +658,10 @@ Value Search::Worker::search(
     Square prevSq  = ((ss - 1)->currentMove).is_ok() ? ((ss - 1)->currentMove).to_sq() : SQ_NONE;
     bestMove       = Move::none();
     priorReduction = (ss - 1)->reduction;
+    priorR = (ss - 1)->r;
     (ss - 1)->reduction = 0;
+    (ss - 1)->r         = 0;
+
     ss->statScore       = 0;
     (ss + 2)->cutoffCnt = 0;
 
@@ -1211,6 +1215,8 @@ moves_loop:  // When in check, search starts here
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 789 / 8192;
 
+        r -= priorR / 17;
+
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
         {
@@ -1220,10 +1226,12 @@ moves_loop:  // When in check, search starts here
             // To prevent problems when the max value is less than the min value,
             // std::clamp has been replaced by a more robust implementation.
             Depth d = std::max(1, std::min(newDepth - r / 1024, newDepth + 1 + PvNode)) + PvNode;
-
+            
+            ss->r = r;
             ss->reduction = newDepth - d;
             value         = -search<NonPV>(pos, ss + 1, -(alpha + 1), -alpha, d, true);
             ss->reduction = 0;
+            ss->r = 0;
 
             // Do a full-depth search when reduced LMR search fails high
             // (*Scaler) Usually doing more shallower searches
