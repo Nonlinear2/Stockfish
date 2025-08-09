@@ -1541,12 +1541,13 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         return ttData.value;
 
     // Step 4. Static evaluation of the position
+    const int correctionValue = VALUE_NONE;
     Value unadjustedStaticEval = VALUE_NONE;
     if (ss->inCheck)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
     {
-        const auto correctionValue = correction_value(*this, pos, ss);
+        correctionValue = correction_value(*this, pos, ss);
 
         if (ss->ttHit)
         {
@@ -1624,6 +1625,9 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     continue;
 
                 Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
+                assert(correctionValue != VALUE_NONE);
+                Value secondFutilityValue =
+                    to_corrected_static_eval(futilityBase, correctionValue) + PieceValue[pos.piece_on(move.to_sq())] + 70;
 
                 // If static eval + value of piece we are going to capture is
                 // much lower than alpha, we can prune this move.
@@ -1633,11 +1637,17 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     continue;
                 }
 
-                // If static exchange evaluation is low enough
-                // we can prune this move.
-                if (!pos.see_ge(move, alpha - futilityBase))
+                if (secondFutilityValue <= alpha)
                 {
-                    bestValue = std::min(alpha, futilityBase);
+                    bestValue = std::max(bestValue, secondFutilityValue);
+                    continue;
+                }
+
+                // If static eval + value of piece we are going to capture is
+                // much lower than alpha, we can prune this move.
+                if (futilityValue <= alpha)
+                {
+                    bestValue = std::max(bestValue, futilityValue);
                     continue;
                 }
             }
