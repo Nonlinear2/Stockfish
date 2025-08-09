@@ -28,14 +28,6 @@
 
 namespace Stockfish {
 
-int a1 = 16384,
-    a2 = 16384,
-    a3 = 16384,
-    a4 = 16384,
-    a5 = 16384;
-
-TUNE(a1, a2, a3, a4, a5);
-
 namespace {
 
 enum Stages {
@@ -179,19 +171,19 @@ ExtMove* MovePicker::score(MoveList<Type>& ml) {
                 switch (pt)
                 {
                 case PAWN:
-                    m.value += a1;
+                    m.value += 15663;
                     break;
                 case BISHOP:
-                    m.value += a2;
+                    m.value += 16201;
                     break;
                 case KNIGHT:
-                    m.value += a3;
+                    m.value += 16986;
                     break;
                 case ROOK:
-                    m.value += a4;
+                    m.value += 16181;
                     break;
                 case QUEEN:
-                    m.value += a5;
+                    m.value += 15485;
                     break;
                 default:
                     assert(false);
