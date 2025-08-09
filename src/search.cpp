@@ -1643,11 +1643,10 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                     continue;
                 }
 
-                // If static eval + value of piece we are going to capture is
-                // much lower than alpha, we can prune this move.
-                if (futilityValue <= alpha)
-                {
-                    bestValue = std::max(bestValue, futilityValue);
+                // If static exchange evaluation is low enough
+                // we can prune this move.
+                if (!pos.see_ge(move, alpha - futilityBase))
+                    bestValue = std::min(alpha, futilityBase);
                     continue;
                 }
             }
