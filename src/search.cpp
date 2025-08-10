@@ -1216,7 +1216,7 @@ moves_loop:  // When in check, search starts here
         r -= ss->statScore * 789 / 8192;
 
         if (priorR > 5120 && r < 0)
-            r -= 512;
+            r -= 1536;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
