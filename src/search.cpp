@@ -1238,7 +1238,7 @@ moves_loop:  // When in check, search starts here
             {
                 // Adjust full-depth search based on LMR results - if the result was
                 // good enough search deeper, if it was bad enough search shallower.
-                const bool doDeeperSearch = ((PvNode && priorR > 4096) || d < newDepth) && value > (bestValue + 43 + 2 * newDepth);
+                const bool doDeeperSearch = ((PvNode && priorR > 2048) || d < newDepth) && value > (bestValue + 43 + 2 * newDepth);
                 const bool doShallowerSearch = value < bestValue + 9;
 
                 newDepth += doDeeperSearch - doShallowerSearch;
