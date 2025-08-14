@@ -818,7 +818,7 @@ Value Search::Worker::search(
               << bonus * 1428 / 1024;
     }
 
-    noLegalCaptures = !(bool(pos.attacks_by(~us) & pos.pieces(us)));
+    noLegalCaptures = !(bool(pos.attacks_by<ALL_PIECES>(~us) & pos.pieces(us)));
 
     // Set up the improving flag, which is true if current static evaluation is
     // bigger than the previous static evaluation at our turn (if we were in
