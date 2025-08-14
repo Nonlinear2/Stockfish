@@ -613,6 +613,7 @@ Value Search::Worker::search(
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
+    bool noLegalCaptures = false;
 
     SearchedList capturesSearched;
     SearchedList quietsSearched;
@@ -817,6 +818,8 @@ Value Search::Worker::search(
               << bonus * 1428 / 1024;
     }
 
+    noLegalCaptures = !(bool(pos.attacks_by(~us) & pos.pieces(us)));
+
     // Set up the improving flag, which is true if current static evaluation is
     // bigger than the previous static evaluation at our turn (if we were in
     // check at our previous move we go back until we weren't in check) and is
@@ -826,7 +829,7 @@ Value Search::Worker::search(
 
     if (priorReduction >= (depth < 10 ? 1 : 3) && !opponentWorsening)
         depth++;
-    if (priorReduction >= 2 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 177)
+    if (priorReduction >= 2 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 177 - 50 * noLegalCaptures)
         depth--;
 
     // Step 7. Razoring
