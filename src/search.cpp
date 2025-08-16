@@ -808,7 +808,7 @@ Value Search::Worker::search(
     }
 
     noLegalCaptures = !(bool(pos.attacks_by<ALL_PIECES>(~us) & pos.pieces(us)));
-    ss->staticEval = std::clamp((8 + noLegalCaptures) * ss->staticEval / 8, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+    ss->staticEval = std::clamp((16 + noLegalCaptures) * ss->staticEval / 16, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
     
     // Use static evaluation difference to improve quiet move ordering
     if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
