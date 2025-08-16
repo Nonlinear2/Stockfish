@@ -807,6 +807,9 @@ Value Search::Worker::search(
                        unadjustedStaticEval, tt.generation());
     }
 
+    noLegalCaptures = !(bool(pos.attacks_by<ALL_PIECES>(~us) & pos.pieces(us)));
+    ss->staticEval = std::clamp((8 + noLegalCaptures) * ss->staticEval / 8, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
+    
     // Use static evaluation difference to improve quiet move ordering
     if (((ss - 1)->currentMove).is_ok() && !(ss - 1)->inCheck && !priorCapture)
     {
@@ -818,7 +821,6 @@ Value Search::Worker::search(
               << bonus * 1428 / 1024;
     }
 
-    noLegalCaptures = !(bool(pos.attacks_by<ALL_PIECES>(~us) & pos.pieces(us)));
 
     // Set up the improving flag, which is true if current static evaluation is
     // bigger than the previous static evaluation at our turn (if we were in
@@ -857,7 +859,7 @@ Value Search::Worker::search(
     }
 
     // Step 9. Null move search with verification search
-    if (cutNode && ss->staticEval >= beta - 19 * depth + 423 - 40 * noLegalCaptures && !excludedMove
+    if (cutNode && ss->staticEval >= beta - 19 * depth + 403 && !excludedMove
         && pos.non_pawn_material(us) && ss->ply >= nmpMinPly && !is_loss(beta))
     {
         assert((ss - 1)->currentMove != Move::null());
