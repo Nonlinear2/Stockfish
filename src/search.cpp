@@ -1164,8 +1164,8 @@ moves_loop:  // When in check, search starts here
         }
 
         // this condition needs to be evaluated before the move is pushed
-        if (pos.rule50_count() > 80 && (capture || type_of(movedPiece) == PAWN))
-            r -= 1024;
+        if (capture || type_of(movedPiece) == PAWN)
+            r -= 4 * pos.rule50_count();
 
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck, ss);
