@@ -1163,6 +1163,10 @@ moves_loop:  // When in check, search starts here
                 extension = -2;
         }
 
+        // this condition needs to be evaluated before the move is pushed
+        if (pos.rule50_count() > 70 && (capture || type_of(movedPiece) == PAWN))
+            r -= 1024;
+
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck, ss);
 
@@ -1209,9 +1213,6 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * (734 - 12 * msb(depth)) / 8192;
-
-        if (pos.rule50_count() > 70 && (capture || type_of(movedPiece) == PAWN))
-            r -= 1024;
 
         // Step 17. Late moves reduction / extension (LMR)
         if (depth >= 2 && moveCount > 1)
