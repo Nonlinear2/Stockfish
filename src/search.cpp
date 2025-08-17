@@ -876,7 +876,7 @@ Value Search::Worker::search(
         if (nullValue >= beta && !is_win(nullValue))
         {
             if (nmpMinPly || depth < 16)
-                return (4*nullValue + beta) / 5;
+                return (2*nullValue + beta) / 3;
 
             assert(!nmpMinPly);  // Recursive verification is not allowed
 
@@ -889,7 +889,7 @@ Value Search::Worker::search(
             nmpMinPly = 0;
 
             if (v >= beta)
-                return (4*nullValue + beta) / 5;
+                return (2*nullValue + beta) / 3;
         }
     }
 
