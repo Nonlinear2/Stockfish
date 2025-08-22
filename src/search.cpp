@@ -1168,7 +1168,7 @@ moves_loop:  // When in check, search starts here
             if (capture || type_of(movedPiece) == PAWN)
                 r -= 1024;
             else
-                r += 200;
+                r += 400;
         }
 
         // Step 16. Make the move
