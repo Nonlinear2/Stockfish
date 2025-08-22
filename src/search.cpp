@@ -696,7 +696,7 @@ Value Search::Worker::search(
 
         // Partial workaround for the graph history interaction problem
         // For high rule50 counts don't produce transposition table cutoffs.
-        if (pos.rule50_count() < 96)
+        if (pos.rule50_count() < 96 || (ttCapture || type_of(pos.moved_piece(ttData.move)) == PAWN))
         {
             if (depth >= 8 && ttData.move && pos.pseudo_legal(ttData.move) && pos.legal(ttData.move)
                 && !is_decisive(ttData.value))
