@@ -680,7 +680,10 @@ Value Search::Worker::search(
         && is_valid(ttData.value)  // Can happen when !ttHit or when access race in probe()
         && (ttData.bound & (ttData.value >= beta ? BOUND_LOWER : BOUND_UPPER))
         && (cutNode == (ttData.value >= beta) || depth > 5)
-        && (ttData.move == Move::none() || pos.rule50_count() < 80 || (!ttCapture && type_of(pos.moved_piece(ttData.move)) != PAWN)))
+        && (depth > 8
+            || ttData.move == Move::none() 
+            || pos.rule50_count() < 80 
+            || (!ttCapture && type_of(pos.moved_piece(ttData.move)) != PAWN)))
     {
         // If ttMove is quiet, update move sorting heuristics on TT hit
         if (ttData.move && ttData.value >= beta)
