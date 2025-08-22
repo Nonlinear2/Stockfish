@@ -1164,8 +1164,12 @@ moves_loop:  // When in check, search starts here
         }
 
         // this condition needs to be evaluated before the move is pushed
-        if (pos.rule50_count() > 80 && (capture || type_of(movedPiece) == PAWN))
-            r -= 1024;
+        if (pos.rule50_count() > 80){
+            if (capture || type_of(movedPiece) == PAWN)
+                r -= 1024;
+            else
+                r += 200;
+        }
 
         // Step 16. Make the move
         do_move(pos, move, st, givesCheck, ss);
@@ -1181,7 +1185,7 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 850 - 6 * msb(depth);  // Base reduction offset to compensate for other tweaks
+        r += 800 - 6 * msb(depth);  // Base reduction offset to compensate for other tweaks
         r -= moveCount * (64 - 2 * msb(depth));
         r -= std::abs(correctionValue) / 30450;
 
