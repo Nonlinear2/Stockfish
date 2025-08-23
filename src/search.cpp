@@ -51,16 +51,6 @@
 
 namespace Stockfish {
 
-int a1 = 1024,
-    a2 = 1024,
-    a3 = 1024,
-    a4 = 3072,
-    a5 = 2048,
-    a6 = 2048;
-
-TUNE(a1, a2, a3, a4, a5, a6);
-
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
@@ -1142,7 +1132,7 @@ moves_loop:  // When in check, search starts here
                                  - (ss->ply * 2 > rootDepth * 3) * 52;
 
                 extension =
-                  a1 + (value < singularBeta - doubleMargin) * a2 + (value < singularBeta - tripleMargin) * a3;
+                  1303 + (value < singularBeta - doubleMargin) * 1209 + (value < singularBeta - tripleMargin) * 1041;
 
                 depth++;
             }
@@ -1165,12 +1155,12 @@ moves_loop:  // When in check, search starts here
 
             // If the ttMove is assumed to fail high over current beta
             else if (ttData.value >= beta)
-                extension = -a4;
+                extension = -3160;
 
             // If we are on a cutNode but the ttMove is not assumed to fail high
             // over current beta
             else if (cutNode)
-                extension = -a5;
+                extension = -1995;
         }
 
         // Step 16. Make the move
@@ -1366,7 +1356,7 @@ moves_loop:  // When in check, search starts here
                 if (value >= beta)
                 {
                     // (* Scaler) Especially if they make cutoffCnt increment more often.
-                    ss->cutoffCnt += (extension < a6) || PvNode;
+                    ss->cutoffCnt += (extension < 1811) || PvNode;
                     assert(value >= beta);  // Fail high
                     break;
                 }
