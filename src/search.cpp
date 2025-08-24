@@ -1647,7 +1647,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
                 continue;
 
             // Do not search moves with bad enough SEE values
-            if (!pos.see_ge(move, -78 + 50 * (ss - 5)->isQs))
+            if (!pos.see_ge(move, -78 + 50 * (ss - 7)->isQs))
                 continue;
         }
 
