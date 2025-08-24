@@ -1651,8 +1651,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
 
         // Step 7. Make and search the move
         do_move(pos, move, st, givesCheck, ss);
-        if (PvNode && ss->inCheck && ttData.value > alpha && ttData.depth >= 3)
+        if (PvNode && ss->inCheck && ttData.value > alpha && ttData.depth >= 3){
+            (ss + 1)->pv = pv;
+            (ss + 1)->pv[0] = Move::none();
             value = -search<nodeType>(pos, ss + 1, -beta, -alpha, 1, false);
+        }
         else
             value = -qsearch<nodeType>(pos, ss + 1, -beta, -alpha);
 
