@@ -207,7 +207,7 @@ constexpr Value PieceValue[PIECE_NB] = {
   VALUE_ZERO, PawnValue, KnightValue, BishopValue, RookValue, QueenValue, VALUE_ZERO, VALUE_ZERO,
   VALUE_ZERO, PawnValue, KnightValue, BishopValue, RookValue, QueenValue, VALUE_ZERO, VALUE_ZERO};
 
-constexpr Value generalPsqt[SQUARE_NB] = {
+constexpr Value generalPsqt[64] = {
             16,   24,   24,   32,   32,   24,   24,   16, 
             24,   40,   56,   40,   40,   40,   40,   24, 
             24,   56,   56,   56,   56,   56,   40,   24, 
