@@ -50,6 +50,13 @@
 #include "ucioption.h"
 
 namespace Stockfish {
+int a1 = 70;
+int a2 = 150;
+int a3 = 20;
+
+TUNE(SetRange(-100, 300), a1);
+TUNE(SetRange(-150, 800), a2);
+TUNE(SetRange(-50, 200), a3);
 
 namespace TB = Tablebases;
 
@@ -1578,7 +1585,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         if (bestValue > alpha)
             alpha = bestValue;
 
-        futilityBase = ss->staticEval + 352 - 65 * (ss - 4)->isQs;
+        futilityBase = ss->staticEval + 352 - a1 * (ss - 5)->isQs;
     }
 
     const PieceToHistory* contHist[] = {(ss - 1)->continuationHistory,
@@ -1639,11 +1646,11 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             if (!capture
                 && (*contHist[0])[pos.moved_piece(move)][move.to_sq()]
                        + pawnHistory[pawn_history_index(pos)][pos.moved_piece(move)][move.to_sq()]
-                     <= 5475)
+                     <= 5475 + a2 * (ss - 5)->isQs)
                 continue;
 
             // Do not search moves with bad enough SEE values
-            if (!pos.see_ge(move, -78))
+            if (!pos.see_ge(move, -78 + a3 * (ss - 5)->isQs))
                 continue;
         }
 
