@@ -207,17 +207,6 @@ constexpr Value PieceValue[PIECE_NB] = {
   VALUE_ZERO, PawnValue, KnightValue, BishopValue, RookValue, QueenValue, VALUE_ZERO, VALUE_ZERO,
   VALUE_ZERO, PawnValue, KnightValue, BishopValue, RookValue, QueenValue, VALUE_ZERO, VALUE_ZERO};
 
-constexpr Value generalPsqt[64] = {
-            0,   8,   8,   16,  16,   8,   8,    0, 
-            8,   24,  40,  24,  24,   24,  24,   8, 
-            8,   40,  40,  40,  40,   40,  24,   8, 
-            24,  24,  40,  40,  40,   40,  24,   16, 
-            16,  24,  40,  40,  40,   40,  24,   16, 
-            8,   24,  40,  40,  40,   40,  24,   8, 
-            8,   24,  24,  24,  24,   24,  24,   8, 
-            0,   8,   8,   16,  16,   8,   8,    0
-};
-
 using Depth = int;
 
 // The following DEPTH_ constants are used for transposition table entries
