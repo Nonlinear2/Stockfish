@@ -1061,10 +1061,9 @@ moves_loop:  // When in check, search starts here
                 // Futility pruning for captures
                 if (!givesCheck && lmrDepth < 7)
                 {
-                    const Value pc_value = PieceValue[capturedPiece];
-                    const Value sq_value = pc_value == 0 ? 0 : generalPsqt[move.to_sq()];
                     Value futilityValue = ss->staticEval + a1 + a2 * lmrDepth
-                                        + pc_value + sq_value + a3 * captHist / 1024;
+                                        + PieceValue[capturedPiece] + generalPsqt[move.to_sq()]
+                                        + a3 * captHist / 1024;
 
                     if (futilityValue <= alpha)
                         continue;
@@ -1629,7 +1628,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
             {
                 if (moveCount > 2)
                     continue;
-                
+
                 Value futilityValue = futilityBase + PieceValue[pos.piece_on(move.to_sq())];
 
                 // If static eval + value of piece we are going to capture is
