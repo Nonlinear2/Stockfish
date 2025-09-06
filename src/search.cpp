@@ -54,7 +54,7 @@ namespace Stockfish {
 constexpr Value generalPsqt[64] = {
 15,
 5,
--0,
+0,
 7,
 9,
 -24,
