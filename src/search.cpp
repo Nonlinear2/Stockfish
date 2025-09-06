@@ -121,9 +121,6 @@ constexpr int a1 = 215;
 constexpr int a2 = 218;
 constexpr int a3 = 124;
 
-TUNE(SetRange(-300, 300), generalPsqt);
-TUNE(a1, a2, a3);
-
 namespace TB = Tablebases;
 
 void syzygy_extend_pv(const OptionsMap&            options,
