@@ -865,7 +865,6 @@ Value Search::Worker::search(
 
             return futilityMult * d                                //
                  - 2094 * improving * futilityMult / 1024          //
-                 - 80 * nextImproving * futilityMult / 1024          //
                  - 1324 * opponentWorsening * futilityMult / 4096  //
                  + (ss - 1)->statScore / 331                       //
                  + std::abs(correctionValue) / 158105;
@@ -1187,7 +1186,7 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 543;  // Base reduction offset to compensate for other tweaks
+        r += 343;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 66;
         r -= std::abs(correctionValue) / 30450;
 
@@ -1208,6 +1207,9 @@ moves_loop:  // When in check, search starts here
         // For first picked move (ttMove) reduce reduction
         if (move == ttData.move)
             r -= 2018;
+
+        if (!nextImproving)
+            r += 750;
 
         if (capture)
             ss->statScore = 803 * int(PieceValue[pos.captured_piece()]) / 128
