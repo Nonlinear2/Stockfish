@@ -713,9 +713,7 @@ Value Search::Worker::search(
                 pos.undo_move(ttData.move);
 
                 // Check that the ttValue after the tt move would also trigger a cutoff
-                if (!is_valid(ttDataNext.value))
-                    return ttData.value;
-                if ((ttData.value >= beta) == (-ttDataNext.value >= beta))
+                if (is_valid(ttDataNext.value) && ((ttData.value >= beta) == (-ttDataNext.value >= beta)))
                     return ttData.value;
             }
             else
