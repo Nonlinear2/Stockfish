@@ -725,7 +725,7 @@ Value Search::Worker::search(
                 auto [ttHitNext, ttDataNext, ttWriterNext] = tt.probe(nextPosKey);
                 pos.undo_move(ttData.move);
 
-                nextUnadjustedStaticEval = ttData.eval;
+                nextUnadjustedStaticEval = ttDataNext.eval;
 
                 // Check that the ttValue after the tt move would also trigger a cutoff
                 if (!is_valid(ttDataNext.value))
