@@ -623,8 +623,8 @@ Value Search::Worker::search(
     Key   posKey;
     Move  move, excludedMove, bestMove;
     Depth extension, newDepth;
-    Value bestValue, value, eval, maxValue, probCutBeta;
-    bool  givesCheck, improving, priorCapture, opponentWorsening;
+    Value bestValue, value, eval, nextUnadjustedStaticEval, maxValue, probCutBeta;
+    bool  givesCheck, improving, priorCapture, opponentWorsening, nextImproving;
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
@@ -686,6 +686,7 @@ Value Search::Worker::search(
     ttData.value = ttHit ? value_from_tt(ttData.value, ss->ply, pos.rule50_count()) : VALUE_NONE;
     ss->ttPv     = excludedMove ? ss->ttPv : PvNode || (ttHit && ttData.is_pv);
     ttCapture    = ttData.move && pos.capture_stage(ttData.move);
+    nextUnadjustedStaticEval = VALUE_NONE;
 
     // At this point, if excluded, skip straight to step 6, static eval. However,
     // to save indentation, we list the condition in all code between here and there.
@@ -723,6 +724,8 @@ Value Search::Worker::search(
                 Key nextPosKey                             = pos.key();
                 auto [ttHitNext, ttDataNext, ttWriterNext] = tt.probe(nextPosKey);
                 pos.undo_move(ttData.move);
+
+                nextUnadjustedStaticEval = ttData.eval;
 
                 // Check that the ttValue after the tt move would also trigger a cutoff
                 if (!is_valid(ttDataNext.value))
@@ -795,7 +798,7 @@ Value Search::Worker::search(
     {
         // Skip early pruning when in check
         ss->staticEval = eval = (ss - 2)->staticEval;
-        improving             = false;
+        nextImproving = improving = false;
         goto moves_loop;
     }
     else if (excludedMove)
@@ -840,6 +843,7 @@ Value Search::Worker::search(
     // check at our previous move we go back until we weren't in check) and is
     // false otherwise. The improving flag is used in various pruning heuristics.
     improving         = ss->staticEval > (ss - 2)->staticEval;
+    nextImproving     = is_valid(nextUnadjustedStaticEval) && nextUnadjustedStaticEval < (ss - 1)->staticEval;
     opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
 
     if (priorReduction >= 3 && !opponentWorsening)
@@ -861,6 +865,7 @@ Value Search::Worker::search(
 
             return futilityMult * d                                //
                  - 2094 * improving * futilityMult / 1024          //
+                 - 80 * nextImproving * futilityMult / 1024          //
                  - 1324 * opponentWorsening * futilityMult / 4096  //
                  + (ss - 1)->statScore / 331                       //
                  + std::abs(correctionValue) / 158105;
