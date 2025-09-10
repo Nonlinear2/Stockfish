@@ -628,6 +628,7 @@ Value Search::Worker::search(
     bool  capture, ttCapture;
     int   priorReduction;
     Piece movedPiece;
+    Move  nextTTMove = Move::none();
 
     SearchedList capturesSearched;
     SearchedList quietsSearched;
@@ -723,6 +724,8 @@ Value Search::Worker::search(
                 Key nextPosKey                             = pos.key();
                 auto [ttHitNext, ttDataNext, ttWriterNext] = tt.probe(nextPosKey);
                 pos.undo_move(ttData.move);
+
+                nextTTMove = ttHitNext ? ttDataNext.move : Move::none();
 
                 // Check that the ttValue after the tt move would also trigger a cutoff
                 if (!is_valid(ttDataNext.value))
@@ -1188,7 +1191,7 @@ moves_loop:  // When in check, search starts here
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += 3094 + 1056 * !ttData.move;
+            r += 3094 + 1056 * !ttData.move + 550 * !nextTTMove;
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
