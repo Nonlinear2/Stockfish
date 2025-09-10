@@ -1185,13 +1185,13 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 600;  // Base reduction offset to compensate for other tweaks
+        r += 543;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 66;
         r -= std::abs(correctionValue) / 30450;
 
         // Increase reduction for cut nodes
         if (cutNode)
-            r += 3094 + 1056 * !ttData.move - 750 * (nextBound == BOUND_LOWER);
+            r += 3094 + 1056 * !ttData.move - 900 * (nextBound == BOUND_LOWER);
 
         // Increase reduction if ttMove is a capture
         if (ttCapture)
