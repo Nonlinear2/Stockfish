@@ -1186,7 +1186,7 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 343;  // Base reduction offset to compensate for other tweaks
+        r += 243;  // Base reduction offset to compensate for other tweaks
         r -= moveCount * 66;
         r -= std::abs(correctionValue) / 30450;
 
@@ -1208,8 +1208,8 @@ moves_loop:  // When in check, search starts here
         if (move == ttData.move)
             r -= 2018;
 
-        if (!nextImproving && depth < 8)
-            r += 750;
+        if (!nextImproving)
+            r += 890;
 
         if (capture)
             ss->statScore = 803 * int(PieceValue[pos.captured_piece()]) / 128
