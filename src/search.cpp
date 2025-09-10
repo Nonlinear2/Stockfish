@@ -1208,7 +1208,7 @@ moves_loop:  // When in check, search starts here
         if (move == ttData.move)
             r -= 2018;
 
-        if (!nextImproving)
+        if (!nextImproving && depth < 8)
             r += 750;
 
         if (capture)
