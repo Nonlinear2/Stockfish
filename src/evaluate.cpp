@@ -82,6 +82,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     // Damp down the evaluation linearly when shuffling
     v -= v * pos.rule50_count() / 212;
+    v += (pos.can_castle(pos.side_to_move() == Color::WHITE ? CastlingRights::WHITE_CASTLING : BLACK_CASTLING)) * 8;
 
     // Guarantee evaluation does not hit the tablebase range
     v = std::clamp(v, VALUE_TB_LOSS_IN_MAX_PLY + 1, VALUE_TB_WIN_IN_MAX_PLY - 1);
