@@ -1176,7 +1176,7 @@ moves_loop:  // When in check, search starts here
         // These reduction adjustments have no proven non-linear scaling
 
         r += 843;  // Base reduction offset to compensate for other tweaks
-        r -= (ttMoveExtension == -3 && extension != -3) * 600;
+        r -= (ttMoveExtension == -3 && extension != -3) * 800;
         r -= moveCount * 66;
         r -= std::abs(correctionValue) / 30450;
 
