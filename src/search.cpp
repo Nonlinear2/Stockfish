@@ -974,6 +974,8 @@ moves_loop:  // When in check, search starts here
     value = bestValue;
 
     int moveCount = 0;
+    
+    int ttMoveExtension = 0;
 
     // Step 13. Loop through all pseudo-legal moves until no moves remain
     // or a beta cutoff occurs.
@@ -1155,6 +1157,8 @@ moves_loop:  // When in check, search starts here
             // over current beta
             else if (cutNode)
                 extension = -2;
+            
+            ttMoveExtension = extension;
         }
 
         // Step 16. Make the move
@@ -1172,6 +1176,7 @@ moves_loop:  // When in check, search starts here
         // These reduction adjustments have no proven non-linear scaling
 
         r += 843;  // Base reduction offset to compensate for other tweaks
+        r -= (ttMoveExtension == -3 && extension != -3) * 400;
         r -= moveCount * 66;
         r -= std::abs(correctionValue) / 30450;
 
