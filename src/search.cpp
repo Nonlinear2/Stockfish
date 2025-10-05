@@ -1190,7 +1190,7 @@ moves_loop:  // When in check, search starts here
             r -= 2018;
 
         if (bestMove)
-            r += 1024;
+            r += 512;
 
         if (capture)
             ss->statScore = 803 * int(PieceValue[pos.captured_piece()]) / 128
