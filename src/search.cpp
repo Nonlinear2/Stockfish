@@ -833,7 +833,7 @@ Value Search::Worker::search(
     improving         = ss->staticEval > (ss - 2)->staticEval;
     opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
     
-    if ((priorReduction >= 3 - (3 * rootDepth / 4 - ss->ply - depth > 1)) && !opponentWorsening)
+    if ((priorReduction >= 3 - (4 * rootDepth / 5 - ss->ply - depth > 2)) && !opponentWorsening)
         depth++;
     if (priorReduction >= 2 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 173)
         depth--;
