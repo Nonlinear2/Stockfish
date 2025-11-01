@@ -1251,6 +1251,13 @@ moves_loop:  // When in check, search starts here
             (ss + 1)->pv    = pv;
             (ss + 1)->pv[0] = Move::none();
 
+            if (moveCount > 1){
+                const bool doDeeperSearch = r < 1024 && value > (bestValue + 53 + 2 * newDepth);
+                const bool doShallowerSearch = r > 2048 && value < bestValue + 14;
+    
+                newDepth += doDeeperSearch - doShallowerSearch;
+            }
+
             // Extend move from transposition table if we are about to dive into qsearch.
             // decisive score handling improves mate finding and retrograde analysis.
             if (move == ttData.move
