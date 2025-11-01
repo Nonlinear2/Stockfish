@@ -785,7 +785,10 @@ Value Search::Worker::search(
         goto moves_loop;
     }
     else if (excludedMove)
-        unadjustedStaticEval = eval = ss->staticEval;
+    {
+        unadjustedStaticEval = ss->staticEval;
+        eval = std::max(ss->staticEval - std::abs(correctionValue) / 131072, VALUE_TB_LOSS_IN_MAX_PLY + 1);
+    }
     else if (ss->ttHit)
     {
         // Never assume anything about values stored in TT
