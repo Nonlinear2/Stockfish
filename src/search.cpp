@@ -268,6 +268,7 @@ void Search::Worker::iterative_deepening() {
           &continuationHistory[0][0][NO_PIECE][0];  // Use as a sentinel
         (ss - i)->continuationCorrectionHistory = &continuationCorrectionHistory[NO_PIECE][0];
         (ss - i)->staticEval                    = VALUE_NONE;
+        (ss - i)->totalMoveCount                = 0;
     }
 
     for (int i = 0; i <= MAX_PLY + 2; ++i)
@@ -626,6 +627,7 @@ Value Search::Worker::search(
     priorCapture  = pos.captured_piece();
     Color us      = pos.side_to_move();
     ss->moveCount = 0;
+    ss->totalMoveCount = (ss - 1)->totalMoveCount;
     bestValue     = -VALUE_INFINITE;
     maxValue      = VALUE_INFINITE;
 
@@ -991,6 +993,7 @@ moves_loop:  // When in check, search starts here
             continue;
 
         ss->moveCount = ++moveCount;
+        ss->totalMoveCount = (ss - 1)->totalMoveCount + ss->moveCount;
 
         if (rootNode && is_mainthread() && nodes > 10000000)
         {
@@ -1167,8 +1170,9 @@ moves_loop:  // When in check, search starts here
 
         // These reduction adjustments have no proven non-linear scaling
 
-        r += 843;  // Base reduction offset to compensate for other tweaks
-        r -= moveCount * 66;
+        r += 863;  // Base reduction offset to compensate for other tweaks
+        r -= moveCount * 60;
+        r -= ss->ply > 0 ? ss->totalMoveCount / ss->ply * 60 : 0;
         r -= std::abs(correctionValue) / 30450;
 
         // Increase reduction for cut nodes
