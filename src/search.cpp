@@ -345,7 +345,6 @@ void Search::Worker::iterative_deepening() {
             // high/low, re-search with a bigger window until we don't fail
             // high/low anymore.
             int failedHighCnt = 0;
-            int exactStreakCounter = 0;
             while (true)
             {
                 // Adjust the effective depth searched, but ensure at least one
@@ -395,15 +394,10 @@ void Search::Worker::iterative_deepening() {
                 }
                 else
                 {
-                    if (exactStreakCounter > 3){
-                        alpha += (beta - alpha) / 6;
-                        beta -= (beta - alpha) / 6;
-                    }
-                    exactStreakCounter++;
+                    alpha += (beta - alpha) / 6;
+                    beta -= (beta - alpha) / 6;
                     break;
                 }
-
-                exactStreakCounter = 0;
 
                 delta += delta / 3;
 
