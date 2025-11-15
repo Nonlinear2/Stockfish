@@ -298,6 +298,8 @@ void Search::Worker::iterative_deepening() {
 
     lowPlyHistory.fill(97);
 
+    delta = 0;
+    int meanDelta = 0;
     // Iterative deepening loop until requested to stop or the target depth is reached
     while (++rootDepth < MAX_PLY && !threads.stop
            && !(limits.depth && mainThread && rootDepth > limits.depth))
@@ -332,7 +334,8 @@ void Search::Worker::iterative_deepening() {
             selDepth = 0;
 
             // Reset aspiration window starting size
-            delta     = 5 + threadIdx % 8 + std::abs(rootMoves[pvIdx].meanSquaredScore) / 9000;
+            delta     = 5 + threadIdx % 8 + std::abs(rootMoves[pvIdx].meanSquaredScore) / 9000 + (meanDelta - delta) / 10;
+            delta     = std::max(delta, 5);
             Value avg = rootMoves[pvIdx].averageScore;
             alpha     = std::max(avg - delta, -VALUE_INFINITE);
             beta      = std::min(avg + delta, VALUE_INFINITE);
@@ -393,16 +396,14 @@ void Search::Worker::iterative_deepening() {
                     ++failedHighCnt;
                 }
                 else
-                {
-                    alpha += (beta - alpha) / 6;
-                    beta -= (beta - alpha) / 6;
                     break;
-                }
 
                 delta += delta / 3;
 
                 assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
             }
+
+            meanDelta = meanDelta == 0 ? delta : (meanDelta + delta) / 2;
 
             // Sort the PV lines searched so far and update the GUI
             std::stable_sort(rootMoves.begin() + pvFirst, rootMoves.begin() + pvIdx + 1);
