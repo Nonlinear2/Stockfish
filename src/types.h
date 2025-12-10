@@ -116,6 +116,7 @@ using Bitboard = uint64_t;
 
 constexpr int MAX_MOVES = 256;
 constexpr int MAX_PLY   = 246;
+constexpr int DEPTH_SCALE   = 1024;
 
 enum Color : int8_t {
     WHITE,
