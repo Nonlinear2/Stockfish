@@ -92,6 +92,22 @@ int correction_value(const Worker& w, const Position& pos, const Stack* const ss
     return 10347 * pcv + 8821 * micv + 11168 * (wnpcv + bnpcv) + 7841 * cntcv;
 }
 
+int qs_correction_value(const Worker& w, const Position& pos, const Stack* const ss) {
+    const Color us     = pos.side_to_move();
+    const auto  m      = (ss - 1)->currentMove;
+    const auto& shared = w.sharedHistory;
+    const int   pcv    = shared.pawn_correction_entry(pos).at(us).pawn;
+    const int   micv   = shared.minor_piece_correction_entry(pos).at(us).minor;
+    const int   wnpcv  = shared.nonpawn_correction_entry<WHITE>(pos).at(us).nonPawnWhite;
+    const int   bnpcv  = shared.nonpawn_correction_entry<BLACK>(pos).at(us).nonPawnBlack;
+    const int   cntcv =
+      m.is_ok() ? (*(ss - 2)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+                    + (*(ss - 4)->continuationCorrectionHistory)[pos.piece_on(m.to_sq())][m.to_sq()]
+                  : 8;
+
+    return 11347 * pcv + 9621 * micv + 12268 * (wnpcv + bnpcv) + 8541 * cntcv;
+}
+
 // Add correctionHistory value to raw staticEval and guarantee evaluation
 // does not hit the tablebase range.
 Value to_corrected_static_eval(const Value v, const int cv) {
@@ -1554,7 +1570,7 @@ Value Search::Worker::qsearch(Position& pos, Stack* ss, Value alpha, Value beta)
         bestValue = futilityBase = -VALUE_INFINITE;
     else
     {
-        const auto correctionValue = correction_value(*this, pos, ss);
+        const auto correctionValue = qs_correction_value(*this, pos, ss);
 
         if (ss->ttHit)
         {
