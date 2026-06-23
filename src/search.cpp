@@ -973,7 +973,7 @@ Value Search::Worker::search(
         && !is_win(eval))
     {
         Value futilityMult = interpolate(std::min(int(depth), 10), 1, 10, 40, 80);
-        futilityMult -= 20 * !ss->ttHit;
+        futilityMult -= 17 * !ss->ttHit - 10 * cutNode;
 
         Value futilityMargin = futilityMult * depth
                              - (2934 * improving + 343 * opponentWorsening) * futilityMult / 1024
