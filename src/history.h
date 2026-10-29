@@ -127,6 +127,10 @@ struct DynStats {
 // see https://www.chessprogramming.org/Butterfly_Boards
 using ButterflyHistory = Stats<i16, 7183, COLOR_NB, UINT_16_HISTORY_SIZE>;
 
+// [depth][color][to]
+// TODO: make sure depth can't exceed the history size
+using ReductionHistory = Stats<i16, 7183, MAX_PLY + 1, COLOR_NB, SQUARE_NB>;
+
 // LowPlyHistory is addressed by ply and move's from and to squares, used
 // to improve move ordering near the root
 using LowPlyHistory = Stats<i16, 7183, LOW_PLY_HISTORY_SIZE, UINT_16_HISTORY_SIZE>;

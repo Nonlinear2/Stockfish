@@ -118,6 +118,7 @@ struct Stack {
     PieceToHistory*             continuationHistory;
     CorrectionHistory<PieceTo>* continuationCorrectionHistory;
     int                         ply;
+    int                         depth;
     Move                        currentMove;
     Move                        excludedMove;
     Value                       staticEval;
@@ -329,6 +330,7 @@ class Worker {
 
     // Public because they need to be updatable by the stats
     ButterflyHistory mainHistory;
+    ReductionHistory reductionHistory;
     LowPlyHistory    lowPlyHistory;
 
     CapturePieceToHistory           captureHistory;

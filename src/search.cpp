@@ -713,6 +713,7 @@ void Search::Worker::undo_null_move(Position& pos) { pos.undo_null_move(); }
 // Reset histories, usually before a new game
 void Search::Worker::clear() {
     mainHistory.fill(-5);
+    reductionHistory.fill(0);
     captureHistory.fill(-742);
 
     // Each thread clears its part of the dynamically-sized shared histories.
@@ -783,6 +784,7 @@ Value Search::Worker::search(
 
     // Step 1. Initialize node
     ss->inCheck   = pos.checkers();
+    ss->depth     = depth;
     priorCapture  = pos.captured_piece();
     Color us      = pos.side_to_move();
     ss->moveCount = 0;
@@ -885,10 +887,15 @@ Value Search::Worker::search(
     opponentWorsening = ss->staticEval > -(ss - 1)->staticEval;
 
     // Hindsight adjustment of reductions based on static evaluation difference
-    if (priorReduction >= 3 && !opponentWorsening)
+    if (priorReduction >= 3 && !opponentWorsening){
         depth++;
-    if (priorReduction >= 2 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 166)
+        reductionHistory[(ss - 1)->depth][~pos.side_to_move()][(ss - 1)->currentMove.to_sq()] << -180;
+    }
+
+    if (priorReduction >= 2 && depth >= 2 && ss->staticEval + (ss - 1)->staticEval > 166){
         depth--;
+        reductionHistory[(ss - 1)->depth][~pos.side_to_move()][(ss - 1)->currentMove.to_sq()] << 180;
+    }
 
     // Step 6. At non-PV nodes we check for an early TT cutoff. Note that we
     //         always check the validity of the TT value because of access races.
@@ -1381,6 +1388,8 @@ moves_loop:  // When in check, search starts here
 
         // Decrease/increase reduction for moves with a good/bad history
         r -= ss->statScore * 439 / 4096;
+
+        r += reductionHistory[depth][~pos.side_to_move()][move.to_sq()] / 20;
 
         if (!capture && !is_decisive(alpha))
             r += 3 * std::clamp(alpha - eval, -64, 96);
